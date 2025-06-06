@@ -1,0 +1,7 @@
+server:
+  port: 8083
+
+my_shop:
+  services:
+    catalogue:
+      uri: http://localhost:8082

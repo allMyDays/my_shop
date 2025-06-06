@@ -1,0 +1,13 @@
+.form-control{
+    width: 500px;
+
+
+
+}
+.main,.main-input{
+    display: grid;
+    justify-content: center
+
+
+
+}

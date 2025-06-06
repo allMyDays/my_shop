@@ -1,0 +1,95 @@
+:root{
+    --bg-color: #cfd0d4;
+    --text-color: #141416;
+
+
+}
+body{
+    background-color: var(--bg-color) ;
+    color: var(--text-color) ;
+
+
+
+
+
+}
+.header-top{
+    margin-top: 10px;
+
+
+
+}
+
+#offcanvasHeart, #offcanvasCart{
+    width: 700px;
+
+
+}
+
+
+
+.offcanvas-body img{
+    max-width: 100px;
+
+
+
+}
+
+
+
+
+
+
+
+a{
+    text-decoration: none;
+}
+a:hover{
+    text-decoration: underline;
+
+
+
+}
+.btn{
+
+    border-radius: 0;
+}
+
+ul.social-icons{
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+
+}
+
+ul.social-icons li{
+
+    margin-right:10px;
+
+
+
+
+
+}
+.entrance-buttons a{
+   color:white;
+
+}
+.phone{
+    color:black;
+
+
+}
+
+
+ul.social-icons a{
+    color: #141416;
+
+
+
+
+
+
+
+
+}
