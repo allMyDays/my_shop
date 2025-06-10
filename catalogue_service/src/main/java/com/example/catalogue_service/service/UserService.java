@@ -17,7 +17,7 @@ import java.security.Principal;
 @Service
 
 //@Slf4j
-public class UserService implements com.example.catalogue_service.service.i.UserService {
+public class UserService{// implements com.example.catalogue_service.service.i.UserService {
 
     private UserRepository repository;
 
@@ -40,7 +40,7 @@ public class UserService implements com.example.catalogue_service.service.i.User
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Override
+//    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return repository.findByEmail(username).orElseThrow(()-> new UsernameNotFoundException("User not found!"));
 
@@ -55,7 +55,7 @@ public class UserService implements com.example.catalogue_service.service.i.User
         return findByEmail(principal.getName());
     }
 
-    @Override
+ //   @Override
     public boolean createUser(UserDTO userDTO) {
         String email = userDTO.getEmail();
         if(repository.findByEmail(email).isPresent()) return false;
@@ -69,12 +69,12 @@ public class UserService implements com.example.catalogue_service.service.i.User
 
     }
 
-    @Override
+//    @Override
     public void saveUser(MyUser user) {
         repository.save(user);
     }
 
-    @Override
+  //  @Override
     public boolean updateProfile(UserDTO userDTO, Principal principal) {
          boolean isChanged = false;
 

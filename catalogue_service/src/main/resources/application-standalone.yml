@@ -2,11 +2,18 @@ server:
   port: 8082
 
 spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8084/realms/my_realm
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: igor333333
     driver-class-name: org.postgresql.Driver
+
+
   jpa:
     hibernate:
       ddl-auto: create-drop

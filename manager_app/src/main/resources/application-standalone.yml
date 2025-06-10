@@ -1,7 +1,44 @@
 server:
   port: 8083
+spring:
+  flyway:
+    enabled: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: igor333333
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      client:
+       provider:
+          keycloak:
+            issuer-uri: http://localhost:8084/realms/my_realm
+            user-name-attribute: preferred_username
+
+       registration:
+         keycloak:
+           client-id: manager_app
+           client-secret: jgzYnUEgRkbZan2ly9Jhh8oixe5DRgSe
+           scope:
+             - openid
+             - microprofile-jwt
+             - view_catalogue
+             - edit_catalogue
+
 
 my_shop:
   services:
     catalogue:
       uri: http://localhost:8082
+      registration-id: keycloak
+
