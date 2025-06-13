@@ -8,11 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProductDTO {
     private long id;
-    @NotNull
+    @NotNull(message = "title must not be null")
     private String title;
     @NotNull
-    private double price;
-    @NotNull
+    private int price;
+    @NotNull(message = "description must not be null")
     private String description;
     private Long previewImageID;
 

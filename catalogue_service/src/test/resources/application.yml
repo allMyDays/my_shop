@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16:///my_bd?TC_DAEMON=true
+    username: user
+    password: password
+
+  jpa:
+      hibernate:
+        ddl-auto: create-drop
+      database: postgresql
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      show-sql: true
+      properties:
+        hibernate:
+          format_sql: true

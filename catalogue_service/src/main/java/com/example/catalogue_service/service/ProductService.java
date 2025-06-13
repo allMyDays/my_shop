@@ -64,7 +64,7 @@ public class ProductService implements com.example.catalogue_service.service.i.P
         Image image1;
         Image image2;
         Image image3;
-        product.setCreator(userService.findByPrincipal(principal));
+       // product.setCreator(userService.findByPrincipal(principal));
 
         if(file1!=null){
             image1 = toImage(file1);
@@ -82,7 +82,7 @@ public class ProductService implements com.example.catalogue_service.service.i.P
 
      //   log.info("Saving new product. Title:{}",product.getTitle());
         Product productFromBD = productRepository.save(product);
-        productFromBD.setPreviewImageID(productFromBD.getImages().get(0).getId());
+        productFromBD.setPreviewImageID(productFromBD.getImages().isEmpty()?null:productFromBD.getImages().get(0).getId());
         return productRepository.save(productFromBD);
 
     }

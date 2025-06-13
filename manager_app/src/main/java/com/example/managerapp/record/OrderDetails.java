@@ -1,4 +1,4 @@
 package com.example.managerapp.record;
 
-public class OrderDetails {
+public record OrderDetails (int id, Order order, Product product, int price, int amount) {
 }

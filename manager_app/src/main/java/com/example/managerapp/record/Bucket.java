@@ -1,4 +1,6 @@
 package com.example.managerapp.record;
 
-public class Bucket {
+import java.util.List;
+
+public record Bucket (int id, MyUser user, List<Product> products) {
 }

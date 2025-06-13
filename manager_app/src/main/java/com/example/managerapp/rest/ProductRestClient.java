@@ -1,5 +1,6 @@
 package com.example.managerapp.rest;
 
+import com.example.managerapp.controller.payload.NewProductPayload;
 import com.example.managerapp.exception.BadRequestException;
 import com.example.managerapp.record.Image;
 import com.example.managerapp.record.Product;
@@ -31,14 +32,14 @@ public class ProductRestClient {
     public List<Product> getAllProducts(String filter) {
         return restClient
                 .get()
-                .uri("/catalogue-api/products?filter={filter}",filter)
+                .uri("/catalogue-api/products?filter={filter}", filter)
                 .retrieve()
                 .body(PRODUCT_TYPE_REFERENCE);
 
 
     }
 
-    public Product createProduct(Principal principal, Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
+    public Product createProduct(NewProductPayload product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
         try {
             return restClient
                     .post()

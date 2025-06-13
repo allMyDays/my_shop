@@ -1,4 +1,4 @@
 package com.example.managerapp.record;
 
-public class Category {
+public record Category (Long id, String title) {
 }

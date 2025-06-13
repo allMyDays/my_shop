@@ -32,10 +32,10 @@ public class UserRestClient {
         return null;// repository.findByEmail(email).orElseThrow(()-> new UsernameNotFoundException("User not found!"));
 
     }
-    public MyUser findByPrincipal(Principal principal) {
+   /* public MyUser findByPrincipal(Principal principal) {
         if(principal==null) return new MyUser();
         return findByEmail(principal.getName());
-    }
+    }*/
 
 
     public boolean createUser(MyUser user) {

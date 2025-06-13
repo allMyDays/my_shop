@@ -26,7 +26,7 @@ public class UserController {
 
     @GetMapping("/new_user")
     public String newUser(Model model) {
-        model.addAttribute("user", new MyUser());
+      //  model.addAttribute("user", new MyUser());
         return "auth";
     }
 
