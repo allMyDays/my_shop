@@ -1,9 +1,9 @@
 package com.example.managerapp.rest;
 
 
-import com.example.managerapp.record.Bucket;
-import com.example.managerapp.record.MyUser;
-import com.example.managerapp.record.Product;
+import com.example.managerapp.entity.Bucket;
+import com.example.managerapp.entity.MyUser;
+import com.example.managerapp.entity.Product;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

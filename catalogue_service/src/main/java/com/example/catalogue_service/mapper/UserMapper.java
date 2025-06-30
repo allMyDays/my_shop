@@ -1,4 +1,4 @@
-package com.example.artem.task1.marketplace.mapper;
+package com.example.catalogue_service.mapper;
 
 import com.example.catalogue_service.dto.UserDTO;
 import com.example.catalogue_service.entity.MyUser;

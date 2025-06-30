@@ -1,6 +1,6 @@
-package com.example.managerapp.record;
+package com.example.managerapp.entity;
 
-import com.example.managerapp.record.enums.OrderStatus;
+import com.example.managerapp.entity.enums.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;

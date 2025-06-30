@@ -41,10 +41,14 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(
                         a->a
+                                .requestMatchers("/my_profile","/get_bucket")
+                                .authenticated()
                                 .anyRequest()
-                                .hasRole("CUSTOMER"))
+                                .permitAll()
+                )
                 .oauth2Login(Customizer.withDefaults())
                 .oauth2Client(Customizer.withDefaults())
+                .logout(a->a.logoutSuccessUrl("/"))
                 .build();
     }
 

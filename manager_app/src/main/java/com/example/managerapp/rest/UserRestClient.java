@@ -1,7 +1,7 @@
 package com.example.managerapp.rest;
 
 
-import com.example.managerapp.record.MyUser;
+import com.example.managerapp.entity.MyUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

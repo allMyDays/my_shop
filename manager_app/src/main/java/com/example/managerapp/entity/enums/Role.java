@@ -1,4 +1,4 @@
-package com.example.managerapp.record.enums;
+package com.example.managerapp.entity.enums;
 
 import org.springframework.security.core.GrantedAuthority;
 

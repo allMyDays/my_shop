@@ -4,13 +4,14 @@ package com.example.catalogue_service.service;
 import com.example.artem.task1.marketplace.model.enums.Role;
 import com.example.catalogue_service.dto.UserDTO;
 import com.example.catalogue_service.entity.MyUser;
+import com.example.catalogue_service.mapper.UserMapper;
 import com.example.catalogue_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.example.artem.task1.marketplace.mapper.UserMapper;
+
 
 import java.security.Principal;
 

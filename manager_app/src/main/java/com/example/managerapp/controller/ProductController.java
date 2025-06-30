@@ -5,12 +5,9 @@ package com.example.managerapp.controller;
 import com.example.managerapp.controller.payload.NewProductPayload;
 import com.example.managerapp.exception.BadRequestException;
 import com.example.managerapp.rest.ProductRestClient;
-import com.example.managerapp.record.Product;
-import com.example.managerapp.rest.UserRestClient;
+import com.example.managerapp.entity.Product;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,7 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 

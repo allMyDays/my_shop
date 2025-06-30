@@ -2,19 +2,16 @@ package com.example.managerapp.rest;
 
 import com.example.managerapp.controller.payload.NewProductPayload;
 import com.example.managerapp.exception.BadRequestException;
-import com.example.managerapp.record.Image;
-import com.example.managerapp.record.Product;
+import com.example.managerapp.entity.Image;
+import com.example.managerapp.entity.Product;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;

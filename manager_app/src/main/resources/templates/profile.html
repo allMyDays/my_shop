@@ -19,26 +19,51 @@
 
         <div class="main-input">
             <form class="pt-5" name="f" method="post" action="/my_profile" th:object="${user}">
-                <label for="name" class="col-sm-2 col-form-label"><h6>Имя:</h6></label>
-                <div class="alert alert-success" role="alert">Необязательно</div>
-                <input type="text" th:placeholder="${user.name}" class="form-control" name="name" id="name" th:field="*{name}">
+
+                <div class="alert alert-success" role="alert">Поля, которые не хотите менять, можно оставить пустыми.</div>
+
+                <label for="nickName" class="col-sm-2 col-form-label"><h6>Ваш никнейм:</h6></label>
+                <input type="text" th:value="${user.nickName ?: ''}" class="form-control" name="nickName" id="nickName" th:field="*{nickName}" readonly>
+
+                <label for="firstName" class="col-sm-2 col-form-label"><h6>Имя:</h6></label>
+                <input type="text" th:value="${user.firstName ?: ''}" class="form-control" name="firstName" id="firstName" th:field="*{firstName}">
+
+                <label for="lastName" class="col-sm-2 col-form-label"><h6>Фамилия:</h6></label>
+                <input type="text" th:value="${user.lastName ?: ''}" class="form-control" name="lastName" id="lastName" th:field="*{lastName}">
 
 
                 <label for="email" class="col-sm-2 col-form-label"><h6>Email: </h6></label>
-                <div class="alert alert-success" role="alert">Необязательно</div>
-                <input type="email" th:placeholder="${user.email}" class="form-control" name="email" id="email" th:field="*{email}">
+                <input type="email" th:value="${user.email ?: ''}" class="form-control" name="email" id="email" th:field="*{email}">
 
 
                 <label for="password" class="col-sm-2 col-form-label"><h6>Пароль: </h6></label>
-                <div class="alert alert-success" role="alert">Необязательно</div>
                 <input type="password"  class="form-control" name="password" id="password"  th:field="*{password}">
 
 
-                <label for="password2" class="col-sm-2 col-form-label"><h6>Повторите пароль: </h6></label>
-                <input type="password"  class="form-control" name="password2" id="password2"  th:field="*{matchingPassword}">
+                <label for="password2" class="col-sm-2 col-form-label"><h6>Повтор пароля: </h6></label>
+                <input type="password"  class="form-control" name="password2" id="password2"  th:field="*{repeatedPassword}">
 
 
-                <button type="submit" class="btn btn-dark mt-4">Отредактировать</button><form/>
+                <button type="submit" class="btn btn-dark mt-4">Сохранить</button><form/>
+
+                <div th:if="${errors}" class="mt-3">
+                    <div th:each="err : ${errors}" class="alert alert-danger" role="alert">
+                        <span th:text="${err}"></span>
+                    </div>
+                </div>
+
+                <!-- Ошибка: пароли не совпадают -->
+                <div th:if="${notMatchingPasswords}" class="alert alert-warning" role="alert">
+                    Введённые пароли не совпадают.
+                </div>
+
+                <!-- Ошибка: email уже зарегистрирован -->
+                <div th:if="${userExists}" class="alert alert-danger" role="alert">
+                    Пользователь с таким email или никнеймом уже существует.
+                </div>
+                <div th:if="${updated}" class="alert alert-success" role="alert">
+                    Ваши данные были успешно обновлены.
+                </div>
                 <div/>
 
             </form>

@@ -1,5 +1,9 @@
 package com.example.managerapp.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +20,7 @@ public class MainController {
     }
     @GetMapping("/login")
     public String login(){
-        return "login";
+        return "redirect:/oauth2/authorization/keycloak";
 
 
     }
@@ -26,6 +30,17 @@ public class MainController {
         model.addAttribute("loginError", true);
         return "login";
 
+    }
+
+    @GetMapping("/my_logout")
+    public String logout(HttpServletRequest request,
+                         HttpServletResponse response,
+                         Authentication authentication) {
+        if (authentication != null) {
+            new SecurityContextLogoutHandler().logout(request, response, authentication);
+        }
+
+        return "redirect:http://localhost:8084/realms/my_realm/protocol/openid-connect/logout?redirect_uri=http://localhost:8083/";
     }
 
 

@@ -1,4 +1,4 @@
-package com.example.managerapp.record;
+package com.example.managerapp.entity;
 
 import java.util.List;
 

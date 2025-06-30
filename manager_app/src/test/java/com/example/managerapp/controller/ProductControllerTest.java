@@ -2,7 +2,7 @@ package com.example.managerapp.controller;
 
 import com.example.managerapp.controller.payload.NewProductPayload;
 import com.example.managerapp.exception.BadRequestException;
-import com.example.managerapp.record.Product;
+import com.example.managerapp.entity.Product;
 import com.example.managerapp.rest.ProductRestClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
