@@ -62,7 +62,7 @@ public class UserService {
         user.setLastName(userDTO.getLastName());
         user.setEmail(userDTO.getEmail());
         user.setEnabled(true);
-        user.setEmailVerified(false);
+        user.setEmailVerified(true);
 
         Response response = keycloak.realm(realm).users().create(user);
         if(response.getStatus() != 201){
@@ -175,8 +175,9 @@ public class UserService {
         return user.getAttribute("sub");
     }
 
-    public void markEmailAsVerified(String email){
-
+    public boolean isEmailChanged(OAuth2AuthenticationToken authentication, String newEmail){
+        Optional<MyUser> userOptional = collectMinimumUserInfo(authentication);
+        return !newEmail.equalsIgnoreCase(userOptional.get().getEmail());
 
 
 

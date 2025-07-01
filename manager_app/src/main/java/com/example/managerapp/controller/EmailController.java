@@ -8,6 +8,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @AllArgsConstructor
@@ -17,24 +21,22 @@ public class EmailController {
     private final RedisService redisService;
 
 
-    @PostMapping("/verify_email")
-    public String verifyEmail(@RequestParam String email, @RequestParam String code, @RequestParam Boolean isRegistrationPage, Model model) {
+    @PostMapping(value = "/verify_email", produces = "application/json")
+    @ResponseBody
+    public Map<String, Object> verify(@RequestParam String email,
+                                      @RequestParam String code) {
+        Map<String, Object> res = new HashMap<>();
 
-        String returningPage = isRegistrationPage?"registration":"profile";
-        String expectedCode = redisService.get(email);
-
-        if(expectedCode==null){
-            model.addAttribute("EmailKeyNotExists", true);
-            return returningPage;
+        String expected = redisService.get(email);
+        if (expected == null) {
+            res.put("expired", true);
+        } else if (!expected.equals(code)) {
+            res.put("notMatch", true);
+        } else {
+            res.put("success", true);
         }
-        if(!expectedCode.equals(code)){
-            model.addAttribute("EmailKeyNotEquals", true);
-            return returningPage;
-        }
-        userService.markEmailAsVerified(email);
-        model.addAttribute("EmailSuccess", true);
-        return returningPage;
 
+        return res;
     }
 
 
