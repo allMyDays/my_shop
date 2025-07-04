@@ -31,7 +31,7 @@ class ProductRepositoryIT {
         // when
         var products = productRepository.findAllByTitleLikeIgnoreCase(filter);
 
-        assertEquals(List.of(new Product(1L, "good1", "desc 1", 0,new ArrayList<>(),null,null,new ArrayList<>(),null)),products);
+        assertEquals(List.of(new Product(1L, "good1", "desc 1", 0,null,null)),products);
 
 
 

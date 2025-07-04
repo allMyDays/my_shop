@@ -41,7 +41,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(
                         a->a
-                                .requestMatchers("/my_profile","/get_bucket")
+                                .requestMatchers("/my_profile")
                                 .authenticated()
                                 .anyRequest()
                                 .permitAll()

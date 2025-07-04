@@ -1,9 +1,9 @@
 package com.example.managerapp.rest;
 
 
-import com.example.managerapp.entity.Bucket;
+import com.example.managerapp.entity.Cart;
 import com.example.managerapp.entity.MyUser;
-import com.example.managerapp.entity.Product;
+import com.example.managerapp.entity.ProductRecord;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -14,39 +14,39 @@ public class BucketRestClient {
 
 
 
-    public Bucket createBucket(MyUser user, List<Long> productIDs) {
+    public Cart createBucket(MyUser user, List<Long> productIDs) {
      /*   Bucket bucket = new Bucket();
         bucket.setUser(user);
-        List<Product> products = getProductsByIDs(productIDs);
+        List<ProductRecord> products = getProductsByIDs(productIDs);
         bucket.setProducts(products);
         return bucketRepository.save(bucket);*/
         return null;
     }
 
-    public void addProductsToBucket(Bucket bucket, List<Long> productIDs) {
-       /* List<Product> products = bucket.getProducts()==null?new ArrayList<>():bucket.getProducts();
+    public void addProductsToBucket(Cart bucket, List<Long> productIDs) {
+       /* List<ProductRecord> products = bucket.getProducts()==null?new ArrayList<>():bucket.getProducts();
         products.addAll(getProductsByIDs(productIDs));
         bucket.setProducts(products);
         bucketRepository.save(bucket);*/
 
     }
 
-    public Bucket getBucketDtoByUser(String email) {
+    public Cart getBucketDtoByUser(String email) {
       /*  MyUser user = userService.findByEmail(email);
         BucketDTO bucketDTO = new BucketDTO();
         if(user==null||user.getBucket()==null ) return bucketDTO;
 
         Map<Long, BucketDetailsDTO> tempMap = new HashMap<>();
 
-        List<Product> products = user.getBucket().getProducts();
-        for(Product product : products){
-         BucketDetailsDTO detail = tempMap.get(product.getId());
+        List<ProductRecord> products = user.getBucket().getProducts();
+        for(ProductRecord productRecord : products){
+         BucketDetailsDTO detail = tempMap.get(productRecord.getId());
          if(detail==null){
-                tempMap.put(product.getId(), new BucketDetailsDTO(product));
+                tempMap.put(productRecord.getId(), new BucketDetailsDTO(productRecord));
 
          }else {
              detail.setProductQuantity(detail.getProductQuantity()+1);
-             detail.setSum(detail.getSum()+product.getPrice());
+             detail.setSum(detail.getSum()+productRecord.getPrice());
          }
         }
         bucketDTO.setBucketDetailsList(new ArrayList<>(tempMap.values()));
@@ -58,7 +58,7 @@ public class BucketRestClient {
     }
 
 
-    private List<Product> getProductsByIDs(List<Long> productIDs){
+    private List<ProductRecord> getProductsByIDs(List<Long> productIDs){
        /* return productIDs.stream()
                 .map(productRepository::getOne) //todo
                 .collect(Collectors.toList());*/

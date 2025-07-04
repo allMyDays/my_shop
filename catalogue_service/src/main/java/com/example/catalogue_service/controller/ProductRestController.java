@@ -1,9 +1,10 @@
 package com.example.catalogue_service.controller;
 
-import com.example.catalogue_service.dto.ProductDTO;
+import com.example.catalogue_service.dto.GetProductDTO;
+import com.example.catalogue_service.dto.SendProductDTO;
 import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.mapper.ProductMapper;
-import com.example.catalogue_service.service.i.ProductService;
+import com.example.catalogue_service.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -35,14 +36,14 @@ public class ProductRestController {
     }
 
     @GetMapping
-    public ProductDTO getProductDTO(@ModelAttribute("product") Product product) {
-        return productMapper.toProductDTO(product);
+    public SendProductDTO getProduct(@ModelAttribute("product") Product product) {
+        return productMapper.toSendProductDTO(product);
 
     }
 
     @PatchMapping
     public ResponseEntity<?> updateProduct(@PathVariable("productId") long productId,
-                                              @Valid @RequestBody ProductDTO productDTO,
+                                              @Valid @RequestBody GetProductDTO productDTO,
                                               BindingResult bindingResult) throws BindException {
 
         if(bindingResult.hasErrors()){

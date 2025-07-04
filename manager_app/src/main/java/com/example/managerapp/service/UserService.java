@@ -1,8 +1,10 @@
 package com.example.managerapp.service;
 
 import com.example.managerapp.dto.EditUserDTO;
+import com.example.managerapp.dto.GetUserDTO;
 import com.example.managerapp.dto.RegistrationUserDTO;
 import com.example.managerapp.entity.MyUser;
+import com.example.managerapp.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
@@ -13,6 +15,7 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -23,9 +26,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+
 public class UserService {
 
     private Keycloak keycloak;      // клиент, который авторизируется в keycloak и позволяет делать запросы от имени админа. Позволяет создать пользователя, проверить, существует ли он и т.д.
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Value("${keycloak.realm}")
     private String realm;
@@ -76,6 +83,10 @@ public class UserService {
         password.setValue(userDTO.getPassword());
 
         keycloak.realm(realm).users().get(userID).resetPassword(password);
+
+        MyUser myUser = new MyUser();
+        myUser.setKeycloakID(userID);
+        userRepository.save(myUser);
 
         return true;
 
@@ -145,7 +156,7 @@ public class UserService {
 
     }
 
-    public Optional<MyUser> collectMinimumUserInfo(OAuth2AuthenticationToken authentication) {
+    public Optional<GetUserDTO> collectMinimumUserInfo(OAuth2AuthenticationToken authentication) {
         if (authentication == null) return Optional.empty();
 
         String UserID = getUserID(authentication);
@@ -156,8 +167,7 @@ public class UserService {
         try {
             UserRepresentation userRep = userResource.toRepresentation();
 
-            MyUser user = new MyUser();
-            user.setId(userRep.getId());
+            GetUserDTO user = new GetUserDTO();
             user.setEmail(userRep.getEmail());
             user.setFirstName(userRep.getFirstName());
             user.setLastName(userRep.getLastName());
@@ -169,6 +179,16 @@ public class UserService {
             return Optional.empty();
         }
     }
+
+    public MyUser getMyUserFromBD(String keycloakID) {
+        if (keycloakID == null) throw new NotFoundException();
+        Optional<MyUser> user = userRepository.findByKeycloakID(keycloakID);
+        if (user.isEmpty()) throw new NotFoundException();
+        return user.get();
+    }
+
+
+
     public String getUserID(OAuth2AuthenticationToken authentication){
         OAuth2User user = authentication.getPrincipal();
 
@@ -176,9 +196,8 @@ public class UserService {
     }
 
     public boolean isEmailChanged(OAuth2AuthenticationToken authentication, String newEmail){
-        Optional<MyUser> userOptional = collectMinimumUserInfo(authentication);
+        Optional<GetUserDTO> userOptional = collectMinimumUserInfo(authentication);
         return !newEmail.equalsIgnoreCase(userOptional.get().getEmail());
-
 
 
     }

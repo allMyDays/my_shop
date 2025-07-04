@@ -32,11 +32,11 @@ public class Product {
     @Column
     private int price;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+   /* @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name="products_categories",
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<Category> categories;
+    private List<Category> categories;*/
 
     @Column
     private LocalDateTime dateOfCreation;
@@ -44,12 +44,12 @@ public class Product {
     @Column
     private Long previewImageID;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
-    private List<Image> images = new ArrayList<>();
+    /*@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
+    private List<Image> images = new ArrayList<>();*/
 
-    @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+   /* @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn
-    private MyUser creator;
+    private MyUser creator;*/
 
     @PrePersist
     private void init(){
@@ -57,10 +57,10 @@ public class Product {
 
     }
 
-    public void addImageToProduct(Image image){
+   /* public void addImageToProduct(Image image){
         image.setProduct(this);
         images.add(image);
-    }
+    }*/
 
 
 

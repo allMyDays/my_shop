@@ -1,9 +1,10 @@
 package com.example.catalogue_service.controller;
 
-import com.example.catalogue_service.dto.ProductDTO;
+import com.example.catalogue_service.dto.GetProductDTO;
+import com.example.catalogue_service.dto.SendProductDTO;
 import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.mapper.ProductMapper;
-import com.example.catalogue_service.service.i.ProductService;
+import com.example.catalogue_service.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -27,11 +28,19 @@ public class ProductsRestController {
      private final ProductMapper productMapper;
 
     @GetMapping
-    public List<ProductDTO> findProducts(@RequestParam(name = "filter", required = false) String filter) {
-        return productMapper.toProductDTOList(productService.getAll(filter));
+    public List<SendProductDTO> findProducts(@RequestParam(name = "filter", required = false) String filter) {
+        return productMapper.toSendProductDTOList(productService.getAll(filter));
     }
+
+    @PostMapping("/get-by-ids")
+    public List<SendProductDTO> getProductByIDs(@RequestBody List<Long> IDs) {
+
+        return productMapper.toSendProductDTOList(productService.getProductsByIDs(IDs));
+
+    }
+
     @PostMapping
-    public ResponseEntity<?> createProduct(@Valid @RequestBody ProductDTO productDTO, BindingResult bindingResult, UriComponentsBuilder uriBuilder) throws BindException {
+    public ResponseEntity<?> createProduct(@Valid @RequestBody GetProductDTO productDTO, BindingResult bindingResult, UriComponentsBuilder uriBuilder) throws BindException {
 
         if(bindingResult.hasErrors()) {
             throw new BindException(bindingResult);
@@ -45,15 +54,7 @@ public class ProductsRestController {
                             .replacePath("catalogue-api/products/{productId}")
                             .build(Map.of("productId",product.getId())))
                     .body(product);
-
-
-
-
-
         }
-
-
-
 
     }
 }

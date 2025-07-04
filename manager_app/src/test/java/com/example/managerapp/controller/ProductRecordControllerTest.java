@@ -2,7 +2,7 @@ package com.example.managerapp.controller;
 
 import com.example.managerapp.controller.payload.NewProductPayload;
 import com.example.managerapp.exception.BadRequestException;
-import com.example.managerapp.entity.Product;
+import com.example.managerapp.entity.ProductRecord;
 import com.example.managerapp.rest.ProductRestClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Модульные тесты ProductController")
-class ProductControllerTest {
+class ProductRecordControllerTest {
 
     @Mock
     private ProductRestClient productRestClient;
@@ -32,10 +32,10 @@ class ProductControllerTest {
     void createProduct_ValidRequest_ReturnsPageWithCreatedProduct() {
 
         // given
-        var product = new NewProductPayload("new product", 60, "simple description");
+        var product = new NewProductPayload("new productRecord", 60, "simple description");
         var model = new ConcurrentModel();
 
-        doReturn(new Product(1, "title", 60, "simple desc", null))
+        doReturn(new ProductRecord(1, "title", 60, "simple desc", null))
                 .when(productRestClient)
                 .createProduct(product,null,null,null);
 

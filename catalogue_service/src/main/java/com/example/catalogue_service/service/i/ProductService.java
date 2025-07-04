@@ -10,8 +10,6 @@ import java.util.Optional;
 public interface ProductService {
      List<Product> getAll(String title);
 
-     void addToUserBucket(Long productID, String email);
-
      Optional<Product> getProductByID(Long productID);
 
      Product createProduct(Principal principal, Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3);

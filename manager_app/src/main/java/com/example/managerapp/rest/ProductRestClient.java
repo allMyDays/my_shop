@@ -1,9 +1,9 @@
 package com.example.managerapp.rest;
 
 import com.example.managerapp.controller.payload.NewProductPayload;
+import com.example.managerapp.entity.ProductRecord;
 import com.example.managerapp.exception.BadRequestException;
 import com.example.managerapp.entity.Image;
-import com.example.managerapp.entity.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -22,11 +22,11 @@ public class ProductRestClient {
    // private final UserRestClient userRestClient;
  //   private final BucketRestClient bucketRestClient;
     private final RestClient restClient;
-    private static final ParameterizedTypeReference<List<Product>> PRODUCT_TYPE_REFERENCE = new ParameterizedTypeReference<>() {};
+    private static final ParameterizedTypeReference<List<ProductRecord>> PRODUCT_TYPE_REFERENCE = new ParameterizedTypeReference<>() {};
 
 
 
-    public List<Product> getAllProducts(String filter) {
+    public List<ProductRecord> getAllProducts(String filter) {
         return restClient
                 .get()
                 .uri("/catalogue-api/products?filter={filter}", filter)
@@ -36,7 +36,7 @@ public class ProductRestClient {
 
     }
 
-    public Product createProduct(NewProductPayload product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
+    public ProductRecord createProduct(NewProductPayload product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
         try {
             return restClient
                     .post()
@@ -44,7 +44,7 @@ public class ProductRestClient {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(product)
                     .retrieve()
-                    .body(Product.class);
+                    .body(ProductRecord.class);
         }catch (HttpClientErrorException.BadRequest exception){
             ProblemDetail problemDetail = exception.getResponseBodyAs(ProblemDetail.class);
             throw new BadRequestException(problemDetail);
@@ -55,28 +55,46 @@ public class ProductRestClient {
 
     }
 
-    public Optional<Product> getProductByID(Long productID) {
+    public Optional<ProductRecord> getProductByID(Long productID) {
         try {
             return Optional.ofNullable(
                     restClient.get()
                             .uri("/catalogue-api/products/{productId}", productID)
                             .retrieve()
-                            .body(Product.class));
+                            .body(ProductRecord.class));
         }catch (HttpClientErrorException.NotFound exception){
         return Optional.empty();
 
 
         }
+    }
+    public List<ProductRecord> getProductsByIDs(List<Long> productIDs) {
+        try {
+            return restClient.post()
+                            .uri("/catalogue-api/products/get-by-ids")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(productIDs)
+                            .retrieve()
+                            .body(PRODUCT_TYPE_REFERENCE);
+        }catch (HttpClientErrorException.NotFound exception){
+            return List.of();
 
+
+        }
     }
 
-    public void updateProduct(Long productID, Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
+
+
+
+
+
+    public void updateProduct(Long productID, ProductRecord productRecord, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
         try {
             restClient
                     .patch()
                     .uri("/catalogue-api/products/{productID}", productID)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(product)
+                    .body(productRecord)
                     .retrieve()
                     .toBodilessEntity();
         }catch (HttpClientErrorException.BadRequest exception){
@@ -100,24 +118,6 @@ public class ProductRestClient {
         }
     }
 
-    public void addToUserBucket(Long productID, String email) {
-     /*   MyUser user = userService.findByEmail(email);
-        Bucket bucket = user.getBucket();
-        if (bucket == null) {
-            Bucket newBucket = bucketService.createBucket(user, Collections.singletonList(productID));
-            user.setBucket(newBucket);
-            userService.saveUser(user);
-        }
-        else {
-       bucketService.addProductsToBucket(bucket,Collections.singletonList(productID));
-
-
-
-
-        }*/
-
-
-    }
 
 
 

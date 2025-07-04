@@ -3,9 +3,9 @@ package com.example.managerapp.controller;
 
 
 import com.example.managerapp.controller.payload.NewProductPayload;
+import com.example.managerapp.entity.ProductRecord;
 import com.example.managerapp.exception.BadRequestException;
 import com.example.managerapp.rest.ProductRestClient;
-import com.example.managerapp.entity.Product;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,8 +42,8 @@ public class ProductController {
                                 HttpServletResponse response
                                ) {
        try{
-           Product dataBaseProduct = productRestClient.createProduct(product, file1, file2, file3);
-           return "redirect:/catalogue/products/%d".formatted(dataBaseProduct.id());
+           ProductRecord dataBaseProductRecord = productRestClient.createProduct(product, file1, file2, file3);
+           return "redirect:/catalogue/products/%d".formatted(dataBaseProductRecord.id());
        } catch (BadRequestException exception) {
         model.addAttribute("payload", product);
         model.addAttribute("errors", exception.getErrors());
@@ -54,7 +54,7 @@ public class ProductController {
 
     @GetMapping("/products")
     public String list(Principal principal, Model model, @RequestParam(name="filter",required = false) String filter) {
-        List<Product> list = productRestClient.getAllProducts(filter);
+        List<ProductRecord> list = productRestClient.getAllProducts(filter);
         model.addAttribute("products",list);
         model.addAttribute("title",filter);
         return "products";
@@ -67,21 +67,14 @@ public class ProductController {
         return "catalogue/products/new_product";
     }
 
-    @GetMapping("/product_to_bucket/{id}")
-    public String addToBucket(@PathVariable long id, Principal principal) {
-       /* if (principal == null) return "redirect:/login";
 
-        productService.addToUserBucket(id, principal.getName());*/
-        return "redirect:/products";
-
-    }
 
     @GetMapping("/product_info/{id}")
     public String productInfo(@PathVariable long id, Model model){
-       /* Optional<Product> product = productService.getProductByID(id);
-        if(product.isEmpty()) return "redirect:/products";
-        model.addAttribute("product",productMapper.toProductDTO(product.get()));
-        model.addAttribute("images",product.get().getImages());*/
+       /* Optional<ProductRecord> productRecord = productService.getProductByID(id);
+        if(productRecord.isEmpty()) return "redirect:/products";
+        model.addAttribute("productRecord",productMapper.toProductDTO(productRecord.get()));
+        model.addAttribute("images",productRecord.get().getImages());*/
         return "product-info";
 
     }

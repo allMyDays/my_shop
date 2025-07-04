@@ -15,27 +15,17 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-6 col-sm-4">
-                    <div class="head-top-phone">
-                        <i class="fa-solid fa-phone">
-                            <a class="phone" href="tel:++74952321000">+7 (495) 232-10-00</a>
-                        </i>
-
-                    </div>
+                    <a href="/"><img src="images/logo2.png" alt="logo" width="188"></a>
                 </div>
                 <div class="col-sm-4 d-none d-sm-block">
-                    <ul class="social-icons">
-                        <li><a href="http://" target="_blank"> <i class="fa-brands fa-youtube"></i></a> </li>
-
-                        <li><a href="http://" target="_blank">  <i class="fa-brands fa-facebook"></i></a> </li>
-
-                        <li><a href="http://" target="_blank"> <i class="fa-brands fa-telegram"></i></a> </li>
-
-                    </ul>
-
+                    <form class="input-group mb-3 my-3" action="/productRecords" method="get">
+                        <input type="text" name="filter" class="form-control" placeholder="Поиск товаров" aria-label="Recipient's username" aria-describedby="button-addon2">
+                        <button class="btn btn-outline-dark bg-white" type="submit" id="button-addon2"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
 
                 </div>
 
-                <div class="col-6 col-sm-4">
+                <div class="col-6 col-sm-4 my-1">
 
                     <div class="btn-group d-flex justify-content-end">
 
@@ -64,61 +54,49 @@
 
                             </div>
 
+
                             <div>
-                                <button class="btn position-relative me-4 px-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasHeart" aria-controls="offcanvasHeart">
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                6
-                                <span class="visually-hidden">unread messages</span>
-                              </span>
+                                <button class="btn position-relative me-4 px-1" type="button"
+                                        data-bs-toggle="offcanvas" data-bs-target="#offcanvasWish"
+                                        aria-controls="offcanvasWish" onclick="loadWishList()">
+
+        <span id="wish-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            0
+            <span class="visually-hidden">товаров в избранном</span>
+        </span>
 
                                     <i class="fa-solid fa-heart"></i>
                                 </button>
 
-
-                                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasHeart" aria-labelledby="offcanvasHeartLabel">
+                                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasWish" aria-labelledby="offcanvasWishLabel">
                                     <div class="offcanvas-header">
-                                        <h3 class="offcanvas-title" id="offcanvasHeartLabel">Избранные товары</h3>
-                                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                        <h3 class="offcanvas-title" id="offcanvasWishLabel">Список желаний</h3>
+                                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
                                     </div>
                                     <div class="offcanvas-body">
-
-
-                                        <table class="table mt-8">
-                                            <tbody>
-                                            <tr>
-                                                <th scope="row">1</th>
-                                                <td><img src="assets/goods/dress.webp"></td>
-                                                <td>Платье женское красное</td>
-                                                <td>20000₽</td>
-                                                <td><i class="fa-solid fa-trash"></i></td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">2</th>
-                                                <td><img src="assets/goods/pants.webp"></td>
-                                                <td>Штаны мужские летние</td>
-                                                <td>3500₽</td>
-                                                <td><i class="fa-solid fa-trash"></i></td>
-                                            </tr>
-
+                                        <table class="table mt-4">
+                                            <tbody id="wish-items-table">
+                                            <!-- AJAX будет вставлять сюда строки -->
                                             </tbody>
                                         </table>
-
-
-
-
                                     </div>
                                 </div>
-
                             </div>
 
+
+
+                            <!-- блок корзины -->
+
+
                             <div>
-                                <button class="btn position-relative me-4 px-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" >
+                                <button class="btn position-relative me-4 px-1" type="button"
+                                        data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart"
+                                        aria-controls="offcanvasCart" onclick="loadCart()">
 
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                5
-                                <span class="visually-hidden">unread messages</span>
-                              </span>
-
+        <span id="cart-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            0
+            <span class="visually-hidden">товаров в корзине</span>
+        </span>
 
                                     <i class="fa-solid fa-cart-shopping"></i>
                                 </button>
@@ -126,53 +104,17 @@
                                 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
                                     <div class="offcanvas-header">
                                         <h3 class="offcanvas-title" id="offcanvasCartLabel">Корзина товаров</h3>
-                                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
                                     </div>
                                     <div class="offcanvas-body">
-
-                                        <table class="table mt-8">
-                                            <tbody>
-                                            <tr>
-                                                <th scope="row">1</th>
-                                                <td><img src="assets/goods/dress.webp"></td>
-                                                <td>Платье женское красное</td>
-                                                <td>20000₽</td>
-                                                <td><i class="fa-solid fa-trash"></i></td>
-                                            </tr>
-                                            <tr>
-                                                <th scope="row">2</th>
-                                                <td><img src="assets/goods/pants.webp"></td>
-                                                <td>Штаны мужские летние</td>
-                                                <td>3500₽</td>
-                                                <td><i class="fa-solid fa-trash"></i></td>
-                                            </tr>
-
+                                        <table class="table mt-4">
+                                            <tbody id="cart-items-table">
+                                            <!-- AJAX будет вставлять сюда строки -->
                                             </tbody>
                                         </table>
-
-
                                     </div>
                                 </div>
-
-
-
-
                             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-                        </div>
-
-
 
 
 
@@ -243,36 +185,6 @@
 
       </div>
 
-      <div class="header-bottom">
-          <div class="container-fluid">
-              <div class="row">
-                  <div class="col-sm-4 px-0 my-0">
-                      <a href="/"><img src="images/logo2.png" alt="logo" width="188"></a>
-                  </div>
-                  <div class="col-sm-4 ">
-                      <form class="input-group mb-3 my-3" action="/products" method="get">
-                          <input type="text" name="filter" class="form-control" placeholder="Поиск товаров" aria-label="Recipient's username" aria-describedby="button-addon2">
-                          <button class="btn btn-outline-dark bg-white" type="submit" id="button-addon2"><i class="fa-solid fa-magnifying-glass"></i></button>
-                      </form>
-
-                  </div>
-
-
-              </div>
-
-
-
-
-
-                   </div>
-
-
-
-
-
-
-
-               </div>
 
 
 
@@ -285,11 +197,6 @@
 
 
 
-
-
-
-
-
-           <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-           </body>
-           </html>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>

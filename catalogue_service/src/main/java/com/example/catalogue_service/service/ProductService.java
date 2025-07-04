@@ -1,8 +1,6 @@
 package com.example.catalogue_service.service;
 
-import com.example.catalogue_service.entity.Bucket;
-import com.example.catalogue_service.entity.Image;
-import com.example.catalogue_service.entity.MyUser;
+
 import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,49 +17,34 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 //@Slf4j
-public class ProductService implements com.example.catalogue_service.service.i.ProductService {
+public class ProductService {//implements com.example.catalogue_service.service.i.ProductService {
 
     private final ProductRepository productRepository;
-    private final UserService userService;
-    private final BucketService bucketService;
 
 
 
-    @Override
     public List<Product> getAll(String title) {
         if(title!=null&&!title.isEmpty()) return productRepository.findAllByTitleLikeIgnoreCase("%"+title+"%");
 
         return productRepository.findAll();
     }
 
-    @Override
-    public void addToUserBucket(Long productID, String email) {
-        MyUser user = userService.findByEmail(email);
-        Bucket bucket = user.getBucket();
-        if (bucket == null) {
-            Bucket newBucket = bucketService.createBucket(user, Collections.singletonList(productID));
-            user.setBucket(newBucket);
-            userService.saveUser(user);
-        }
-        else {
-       bucketService.addProductsToBucket(bucket,Collections.singletonList(productID));
+    public List<Product> getProductsByIDs(List<Long> ids) {
 
-
-
-
-        }
-
-
+        return productRepository.findAllByIdIn(ids);
     }
 
-    @Override
+
+
+
+
     public Optional<Product> getProductByID(Long productID) {
         return productRepository.findById(productID);
     }
 
-    @Override
+
     public Product createProduct(Principal principal, Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
-        Image image1;
+       /* Image image1;
         Image image2;
         Image image3;
        // product.setCreator(userService.findByPrincipal(principal));
@@ -83,22 +66,23 @@ public class ProductService implements com.example.catalogue_service.service.i.P
      //   log.info("Saving new product. Title:{}",product.getTitle());
         Product productFromBD = productRepository.save(product);
         productFromBD.setPreviewImageID(productFromBD.getImages().isEmpty()?null:productFromBD.getImages().get(0).getId());
-        return productRepository.save(productFromBD);
+        return productRepository.save(productFromBD);*/
+        return null;
 
     }
 
-    @Override
+
     public Product updateProduct(Long productID, Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
        //todo
         return product;
     }
 
-    @Override
+
     public void deleteProduct(long productId) {
         //todo
     }
 
-    private Image toImage(MultipartFile file){
+  /*  private Image toImage(MultipartFile file){
         Image image = new Image();
         image.setName(file.getName());
         image.setOriginalFileName(file.getOriginalFilename());
@@ -111,7 +95,7 @@ public class ProductService implements com.example.catalogue_service.service.i.P
         }
         return image;
 
-    }
+    }*/
 
 
 

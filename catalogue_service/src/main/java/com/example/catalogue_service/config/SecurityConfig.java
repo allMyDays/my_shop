@@ -20,6 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
+//@MapperScan("com.example.catalogue_service.mapper")
 public class SecurityConfig {
 
 
@@ -41,8 +42,10 @@ public class SecurityConfig {
                                         .hasAuthority("SCOPE_edit_catalogue")
                                         .requestMatchers(HttpMethod.DELETE,"catalogue-api/products/{productId:\\d+}")
                                         .hasAuthority("SCOPE_edit_catalogue")
+                                        .requestMatchers(HttpMethod.POST, "catalogue-api/products/get-by-ids")
+                                        .permitAll()
                                         .requestMatchers(HttpMethod.GET)
-                                        .hasAuthority("SCOPE_view_catalogue")
+                                        .permitAll()
                                         .anyRequest()
                                         .denyAll()
                 )

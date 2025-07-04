@@ -3,6 +3,7 @@ package com.example.managerapp.controller;
 
 
 import com.example.managerapp.dto.EditUserDTO;
+import com.example.managerapp.dto.GetUserDTO;
 import com.example.managerapp.dto.RegistrationUserDTO;
 import com.example.managerapp.entity.MyUser;
 import com.example.managerapp.mapper.UserMapper;
@@ -48,11 +49,9 @@ public class UserController {
 
     @GetMapping("/my_profile")
     public String profile(Model model, OAuth2AuthenticationToken authentication) {
-        Optional<MyUser> userOptional =  userService.collectMinimumUserInfo(authentication);
+        Optional<GetUserDTO> userOptional =  userService.collectMinimumUserInfo(authentication);
         if(userOptional.isEmpty()) return "redirect:/login";
-
-        EditUserDTO userDTO = userMapper.toEditUserDTO(userOptional.get());
-        model.addAttribute("user", userDTO);
+        model.addAttribute("user", userOptional.get());
         return "profile";
 
     }

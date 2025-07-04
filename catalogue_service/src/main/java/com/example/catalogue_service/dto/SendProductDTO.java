@@ -4,17 +4,26 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
-public class ProductDTO {
+public class SendProductDTO {
+
     private long id;
-    @NotNull(message = "title must not be null")
+
     private String title;
-    @NotNull
-    private int price;
-    @NotNull(message = "description must not be null")
+
     private String description;
+
+    private int price;
+
     private Long previewImageID;
+
+    private LocalDateTime dateOfCreation;
+
+
+
 
 
 

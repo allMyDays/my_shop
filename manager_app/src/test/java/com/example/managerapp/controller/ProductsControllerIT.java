@@ -1,6 +1,6 @@
 package com.example.managerapp.controller;
 
-import com.example.managerapp.entity.Product;
+import com.example.managerapp.entity.ProductRecord;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Test;
@@ -72,8 +72,8 @@ public class ProductsControllerIT {
                         view().name("products"),
                        // model().attribute("title",title);
                         model().attribute("products", List.of(
-                                new Product(1,"Товар №1",0,"Описание товара №1",null),
-                                new Product(2,"Товар №2",0,"Описание товара №2",null)
+                                new ProductRecord(1,"Товар №1",0,"Описание товара №1",null),
+                                new ProductRecord(2,"Товар №2",0,"Описание товара №2",null)
 
                         ))
                 );
