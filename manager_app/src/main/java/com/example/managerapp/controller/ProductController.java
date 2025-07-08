@@ -52,15 +52,12 @@ public class ProductController {
     }
 
 
-    @GetMapping("/products")
-    public String list(Principal principal, Model model, @RequestParam(name="filter",required = false) String filter) {
+    @GetMapping("/products_page")
+    public String list(Model model, @RequestParam(name="filter",required = false) String filter) {
         List<ProductRecord> list = productRestClient.getAllProducts(filter);
         model.addAttribute("products",list);
         model.addAttribute("title",filter);
         return "products";
-
-
-
     }
     @GetMapping("/product_create")
     public String newProductPage(){

@@ -15,10 +15,38 @@ services:
     container_name: my_keycloak
     command: start-dev
     ports:
-      - "8084:8080"
+      - "8085:8080"
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
       - /c/Users/foshi/Desktop/my_shop_3/config/keycloak/import:/opt/keycloak/data/import
     restart: unless-stopped
+
+  postgres:
+      image: postgres:latest
+      restart: always
+      environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: igor333333
+        POSTGRES_DB: postgres
+      ports:
+        - "5433:5432"
+      volumes:
+        - /c/Users/foshi/Desktop/my_shop_3/config/postgres/import:/var/lib/postgresql/data
+
+
+
+
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"   # Web API
+      - "9001:9001"   # Web UI (админка)
+    volumes:
+      - /c/Users/foshi/Desktop/my_shop_3/config/minIO/import:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"

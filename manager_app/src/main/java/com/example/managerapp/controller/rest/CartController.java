@@ -1,12 +1,17 @@
-package com.example.managerapp.controller;
+package com.example.managerapp.controller.rest;
 
 import com.example.managerapp.dto.CartDTO;
+import com.example.managerapp.dto.CartItemDTO;
+import com.example.managerapp.entity.CartItem;
 import com.example.managerapp.mapper.CartMapper;
 import com.example.managerapp.service.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -20,6 +25,15 @@ public class CartController {
     public CartDTO getCart(OAuth2AuthenticationToken authenticationToken){
         return cartMapper.toCartDTO(cartService.getUserCart(authenticationToken));
 
+    }
+    @GetMapping("/items")
+    public List<CartItemDTO> getCartItems(OAuth2AuthenticationToken authenticationToken){
+        return getCart(authenticationToken).getItemsDTOList();
+    }
+
+    @GetMapping("/size")
+    public Map<String, Integer> getCartSize(OAuth2AuthenticationToken authenticationToken){
+        return Map.of("count",!authenticationToken.isAuthenticated()?0:cartService.getUserCart(authenticationToken).getItems().size());
     }
 
 

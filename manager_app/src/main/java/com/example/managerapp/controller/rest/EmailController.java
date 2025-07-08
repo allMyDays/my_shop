@@ -1,19 +1,16 @@
-package com.example.managerapp.controller;
+package com.example.managerapp.controller.rest;
 
-import com.example.managerapp.service.EmailService;
 import com.example.managerapp.service.RedisService;
 import com.example.managerapp.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Controller
+@RestController
 @AllArgsConstructor
 public class EmailController {
 
@@ -22,7 +19,6 @@ public class EmailController {
 
 
     @PostMapping(value = "/verify_email", produces = "application/json")
-    @ResponseBody
     public Map<String, Object> verify(@RequestParam String email,
                                       @RequestParam String code) {
         Map<String, Object> res = new HashMap<>();

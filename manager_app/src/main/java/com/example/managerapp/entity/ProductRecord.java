@@ -1,5 +1,5 @@
 package com.example.managerapp.entity;
 
-public record ProductRecord(long id, String title, int price, String description, Long previewImageID ) {
+public record ProductRecord(long id, String title, int price, String description, String previewImageFileName ) {
 
 }

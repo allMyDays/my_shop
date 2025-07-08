@@ -23,7 +23,7 @@
 
                 row.innerHTML = `
                         <th scope="row">${index + 1}</th>
-                        <td><img src="/images/${item.productId}.webp" width="60"></td>
+                        <td><img src="/api/images/${item.previewImageFileName}" width="60"></td>
                         <td>${item.title}</td>
                         <td>${item.price}₽</td>
                         <td><i class="fa-solid fa-trash text-danger" style="cursor:pointer"
@@ -58,7 +58,7 @@
 
                     row.innerHTML = `
                         <th scope="row">${index + 1}</th>
-                        <td><img src="/images/${item.productId}.webp" width="60"></td>
+                        <td><img src="/api/images/${item.previewImageFileName}" width="60"></td>
                         <td>${item.title}</td>
                         <td>${item.price}₽</td>
                         <td><i class="fa-solid fa-trash text-danger" style="cursor:pointer"
@@ -75,6 +75,10 @@
     }).then(res => {
         if (res.ok) {
             loadCart(); // заново загрузить корзину
+            document.dispatchEvent(new CustomEvent('cartItemRemoved', {
+                detail: { productId: productId }
+            }));
+
         } else {
             alert("Ошибка при удалении товара.");
         }
@@ -86,8 +90,12 @@
         }).then(res => {
             if (res.ok) {
                 loadWishList();
+                document.dispatchEvent(new CustomEvent('wishItemRemoved', {
+                    detail: { productId: productId }
+                }));
             } else {
                 alert("Ошибка при удалении товара.");
             }
         });
     }
+

@@ -17,7 +17,7 @@ spring:
   flyway:
     enabled: false
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5433/postgres
     username: postgres
     password: igor333333
     driver-class-name: org.postgresql.Driver
@@ -66,3 +66,8 @@ my_shop:
 keycloak:
   server-uri: http://localhost:8084
   realm: "my_realm"
+
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin

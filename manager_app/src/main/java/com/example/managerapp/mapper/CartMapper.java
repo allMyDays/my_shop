@@ -51,7 +51,7 @@ public abstract class CartMapper {
             if(productRecord != null){
                 dto.setTitle(productRecord.title());
                 dto.setPrice(productRecord.price());
-                dto.setPreviewImageID(productRecord.previewImageID());
+                dto.setPreviewImageFileName(productRecord.previewImageFileName());
 
             }
         }

@@ -11,6 +11,6 @@ public class WishItemDTO {
 
     int price;
 
-    Long previewImageID;
+    String previewImageFileName;
 
 }

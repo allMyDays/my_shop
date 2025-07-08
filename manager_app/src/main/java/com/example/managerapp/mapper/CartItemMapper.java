@@ -12,7 +12,7 @@ public interface CartItemMapper {
 
     @Mapping(target = "title", ignore = true)
     @Mapping(target = "price", ignore = true)
-    @Mapping(target = "previewImageID", ignore = true)
+    @Mapping(target = "previewImageFileName", ignore = true)
     CartItemDTO toCartItemDTO(CartItem cartItem);
 
     List<CartItemDTO> toCartItemDTOList(List<CartItem> cartItemList);

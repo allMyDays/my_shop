@@ -30,6 +30,7 @@ public class ProductsRestController {
     @GetMapping
     public List<SendProductDTO> findProducts(@RequestParam(name = "filter", required = false) String filter) {
         return productMapper.toSendProductDTOList(productService.getAll(filter));
+
     }
 
     @PostMapping("/get-by-ids")

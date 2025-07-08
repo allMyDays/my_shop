@@ -39,7 +39,7 @@ public abstract class WishListMapper {
             wishItemDTO.setProductId(product.id());
             wishItemDTO.setTitle(product.title());
             wishItemDTO.setPrice(product.price());
-            wishItemDTO.setPreviewImageID(product.previewImageID());
+            wishItemDTO.setPreviewImageFileName(product.previewImageFileName());
 
             wishItemDTOs.add(wishItemDTO);
         }

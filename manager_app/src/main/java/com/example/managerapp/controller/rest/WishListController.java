@@ -1,9 +1,8 @@
-package com.example.managerapp.controller;
+package com.example.managerapp.controller.rest;
 
+import com.example.managerapp.dto.WishItemDTO;
 import com.example.managerapp.dto.WishListDTO;
-import com.example.managerapp.entity.WishList;
 import com.example.managerapp.mapper.WishListMapper;
-import com.example.managerapp.service.UserService;
 import com.example.managerapp.service.WishListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +10,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/wish-list")
@@ -26,6 +26,19 @@ public class WishListController {
 
         return wishListMapper.toWishListDTO(wishListService.getUserWishList(authentication));
 
+    }
+
+    @GetMapping("/items")
+    public List<WishItemDTO> getWishListItems(OAuth2AuthenticationToken authentication) {
+
+        return getWishList(authentication).getItemsDTOList();
+
+    }
+
+
+    @GetMapping("/size")
+    public Map<String, Integer> getListSize(OAuth2AuthenticationToken authenticationToken){
+        return Map.of("count",!authenticationToken.isAuthenticated()?0:wishListService.getUserWishList(authenticationToken).getProductIDs().size());
     }
 
 

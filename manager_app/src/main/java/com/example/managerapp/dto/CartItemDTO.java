@@ -15,7 +15,7 @@ public class CartItemDTO {
 
     int price;
 
-    Long previewImageID;
+    String previewImageFileName;
 
 
 

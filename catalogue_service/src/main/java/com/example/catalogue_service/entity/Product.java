@@ -42,7 +42,7 @@ public class Product {
     private LocalDateTime dateOfCreation;
 
     @Column
-    private Long previewImageID;
+    private String previewImageFileName;
 
     /*@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
     private List<Image> images = new ArrayList<>();*/

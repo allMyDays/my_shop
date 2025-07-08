@@ -18,7 +18,7 @@ public class SendProductDTO {
 
     private int price;
 
-    private Long previewImageID;
+    private String previewImageFileName;
 
     private LocalDateTime dateOfCreation;
 
