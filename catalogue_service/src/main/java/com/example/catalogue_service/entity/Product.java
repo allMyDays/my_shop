@@ -32,11 +32,11 @@ public class Product {
     @Column
     private int price;
 
-   /* @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name="products_categories",
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<Category> categories;*/
+    private List<Category> categories;
 
     @Column
     private LocalDateTime dateOfCreation;

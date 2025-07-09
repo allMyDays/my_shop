@@ -38,7 +38,7 @@ public class WishListController {
 
     @GetMapping("/size")
     public Map<String, Integer> getListSize(OAuth2AuthenticationToken authenticationToken){
-        return Map.of("count",!authenticationToken.isAuthenticated()?0:wishListService.getUserWishList(authenticationToken).getProductIDs().size());
+        return Map.of("count",wishListService.getUserWishList(authenticationToken).getProductIDs().size());
     }
 
 

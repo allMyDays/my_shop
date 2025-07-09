@@ -53,10 +53,11 @@ public class ProductController {
 
 
     @GetMapping("/products_page")
-    public String list(Model model, @RequestParam(name="filter",required = false) String filter) {
-        List<ProductRecord> list = productRestClient.getAllProducts(filter);
+    public String list(Model model, @RequestParam(name="filter",required = false) String filter, @RequestParam(name = "categoryId",required = false) Long categoryId) {
+        List<ProductRecord> list = productRestClient.getAllProducts(categoryId,filter);
         model.addAttribute("products",list);
-        model.addAttribute("title",filter);
+        model.addAttribute("filter",filter);
+        model.addAttribute("selectedCategoryId",categoryId);
         return "products";
     }
     @GetMapping("/product_create")

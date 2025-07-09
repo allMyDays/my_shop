@@ -26,10 +26,10 @@ public class ProductRestClient {
 
 
 
-    public List<ProductRecord> getAllProducts(String filter) {
+    public List<ProductRecord> getAllProducts(Long categoryId, String filter) {
         return restClient
                 .get()
-                .uri("/catalogue-api/products?filter={filter}", filter)
+                .uri("/catalogue-api/products?categoryId={categoryId}&filter={filter}", categoryId,filter)
                 .retrieve()
                 .body(PRODUCT_TYPE_REFERENCE);
 

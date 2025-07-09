@@ -33,7 +33,7 @@ public class CartController {
 
     @GetMapping("/size")
     public Map<String, Integer> getCartSize(OAuth2AuthenticationToken authenticationToken){
-        return Map.of("count",!authenticationToken.isAuthenticated()?0:cartService.getUserCart(authenticationToken).getItems().size());
+        return Map.of("count",cartService.getUserCart(authenticationToken).getItems().size());
     }
 
 

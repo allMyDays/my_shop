@@ -23,10 +23,9 @@ public class ProductService {//implements com.example.catalogue_service.service.
 
 
 
-    public List<Product> getAll(String title) {
-        if(title!=null&&!title.isEmpty()) return productRepository.findAllByTitleLikeIgnoreCase("%"+title+"%");
+    public List<Product> getAll(Long categoryId, String title) {
 
-        return productRepository.findAll();
+        return productRepository.findByCategoryAndTitle(categoryId, title);
     }
 
     public List<Product> getProductsByIDs(List<Long> ids) {

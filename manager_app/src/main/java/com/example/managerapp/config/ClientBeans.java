@@ -1,5 +1,6 @@
 package com.example.managerapp.config;
 
+import com.example.managerapp.rest.CategoryRestClient;
 import com.example.managerapp.rest.ProductRestClient;
 import com.example.managerapp.security.OAuthClientHttpRequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,24 @@ public class ClientBeans {
                        ))
                .build()
        );
+    }
+
+    @Bean
+    public CategoryRestClient RestClient(
+            @Value("${my_shop.services.catalogue.uri:http://localhost:8082}") String baseUrl,
+            @Value("${my_shop.services.catalogue.registration-id:keycloak}") String registrationID,
+            ClientRegistrationRepository clientRegistrationRepository,
+            OAuth2AuthorizedClientRepository authorizedClientRepository
+
+    ) {
+        return new CategoryRestClient(RestClient.builder()
+                .baseUrl(baseUrl)
+                .requestInterceptor(
+                        new OAuthClientHttpRequestInterceptor(
+                                new DefaultOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientRepository), registrationID
+                        ))
+                .build()
+        );
     }
 
 

@@ -31,8 +31,6 @@ public class ImageController {
     @GetMapping("/{fileName}")
     public ResponseEntity<byte[]> getImage(@PathVariable String fileName) throws IOException {
 
-        System.out.println(fileName);
-
         byte[] imagesByte = minioService.getFile(fileName,MinIO_bucket.products);
 
         String contentType = Optional.ofNullable(

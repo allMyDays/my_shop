@@ -41,8 +41,9 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(
                         a->a
-                                .requestMatchers("/my_profile")
+                                .requestMatchers("/my_profile","/api/wish-list/*", "/api/cart/*")
                                 .authenticated()
+
                                 .anyRequest()
                                 .permitAll()
                 )

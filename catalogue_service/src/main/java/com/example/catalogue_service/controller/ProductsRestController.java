@@ -28,8 +28,10 @@ public class ProductsRestController {
      private final ProductMapper productMapper;
 
     @GetMapping
-    public List<SendProductDTO> findProducts(@RequestParam(name = "filter", required = false) String filter) {
-        return productMapper.toSendProductDTOList(productService.getAll(filter));
+    public List<SendProductDTO> findProducts( @RequestParam(name = "categoryId",required = false) Long categoryId,@RequestParam(name = "filter", required = false) String filter) {
+
+        System.out.println("!!!!!!!!!!!!!!!"+categoryId);
+        return productMapper.toSendProductDTOList(productService.getAll(categoryId,filter));
 
     }
 
