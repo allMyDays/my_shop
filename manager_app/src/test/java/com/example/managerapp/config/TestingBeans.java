@@ -26,11 +26,11 @@ public class TestingBeans {
 
     @Bean
     @Primary
-    public ProductRestClient testRestClientProductsRestClient( @Value("${my_shop.services.catalogue.uri:http://localhost:54321}")String baseurl){
+    public ProductRestClient testRestClientProductsRestClient(@Value("${my_shop.services.catalogue.uri:http://localhost:54321}")String baseurl){
 
-       return new ProductRestClient(RestClient.builder()
-               .baseUrl(baseurl)
-               .build());
+       return null;// new ProductRestClient(RestClient.builder()
+             //  .baseUrl(baseurl)
+             //  .build());
 
    }
 

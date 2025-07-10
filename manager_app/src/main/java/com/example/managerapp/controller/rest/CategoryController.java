@@ -19,7 +19,9 @@ public class CategoryController {
 
     @GetMapping
     public List<CategoryRecord> getAllCategories() {
-        return categoryRestClient.getAllCategories();
+        var c= categoryRestClient.getAllCategories();
+        //код сюда не доходит
+        return c;
     }
 
 

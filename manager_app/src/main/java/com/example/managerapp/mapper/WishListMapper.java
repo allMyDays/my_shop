@@ -1,6 +1,5 @@
 package com.example.managerapp.mapper;
 
-import com.example.managerapp.dto.CartItemDTO;
 import com.example.managerapp.dto.WishItemDTO;
 import com.example.managerapp.dto.WishListDTO;
 import com.example.managerapp.entity.ProductRecord;
@@ -12,9 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public abstract class WishListMapper {

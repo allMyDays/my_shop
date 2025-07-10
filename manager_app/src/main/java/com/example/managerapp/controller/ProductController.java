@@ -7,7 +7,7 @@ import com.example.managerapp.entity.ProductRecord;
 import com.example.managerapp.exception.BadRequestException;
 import com.example.managerapp.rest.ProductRestClient;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,19 +17,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
+@RequiredArgsConstructor
 public class ProductController {
+
 
     private final ProductRestClient productRestClient;
 
-    @Autowired
-    public ProductController(ProductRestClient productRestClient) {
-        this.productRestClient = productRestClient;
-    }
-    // private final UserRestClient userRestClient;
+
 
 
     @PreAuthorize("hasAuthority('SELLER')")
@@ -67,13 +65,12 @@ public class ProductController {
 
 
 
-    @GetMapping("/product_info/{id}")
-    public String productInfo(@PathVariable long id, Model model){
-       /* Optional<ProductRecord> productRecord = productService.getProductByID(id);
-        if(productRecord.isEmpty()) return "redirect:/products";
-        model.addAttribute("productRecord",productMapper.toProductDTO(productRecord.get()));
-        model.addAttribute("images",productRecord.get().getImages());*/
-        return "product-info";
+    @GetMapping("/product_page/{id:\\d+}")
+    public String productInfo(@PathVariable Long id, Model model){
+        Optional<ProductRecord> productRecord = productRestClient.getProductByID(id);
+        if(productRecord.isEmpty()) return "redirect:/products_page";
+        model.addAttribute("product",productRecord.get());
+        return "product";
 
     }
 

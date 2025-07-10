@@ -18,7 +18,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -156,13 +155,13 @@ public class UserService {
 
     }
 
-    public Optional<GetUserDTO> collectMinimumUserInfo(OAuth2AuthenticationToken authentication) {
+    public Optional<GetUserDTO> collectUserInfo(OAuth2AuthenticationToken authentication) {
         if (authentication == null) return Optional.empty();
 
-        String UserID = getUserID(authentication);
-        if (UserID == null) return Optional.empty();
+        String userID = getUserID(authentication);
+        if (userID == null) return Optional.empty();
 
-        UserResource userResource = keycloak.realm(realm).users().get(UserID);
+        UserResource userResource = keycloak.realm(realm).users().get(userID);
 
         try {
             UserRepresentation userRep = userResource.toRepresentation();
@@ -172,6 +171,15 @@ public class UserService {
             user.setFirstName(userRep.getFirstName());
             user.setLastName(userRep.getLastName());
             user.setNickName(userRep.getUsername());
+
+            Optional<MyUser> userOptional = userRepository.findByKeycloakID(userID);
+            userOptional.ifPresent(myUser -> {
+
+                        user.setId(myUser.getId());
+                        user.setAvatarFileName(myUser.getAvatarFileName());
+
+                     }
+                   );
 
             return Optional.of(user);
 
@@ -187,6 +195,10 @@ public class UserService {
         return user.get();
     }
 
+    public Optional<MyUser> getMyUserFromBD(Long userId) {
+        return userRepository.findById(userId);
+    }
+
 
 
     public String getUserID(OAuth2AuthenticationToken authentication){
@@ -196,10 +208,14 @@ public class UserService {
     }
 
     public boolean isEmailChanged(OAuth2AuthenticationToken authentication, String newEmail){
-        Optional<GetUserDTO> userOptional = collectMinimumUserInfo(authentication);
+        Optional<GetUserDTO> userOptional = collectUserInfo(authentication);
         return !newEmail.equalsIgnoreCase(userOptional.get().getEmail());
 
 
+    }
+
+    public void saveMyUserToBD(MyUser user){
+        userRepository.save(user);
     }
 
 

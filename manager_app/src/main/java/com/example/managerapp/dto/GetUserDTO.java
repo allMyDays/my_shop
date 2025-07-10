@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class GetUserDTO {
 
+    private Long id;
+
     private String nickName;
 
     private String email;
@@ -12,6 +14,8 @@ public class GetUserDTO {
     private String firstName;
 
     private String lastName;
+
+    private String avatarFileName;
 
 
 

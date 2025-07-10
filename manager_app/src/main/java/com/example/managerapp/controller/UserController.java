@@ -5,7 +5,6 @@ package com.example.managerapp.controller;
 import com.example.managerapp.dto.EditUserDTO;
 import com.example.managerapp.dto.GetUserDTO;
 import com.example.managerapp.dto.RegistrationUserDTO;
-import com.example.managerapp.entity.MyUser;
 import com.example.managerapp.mapper.UserMapper;
 import com.example.managerapp.service.EmailService;
 import com.example.managerapp.service.RedisService;
@@ -49,7 +48,7 @@ public class UserController {
 
     @GetMapping("/my_profile")
     public String profile(Model model, OAuth2AuthenticationToken authentication) {
-        Optional<GetUserDTO> userOptional =  userService.collectMinimumUserInfo(authentication);
+        Optional<GetUserDTO> userOptional =  userService.collectUserInfo(authentication);
         if(userOptional.isEmpty()) return "redirect:/login";
         model.addAttribute("user", userOptional.get());
         return "profile";
@@ -96,7 +95,7 @@ public class UserController {
         }
 
         userService.updateUserData(userId, userDTO);
-        response.put("updated", true);
+        response.put("userSuccess", true);
         return response;
     }
 
@@ -171,7 +170,7 @@ public class UserController {
 
 
         boolean success = userService.createUser(userDTO);
-        response.put("userCreationSuccess", success);
+        response.put("userSuccess", success);
 
         return response;
     }

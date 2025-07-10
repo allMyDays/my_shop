@@ -23,7 +23,7 @@
 
                 row.innerHTML = `
                         <th scope="row">${index + 1}</th>
-                        <td><img src="/api/images/${item.previewImageFileName}" width="60"></td>
+                        <td><img src="/api/images/get_product_image/${item.previewImageFileName}" width="60"></td>
                         <td>${item.title}</td>
                         <td>${item.price}₽</td>
                         <td><i class="fa-solid fa-trash text-danger" style="cursor:pointer"
@@ -58,7 +58,7 @@
 
                     row.innerHTML = `
                         <th scope="row">${index + 1}</th>
-                        <td><img src="/api/images/${item.previewImageFileName}" width="60"></td>
+                        <td><img src="/api/images/get_product_image/${item.previewImageFileName}" width="60"></td>
                         <td>${item.title}</td>
                         <td>${item.price}₽</td>
                         <td><i class="fa-solid fa-trash text-danger" style="cursor:pointer"

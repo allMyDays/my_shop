@@ -30,6 +30,9 @@ public class MyUser {
     @Column(unique = true, nullable = false)
     String keycloakID;
 
+    @Column(unique = true)
+    String avatarFileName;
+
 
 
 
