@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -30,7 +31,7 @@ import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
-//@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity()  // чтобы разрешить preAuthorize
 public class SecurityConfig {
 
     @Bean
@@ -41,9 +42,8 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(
                         a->a
-                                .requestMatchers("/my_profile","/api/wish-list/*", "/api/cart/*")
+                                .requestMatchers("/my_profile")
                                 .authenticated()
-
                                 .anyRequest()
                                 .permitAll()
                 )
@@ -70,7 +70,7 @@ public class SecurityConfig {
                                .map(GrantedAuthority.class::cast))
                                .toList();
 
-               return new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo());
+               return new DefaultOidcUser(authorities, oidcUser.getIdToken(), oidcUser.getUserInfo());  // authorities попадут в oAuth2AuthenticationToken.getAuthorities()
 
            }
        };

@@ -199,6 +199,12 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
+    public MyUser getMyUserReference(Long userId){
+
+        return userRepository.getReferenceById(userId);
+
+    }
+
 
 
     public String getUserID(OAuth2AuthenticationToken authentication){

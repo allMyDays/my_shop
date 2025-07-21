@@ -55,9 +55,107 @@
                                     <li><a class="dropdown-item" href="#">Настройки</a></li>
                                     <li><a class="dropdown-item" href="/logout">Выйти</a></li>
 
-                                </ul>
+                                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#supportModal">
+                                        Поддержка
+                                    </button>
 
+
+                                </ul>
                             </div>
+
+                            <!-- кнопки поддержки -->
+                            <div class="modal fade" id="supportModal" tabindex="-1" aria-labelledby="supportModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <a href="/"><img src="/images/logo2.png" alt="logo" width="188"></a>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-footer d-flex justify-content-between align-items-center">
+                                            <a><button type="button" class="btn btn-outline-dark">Часто задаваемые вопросы (FAQ)</button></a>
+                                            <div id="support-user-buttons" style="display: none;">
+                                            <a onClick="openSupportChatList()"><button type="button" class="btn btn-outline-dark">Мои ранее созданные чаты</button></a>
+                                            <a onclick="tryCreateNewSupportChat()" ><button type="button" class="btn btn-outline-dark my-2" data-bs-dismiss="modal">Создать новый чат поддержки</button></a>
+                                            </div>
+                                            <div id="support-agent-buttons" style="display: none;" >
+                                                <a onClick="openSupportChatList()"><button type="button" class="btn btn-outline-dark">Ответить на вопросы пользователей</button></a>
+                                                <a onclick="tryCreateNewSupportChat()" ><button type="button" class="btn btn-outline-dark my-2" data-bs-dismiss="modal">Заблокированные в поддержке пользователи</button></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Модальное окно ввода темы -->
+                            <div class="modal fade" id="topicModal" tabindex="-1" aria-labelledby="topicModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <a href="/"><img src="/images/logo2.png" alt="logo" width="188"></a>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h1 class="modal-title fs-5" id="topicModalLabel">Пожалуйста, введите тему обращения:</h1>
+                                            <input type="text" id="support-topic-input" class="form-control my-4" placeholder="Например: Проблема с заказом" />
+                                            <div id="topic-error" class="text-danger mt-2" style="display:none;">Тема не может быть пустой.</div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a onclick="createNewSupportChat()"><button type="button" class="btn btn-dark">Продолжить</button></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Модальное окно списка чатов -->
+                            <div class="modal fade" id="chatListModal" tabindex="-1" aria-labelledby="chatListModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="chatListModalLabel">Ваши обращения в поддержку</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                                        </div>
+                                        <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                                            <ul class="list-group" id="chat-list-container">
+                                                <!-- Сюда динамически вставляется список чатов -->
+                                            </ul>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Закрыть</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Модальное окно удаления чата поддержки -->
+                            <div class="modal fade" id="deleteSupportChatModal" tabindex="-1" aria-labelledby="deleteSupportChatModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <a href="/"><img src="/images/logo2.png" alt="logo" width="188"></a>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Вы уверены, что хотите удалить этот чат? Отменить действие будет невозможно.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a onclick="deleteSupportChat()"><button type="button" class="btn btn-dark">Удалить</button></a>
+                                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Закрыть</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+
+
+
+
+
+
 
 
                             <div>

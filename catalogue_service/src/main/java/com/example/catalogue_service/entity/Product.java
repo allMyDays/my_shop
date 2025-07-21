@@ -44,8 +44,10 @@ public class Product {
     @Column
     private String previewImageFileName;
 
-    /*@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
-    private List<Image> images = new ArrayList<>();*/
+    @ElementCollection
+    private List<String> imageFileNames = new ArrayList<>();
+
+
 
    /* @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     @JoinColumn

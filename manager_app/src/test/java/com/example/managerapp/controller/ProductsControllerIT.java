@@ -72,8 +72,8 @@ public class ProductsControllerIT {
                         view().name("products"),
                        // model().attribute("title",title);
                         model().attribute("products", List.of(
-                                new ProductRecord(1,"Товар №1",0,"Описание товара №1",null),
-                                new ProductRecord(2,"Товар №2",0,"Описание товара №2",null)
+                                new ProductRecord(1,"Товар №1",0,"Описание товара №1",null,null),
+                                new ProductRecord(2,"Товар №2",0,"Описание товара №2",null,null)
 
                         ))
                 );

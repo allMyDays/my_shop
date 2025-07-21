@@ -1,0 +1,145 @@
+package com.example.managerapp.service;
+
+import com.example.managerapp.dto.SupportChatDTO;
+import com.example.managerapp.entity.MyUser;
+import com.example.managerapp.entity.SupportChat;
+import com.example.managerapp.entity.SupportMessage;
+import com.example.managerapp.repository.SupportChatRepository;
+import com.example.managerapp.repository.SupportMessageRepository;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class SupportService {
+
+    private final UserService userService;
+
+    private final RedisService redisService;
+
+    private final SupportChatRepository supportChatRepository;
+
+    private final SupportMessageRepository supportMessageRepository;
+
+    private final EmailService emailService;
+
+    private final String REDIS_KEY_CHAT_LIMIT = "supportChatCreationLimit:";
+
+    private final String REDIS_KEY_MESSAGE_LIMIT = "supportMessCreationLimit:";
+
+    @Value("${my_shop.support_agent.email}")
+    private String agent_email;
+
+
+    public Long createSupportChat(OAuth2AuthenticationToken authentication, String topic){
+
+         MyUser myUser = userService.getMyUserFromBD(userService.getUserID(authentication));
+
+         SupportChat supportChat = new SupportChat();
+         supportChat.setUser(myUser);
+         supportChat.setTopic(topic);
+         supportChat = supportChatRepository.save(supportChat);
+
+         redisService.saveTemp(REDIS_KEY_CHAT_LIMIT +myUser.getId(),"",7200);
+
+         return supportChat.getId();
+
+    }
+
+    public boolean isSupportChatCreationLimited(OAuth2AuthenticationToken authentication){
+
+        MyUser myUser = userService.getMyUserFromBD(userService.getUserID(authentication));
+
+        return redisService.get(REDIS_KEY_CHAT_LIMIT +myUser.getId())!=null;
+
+
+    }
+    public boolean isSupportMessageCreationLimited( Long chatId){
+
+        return redisService.get(REDIS_KEY_MESSAGE_LIMIT +chatId)!=null;
+
+
+    }
+
+    public SupportMessage saveMessage(Long chatId, String message, boolean isUserMessage){
+
+        SupportChat supportChat = supportChatRepository.findById(chatId).orElseThrow(()->new RuntimeException("chat not found"));
+
+        SupportMessage supportMessage = new SupportMessage();
+
+        supportMessage.setMessage(message);
+        supportMessage.setUserMessage(isUserMessage);
+        supportMessage.setChat(supportChat);
+
+        if(isUserMessage){
+            redisService.saveTemp(REDIS_KEY_MESSAGE_LIMIT +chatId,"",120);
+            supportChat.setNeedsAnswer(true);
+            emailService.sendSimpleMail(agent_email,"Новое сообщение в чат поддержки № %d".formatted(chatId),"Сообщение:\n %s".formatted(message));
+        }
+        else{
+            supportChat.setNeedsAnswer(false);
+        }
+        supportChatRepository.save(supportChat);
+
+        return supportMessageRepository.save(supportMessage);
+
+
+    }
+
+    public List<SupportChat> getAllUserSupportChats(OAuth2AuthenticationToken authentication){
+
+        MyUser myUser = userService.getMyUserFromBD(userService.getUserID(authentication));
+
+        return supportChatRepository.findAllByUserOrderByIdDesc(myUser);
+
+
+    }
+
+    public List<SupportMessage> getAllChatMessages(OAuth2AuthenticationToken authentication, Long chatId){
+
+        return supportMessageRepository.findAllByChatOrderById(supportChatRepository.getReferenceById(chatId));
+
+    }
+
+    public boolean deleteSupportChat(OAuth2AuthenticationToken authentication, Long chatId){
+
+        MyUser myUser = userService.getMyUserFromBD(userService.getUserID(authentication));
+
+        SupportChat supportChat = supportChatRepository.findById(chatId).orElseThrow(()->new RuntimeException("chat not found"));
+
+        if(!supportChat.getUser().equals(myUser)) return false;
+
+        supportChatRepository.delete(supportChat);
+
+        return true;
+
+    }
+
+    public List<SupportChat> getAllActiveChats(OAuth2AuthenticationToken authentication){
+
+        return supportChatRepository.findAllByNeedsAnswerTrueOrderByIdAsc();
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}

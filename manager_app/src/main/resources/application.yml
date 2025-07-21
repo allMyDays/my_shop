@@ -58,6 +58,8 @@ spring:
 
 
 my_shop:
+  support_agent:
+    email: gimmycool444e@mail.ru
   services:
     catalogue:
       uri: http://localhost:8082

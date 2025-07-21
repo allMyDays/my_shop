@@ -20,7 +20,7 @@ public class WishListService {
 
     public WishList getUserWishList(OAuth2AuthenticationToken authentication){
 
-        MyUser user = userService.getMyUserFromBD(userService.getUserID(authentication));
+       MyUser user = userService.getMyUserFromBD(userService.getUserID(authentication));
 
         return wishListRepository.findById(user.getId()).orElseGet(()->{
                     WishList wishList = new WishList();

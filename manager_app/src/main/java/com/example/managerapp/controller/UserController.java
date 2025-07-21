@@ -13,7 +13,9 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSendException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,9 +33,6 @@ public class UserController {
     private final EmailService emailService;
     private UserService userService;
 
-    private UserMapper userMapper;
-
-    private RedisService redisService;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {  // для того чтобы все пустые поля приходили как null
@@ -41,7 +40,7 @@ public class UserController {
     }
 
     @GetMapping("/registration")
-    public String showRegistrationForm(Model model) {
+    public String showRegistrationForm() {
         return "registration";
     }
 
@@ -101,35 +100,6 @@ public class UserController {
 
 
 
-
-
-    /*  @PostMapping("/my_profile")
-    public String profileEdit(@Valid EditUserDTO userDTO, BindingResult res, Model model, OAuth2AuthenticationToken authentication) {
-        if (authentication == null) return "redirect:/login";
-
-        model.addAttribute("user", userDTO);
-
-        if(res.hasErrors()) {
-            model.addAttribute("errors", res.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
-            return "profile";
-        }
-        if(!Objects.equals(userDTO.getRepeatedPassword(),userDTO.getPassword())){
-            model.addAttribute("notMatchingPasswords",true);
-            return "profile";
-        }
-
-        int userExistsTemp = userService.UserExists(userDTO.getEmail(),null,userService.getUserID(authentication));
-
-        if(userExistsTemp>0){
-            model.addAttribute("userExists", userExistsTemp);
-            return "profile";
-        }
-        userService.updateUserData(userService.getUserID(authentication),userDTO);
-
-        model.addAttribute("updated", true);
-        return "profile";
-
-    }*/
     @PostMapping("/registration")
     @ResponseBody
     public Map<String, Object> register(@Validated RegistrationUserDTO userDTO,BindingResult bindingResult, @RequestParam boolean isVerified) {
@@ -174,5 +144,29 @@ public class UserController {
 
         return response;
     }
+
+    @GetMapping("/get_user_roles")
+    @ResponseBody
+    public ResponseEntity<List<String>> getUserRoles(OAuth2AuthenticationToken authentication) {
+
+        if (authentication==null){
+              return ResponseEntity
+                     .badRequest()
+                     .build();
+        }
+
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(role -> role.startsWith("ROLE_"))
+                .toList();
+
+        return ResponseEntity
+                .ok(roles);
+
+    }
+
+
+
+
 
 }

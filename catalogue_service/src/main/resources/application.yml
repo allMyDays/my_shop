@@ -30,3 +30,8 @@ spring:
     enabled: true
   freemarker:
     enabled: false
+
+logging:
+  level:
+    org:
+      springframework: debug

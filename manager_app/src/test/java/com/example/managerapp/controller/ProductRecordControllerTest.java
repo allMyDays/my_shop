@@ -35,7 +35,7 @@ class ProductRecordControllerTest {
         var product = new NewProductPayload("new productRecord", 60, "simple description");
         var model = new ConcurrentModel();
 
-        doReturn(new ProductRecord(1, "title", 60, "simple desc", null))
+        doReturn(new ProductRecord(1, "title", 60, "simple desc", null,null))
                 .when(productRestClient)
                 .createProduct(product,null,null,null);
 
