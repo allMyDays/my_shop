@@ -19,6 +19,8 @@ public class SupportChatDTO {
 
     private boolean needsAnswer;
 
+    private Long userId;
+
     List<SupportMessageDTO> messages = new ArrayList<>();
 
 

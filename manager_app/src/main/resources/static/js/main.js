@@ -121,12 +121,75 @@ document.addEventListener("input", function (event) {      // авторост �
 });
 
 
-
-
 let supportChatId = null;
+let supportChatCreatorId = null;
 let supportStompClient = null;
-let supportStompSubscription = null;
+let supportChatStompSubscription = null;
+let supportTypingStompSubscription = null;
 let pendingDeleteChatId = null;
+
+//  блок статуса "печатает..."
+
+let typingTimeout = null;
+let typingAnimInterval = null;
+let typingDots = 0;
+let typingSentRecently = false;
+
+const messageInput = document.getElementById("support-chat-input");
+const typingIndicator = document.getElementById("typing-indicator");
+
+// 👂 Слушаем ввод
+messageInput.addEventListener("input", () => {
+    if (!supportStompClient || !supportStompClient.connected) return;
+
+    if (typingSentRecently===false) {
+        sendTypingStatus(true);
+        typingSentRecently = true;
+
+        setTimeout(() => typingSentRecently = false, 3000);
+    }
+
+    // Обновляем таймаут очистки индикатора
+    if (typingTimeout) clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        sendTypingStatus(false); // остановка печати
+    }, 5000); // если пользователь перестал печатать
+});
+
+// 📤 Отправка статуса через WebSocket
+function sendTypingStatus(isTyping) {
+    supportStompClient.send("/app/typing_status", {}, JSON.stringify({
+        chatId: supportChatId,
+        typing: isTyping,
+        agent: isStaff()
+    }));
+}
+
+// 👁️ Показ и анимация
+function showTypingIndicator(isTyping, agent) {
+
+    if((isStaff()&&agent)||(!isStaff()&&!agent)) return;
+
+
+    if (isTyping) {
+        typingIndicator.style.display = "block";
+
+        if (typingAnimInterval) clearInterval(typingAnimInterval);
+        typingDots = 0;
+
+        typingAnimInterval = setInterval(() => {
+            typingDots = (typingDots + 1) % 4;
+            typingIndicator.textContent = (agent?"Агент поддержки":"Пользователь")+" печатает" + ".".repeat(typingDots);
+        }, 400);
+    } else {
+        clearInterval(typingAnimInterval);
+        typingIndicator.style.display = "none";
+    }
+}
+
+
+
+
 
 function connectToSupportWebSocket() {
     return new Promise((resolve, reject) => {
@@ -141,26 +204,34 @@ function connectToSupportWebSocket() {
 
     if(supportStompClient.connected){
         // уже подключен - просто переключаем подписку
-        if(supportStompSubscription){
-            supportStompSubscription.unsubscribe();
-        }
-        supportStompSubscription = supportStompClient.subscribe(`/topic/support_chat/${supportChatId}`, function (response) {
-            const data = JSON.parse(response.body);
-            appendMessage(data.message, data.userMessage, data.dateOfCreation); // сообщение от юзера/поддержки
-        });
+        if(supportChatStompSubscription) supportChatStompSubscription.unsubscribe();
+        if(supportTypingStompSubscription) supportTypingStompSubscription.unsubscribe();
+        subscribeSupportChannels();
         return;
     }
 
 
     supportStompClient.connect({}, function () {
-        supportStompSubscription = supportStompClient.subscribe(`/topic/support_chat/${supportChatId}`, function (response) {
-            const data = JSON.parse(response.body);
-            appendMessage(data.message, data.userMessage, data.dateOfCreation); // сообщение от юзера/поддержки
-        });
+        subscribeSupportChannels();
+
         resolve(); // соединение установлено!
     }, reject); // если ошибка соединения
 
     });
+}
+
+function subscribeSupportChannels(){
+
+    supportChatStompSubscription = supportStompClient.subscribe(`/topic/support_chat/${supportChatId}`, function (response) {
+        const data = JSON.parse(response.body);
+        appendMessage(data.message, data.userMessage, data.dateOfCreation); // сообщение от юзера/поддержки
+    });
+
+    supportTypingStompSubscription = supportStompClient.subscribe(`/topic/support_chat/${supportChatId}/typing`, function (response) {
+        const data = JSON.parse(response.body);
+        showTypingIndicator(data.typing, data.agent);
+    });
+
 }
 
 
@@ -174,13 +245,13 @@ function disconnectWebSocket() {
         });
         supportStompClient = null;
     }
-    unsubscribeChannel();
+    unsubscribeSupportChannels();
 }
-function unsubscribeChannel() {
-    if(supportStompSubscription){
-        supportStompSubscription.unsubscribe();
-    }
-    supportStompSubscription=null;
+function unsubscribeSupportChannels() {
+    if(supportChatStompSubscription) supportChatStompSubscription.unsubscribe();
+    if(supportTypingStompSubscription) supportTypingStompSubscription.unsubscribe();
+    supportChatStompSubscription=null;
+    supportTypingStompSubscription=null;
 }
 
 
@@ -188,6 +259,10 @@ function openSupportChat(topic) {
 
     document.getElementById("support-chat-topic-display").textContent = topic;
     document.getElementById("support-chat").style.display = "flex";
+    if(isStaff()===true){
+        document.getElementById("support-chat-agent-buttons").style.display = "block";
+
+    }
 }
 
 function closeSupportChat(disconnect) {
@@ -199,6 +274,7 @@ function closeSupportChat(disconnect) {
     document.getElementById("support-chat-closed-msg").style.display = "none";
 
     supportChatId = null;
+    supportChatCreatorId=null;
     if(disconnect){
         disconnectWebSocket();
     }
@@ -234,13 +310,14 @@ async function createNewSupportChat() {
 
     // очистить визуально прошлый чат если он есть
     closeSupportChat(false);
-    unsubscribeChannel();
+    unsubscribeSupportChannels();
 
 
     try {
         const response = await fetch(`/api/support/create_chat?topic=${encodeURIComponent(topic)}`);
         const data = await response.json();
         supportChatId = data.chatId;
+        supportChatCreatorId = data.userId;
 
         openSupportChat(topic);
         appendMessage("Напишите здесь ваш вопрос и мы рассмотрим его в ближайшее время.", false);
@@ -306,13 +383,13 @@ function appendMessage(message, isUser, timestampStr) {
     msgContainer.scrollTop = msgContainer.scrollHeight;
 }
 
-async function collectExistingChat(chatid, topic, closed, needsAnswer, agent) {
+async function collectExistingChat(chatId, topic, closed, needsAnswer, userId) {
     closeSupportChat(false); // очистить визуально прошлый чат если он есть
-    unsubscribeChannel();
+    unsubscribeSupportChannels();
 
 
     try {
-        const response = await fetch(`/api/support/get_chat_messages?chatId=${chatid}`, {
+        const response = await fetch(`/api/support/get_chat_messages?chatId=${chatId}`, {
             method: "GET"
         });
         const messages = await response.json();
@@ -323,7 +400,8 @@ async function collectExistingChat(chatid, topic, closed, needsAnswer, agent) {
 
         });
 
-        supportChatId=chatid;
+        supportChatId=chatId;
+        supportChatCreatorId=userId;
 
         // Закрыть модальное окно
         bootstrap.Modal.getInstance(document.getElementById("chatListModal")).hide();
@@ -370,7 +448,7 @@ async function sendSupportMessage() {
         }
     }
 
-        if (!supportStompClient || !supportStompSubscription || !supportStompClient.connected) {
+        if (!supportStompClient || !supportChatStompSubscription || !supportStompClient.connected) {
             await connectToSupportWebSocket();
         }
 
@@ -391,15 +469,17 @@ async function sendSupportMessage() {
 
 <!-- блок списка чатов поддержки -->
 
-function openSupportChatList(){
+function openSupportChatList(needsUserId){
     // Закрыть модальное окно
     bootstrap.Modal.getInstance(document.getElementById("supportModal")).hide();
 
 
-    fetch("/api/support"+(isStaff()===true?"/get_active_chats":"/get_user_chats"))
+    fetch(`/api/support${isStaff() === true ? (needsUserId === true ? `/get_user_chats?userId=${supportChatCreatorId}` : '/get_active_chats') : '/get_user_chats'}`)
+
+
         .then(res => res.json())
         .then(data => {
-            renderSupportChatList(data);
+            renderSupportChatList(data,needsUserId);
              new bootstrap.Modal(document.getElementById("chatListModal")).show();
         });
 
@@ -407,11 +487,12 @@ function openSupportChatList(){
 
 
 
-function renderSupportChatList(chatList) {
+function renderSupportChatList(chatList,needsUserId) {
     const container = document.getElementById("chat-list-container");
 
     const listName = document.getElementById("chatListModalLabel");
     if(isStaff()===true) listName.textContent="Эти чаты ждут ваш ответ!";
+    if(needsUserId===true) listName.textContent="Чаты пользователя";
 
     container.innerHTML = ""; // Очистить список
 
@@ -423,7 +504,7 @@ function renderSupportChatList(chatList) {
         const left = document.createElement("div");
         left.className = "chat-topic";
         left.style.cursor = "pointer";
-        left.onclick = () => collectExistingChat(chat.id, chat.topic, chat.closed, chat.needsAnswer);
+        left.onclick = () => collectExistingChat(chat.id, chat.topic, chat.closed, chat.needsAnswer,chat.userId);
 
         const topicSpan = document.createElement("span");
         topicSpan.textContent = chat.topic;

@@ -49,6 +49,7 @@ ul.social-icons a{
     margin-top: 4px;
 }
 
+
 #support-chat {
     position: fixed;
     bottom: 20px;
@@ -127,12 +128,18 @@ ul.social-icons a{
 #support-chat-input{
     font-size: 0.77rem;
 }
+
+
 #support-chat-body{
     overflow-x: hidden;  /*убрать горизонтальный скролл*/
 }
 #support-chat-topic-display{
     font-size: 0.88rem;
+}
 
+
+#support-chat-agent-buttons a button{
+    font-size: 0.70rem;
 }
 
 /* блок списка чатов поддержки */
@@ -165,6 +172,7 @@ ul.social-icons a{
     background-color: #f8f9fa;
     cursor: pointer;
 }
+
 
 
 

@@ -13,6 +13,7 @@ import java.util.List;
 public abstract class SupportChatMapper {
 
     @Mapping(target = "closed",expression = "java(chatClosed(supportChat.getDateOfCreation()))")
+    @Mapping(target = "userId",expression = "java(supportChat.getUser().getId())")
     public abstract SupportChatDTO toSupportChatDTO(SupportChat supportChat);
 
     public abstract List<SupportChatDTO> toSupportChatDTOList(List<SupportChat> supportChats);

@@ -14,18 +14,35 @@
             <!-- Тема чата -->
         </div>
 
+        <div id="support-chat-agent-buttons" style="display: none;" class="bg-white text-center py-2 fw-semibold w-100">
+            <div  class="btn-group" role="group" aria-label="Basic outlined example">
+                <a><button type="button" class="btn btn-outline-dark">Профиль</button></a>
+                <a onclick="openSupportChatList(true)"><button type="button" class="btn btn-outline-dark">Чаты пользователя</button></a>
+                <a><button type="button" class="btn btn-outline-dark">Блокировки</button></a>
+                <a><button type="button" class="btn btn-outline-dark">Заблокировать</button></a>
+            </div>
+        </div>
+
         <!-- Тело чата -->
         <div class="chat-body" id="support-chat-body" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
             <!-- Сообщения -->
         </div>
 
-        <!-- Футер -->
         <div class="chat-footer p-2" id="support-chat-footer">
-            <div class="d-flex w-100 align-items-end gap-2">
-                <textarea id="support-chat-input" class="form-control auto-resize" rows="1" placeholder="Напишите сообщение..." style="overflow:hidden; resize:none;"></textarea>
-                <button class="btn btn-outline-dark" onclick="sendSupportMessage()">
-                    <i class="fa-solid fa-angles-right"></i>
-                </button>
+            <div class="d-flex flex-column w-100 align-items-start gap-1">
+
+                <!-- Надпись "печатает" -->
+                <span id="typing-indicator" style="display: none; color: gray; font-style: italic; font-size: 0.8rem;"></span>
+
+                <!-- Поле и кнопка -->
+                <div class="d-flex w-100 align-items-end gap-2">
+            <textarea id="support-chat-input" class="form-control auto-resize"
+                      rows="1" placeholder="Напишите сообщение..."
+                      style="overflow:hidden; resize:none;"></textarea>
+                    <button class="btn btn-outline-dark" onclick="sendSupportMessage()">
+                        <i class="fa-solid fa-angles-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
 

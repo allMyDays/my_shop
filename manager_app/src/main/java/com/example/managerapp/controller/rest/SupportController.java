@@ -1,6 +1,8 @@
 package com.example.managerapp.controller.rest;
 
+
 import com.example.managerapp.dto.SupportChatDTO;
+import com.example.managerapp.dto.SupportChatTypingStatusDTO;
 import com.example.managerapp.dto.SupportMessageDTO;
 import com.example.managerapp.entity.SupportMessage;
 import com.example.managerapp.mapper.SupportChatMapper;
@@ -43,6 +45,13 @@ public class SupportController {
 
     }
 
+    @MessageMapping("/typing_status")
+    public void handleTypingStatus(SupportChatTypingStatusDTO typingStatusDTO){
+
+        messagingTemplate.convertAndSend("/topic/support_chat/"+typingStatusDTO.getChatId()+"/typing", typingStatusDTO);
+
+    }
+
 
     @GetMapping("/handle_message_check_limit")
     public ResponseEntity<?> handleMessageCheckLimit(OAuth2AuthenticationToken authentication, @RequestParam Long chatId){
@@ -60,12 +69,12 @@ public class SupportController {
 
     @GetMapping("/create_chat")
     public ResponseEntity<?> createChat(OAuth2AuthenticationToken authentication, @RequestParam String topic){
-        Long newChatID = supportService.createSupportChat(authentication, topic);
+        Map<String, Long> result = supportService.createSupportChat(authentication, topic);
 
         return ResponseEntity
                 .ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of("chatId",newChatID));
+                .body(result);
 
     }
 
@@ -84,8 +93,8 @@ public class SupportController {
     }
 
     @GetMapping("/get_user_chats")
-    public List<SupportChatDTO> getAllUserChats(OAuth2AuthenticationToken authentication){
-        return supportChatMapper.toSupportChatDTOList(supportService.getAllUserSupportChats(authentication));
+    public List<SupportChatDTO> getAllUserChats(OAuth2AuthenticationToken authentication, @RequestParam(required = false) Long userId){
+        return supportChatMapper.toSupportChatDTOList(supportService.getAllUserSupportChats(authentication,userId));
 
     }
 
@@ -112,6 +121,11 @@ public class SupportController {
                 .build();
 
     }
+
+
+
+
+
 
     @GetMapping("/get_active_chats")
     @PreAuthorize("hasAnyRole('AGENT','ADMIN')")

@@ -6,8 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class WishListService {
@@ -20,7 +18,7 @@ public class WishListService {
 
     public WishList getUserWishList(OAuth2AuthenticationToken authentication){
 
-       MyUser user = userService.getMyUserFromBD(userService.getUserID(authentication));
+       MyUser user = userService.getMyUserFromPostgres(authentication);
 
         return wishListRepository.findById(user.getId()).orElseGet(()->{
                     WishList wishList = new WishList();

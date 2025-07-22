@@ -5,9 +5,7 @@ package com.example.managerapp.controller;
 import com.example.managerapp.dto.EditUserDTO;
 import com.example.managerapp.dto.GetUserDTO;
 import com.example.managerapp.dto.RegistrationUserDTO;
-import com.example.managerapp.mapper.UserMapper;
 import com.example.managerapp.service.EmailService;
-import com.example.managerapp.service.RedisService;
 import com.example.managerapp.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -15,7 +13,6 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSendException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -61,7 +58,7 @@ public class UserController {
                                            @RequestParam boolean isVerified,
                                            OAuth2AuthenticationToken auth) {
         Map<String, Object> response = new HashMap<>();
-        String userId = userService.getUserID(auth);
+        String userId = userService.getUserKeycloakID(auth);
 
         if (res.hasErrors()) {
             response.put("errors", res.getAllErrors().stream()
@@ -84,7 +81,7 @@ public class UserController {
 
 
         // email был изменён, но не подтверждён
-        if (!isVerified&&userDTO.getEmail()!=null&&userService.isEmailChanged(auth, userDTO.getEmail())) {
+        if (!isVerified&&userDTO.getEmail()!=null&&userService.isUserEmailChanged(auth, userDTO.getEmail())) {
             // отправим код
             try{
             emailService.sendRandomCodeToEmail(userDTO.getEmail());
@@ -149,19 +146,11 @@ public class UserController {
     @ResponseBody
     public ResponseEntity<List<String>> getUserRoles(OAuth2AuthenticationToken authentication) {
 
-        if (authentication==null){
-              return ResponseEntity
-                     .badRequest()
-                     .build();
-        }
+        Optional<List<String>> optionalList = userService.getUserRoles(authentication);
 
-        List<String> roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .filter(role -> role.startsWith("ROLE_"))
-                .toList();
-
-        return ResponseEntity
-                .ok(roles);
+        return optionalList.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity
+                .badRequest()
+                .build());
 
     }
 

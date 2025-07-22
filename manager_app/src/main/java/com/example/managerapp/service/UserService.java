@@ -17,6 +17,7 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -158,7 +159,7 @@ public class UserService {
     public Optional<GetUserDTO> collectUserInfo(OAuth2AuthenticationToken authentication) {
         if (authentication == null) return Optional.empty();
 
-        String userID = getUserID(authentication);
+        String userID = getUserKeycloakID(authentication);
         if (userID == null) return Optional.empty();
 
         UserResource userResource = keycloak.realm(realm).users().get(userID);
@@ -188,14 +189,16 @@ public class UserService {
         }
     }
 
-    public MyUser getMyUserFromBD(String keycloakID) {
+    public MyUser getMyUserFromPostgres(OAuth2AuthenticationToken authentication) {
+
+        String keycloakID = getUserKeycloakID(authentication);
+
         if (keycloakID == null) throw new NotFoundException();
-        Optional<MyUser> user = userRepository.findByKeycloakID(keycloakID);
-        if (user.isEmpty()) throw new NotFoundException();
-        return user.get();
+        return userRepository.findByKeycloakID(keycloakID).orElseThrow(NotFoundException::new);
+
     }
 
-    public Optional<MyUser> getMyUserFromBD(Long userId) {
+    public Optional<MyUser> getMyUserFromPostgres(Long userId) {
         return userRepository.findById(userId);
     }
 
@@ -207,21 +210,44 @@ public class UserService {
 
 
 
-    public String getUserID(OAuth2AuthenticationToken authentication){
+    public String getUserKeycloakID(OAuth2AuthenticationToken authentication){
         OAuth2User user = authentication.getPrincipal();
 
         return user.getAttribute("sub");
     }
 
-    public boolean isEmailChanged(OAuth2AuthenticationToken authentication, String newEmail){
+    public boolean isUserEmailChanged(OAuth2AuthenticationToken authentication, String newEmail){
         Optional<GetUserDTO> userOptional = collectUserInfo(authentication);
         return !newEmail.equalsIgnoreCase(userOptional.get().getEmail());
 
 
     }
 
-    public void saveMyUserToBD(MyUser user){
+    public void saveMyUserToPostgres(MyUser user){
         userRepository.save(user);
+    }
+
+    public Optional<List<String>> getUserRoles(OAuth2AuthenticationToken authentication){
+
+        if(authentication == null) return Optional.empty();
+
+        return Optional.of(authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(role -> role.startsWith("ROLE_"))
+                .toList());
+
+    }
+
+    public boolean isUserAgentOrAdmin(OAuth2AuthenticationToken authentication){
+
+        Optional<List<String>> optional = getUserRoles(authentication);
+        if(optional.isEmpty()) return false;
+
+        for(String role : optional.get()){
+            if(role.matches("ROLE_(AGENT|ADMIN)")) return true;
+
+        } return false;
+
     }
 
 

@@ -1,18 +1,18 @@
 package com.example.managerapp.service;
 
-import com.example.managerapp.dto.SupportChatDTO;
 import com.example.managerapp.entity.MyUser;
 import com.example.managerapp.entity.SupportChat;
 import com.example.managerapp.entity.SupportMessage;
 import com.example.managerapp.repository.SupportChatRepository;
 import com.example.managerapp.repository.SupportMessageRepository;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -36,9 +36,9 @@ public class SupportService {
     private String agent_email;
 
 
-    public Long createSupportChat(OAuth2AuthenticationToken authentication, String topic){
+    public Map<String, Long> createSupportChat(OAuth2AuthenticationToken authentication, String topic){
 
-         MyUser myUser = userService.getMyUserFromBD(userService.getUserID(authentication));
+         MyUser myUser = userService.getMyUserFromPostgres(authentication);
 
          SupportChat supportChat = new SupportChat();
          supportChat.setUser(myUser);
@@ -47,13 +47,17 @@ public class SupportService {
 
          redisService.saveTemp(REDIS_KEY_CHAT_LIMIT +myUser.getId(),"",7200);
 
-         return supportChat.getId();
+         Map<String, Long> result = new HashMap<>();
+         result.put("chatId", supportChat.getId());
+         result.put("userId", myUser.getId());
+
+         return result;
 
     }
 
     public boolean isSupportChatCreationLimited(OAuth2AuthenticationToken authentication){
 
-        MyUser myUser = userService.getMyUserFromBD(userService.getUserID(authentication));
+        MyUser myUser = userService.getMyUserFromPostgres(authentication);
 
         return redisService.get(REDIS_KEY_CHAT_LIMIT +myUser.getId())!=null;
 
@@ -62,7 +66,6 @@ public class SupportService {
     public boolean isSupportMessageCreationLimited( Long chatId){
 
         return redisService.get(REDIS_KEY_MESSAGE_LIMIT +chatId)!=null;
-
 
     }
 
@@ -91,9 +94,19 @@ public class SupportService {
 
     }
 
-    public List<SupportChat> getAllUserSupportChats(OAuth2AuthenticationToken authentication){
+    public List<SupportChat> getAllUserSupportChats(OAuth2AuthenticationToken authentication, Long userId){
 
-        MyUser myUser = userService.getMyUserFromBD(userService.getUserID(authentication));
+        MyUser myUser;
+
+        if(userId!=null){
+            if(!userService.isUserAgentOrAdmin(authentication)) return List.of();
+
+            myUser = userService.getMyUserFromPostgres(userId).orElseThrow(()->new RuntimeException("user not found"));
+        }
+
+        else{
+            myUser = userService.getMyUserFromPostgres(authentication);
+        }
 
         return supportChatRepository.findAllByUserOrderByIdDesc(myUser);
 
@@ -102,13 +115,19 @@ public class SupportService {
 
     public List<SupportMessage> getAllChatMessages(OAuth2AuthenticationToken authentication, Long chatId){
 
-        return supportMessageRepository.findAllByChatOrderById(supportChatRepository.getReferenceById(chatId));
+        SupportChat supportChat = supportChatRepository.findById(chatId).orElseThrow(()->new RuntimeException("chat not found"));
+
+        if(!userService.isUserAgentOrAdmin(authentication)&&!supportChat.getUser().equals(userService.getMyUserFromPostgres(authentication))){
+            return List.of();
+        }
+
+        return supportMessageRepository.findAllByChatOrderById(supportChat);
 
     }
 
     public boolean deleteSupportChat(OAuth2AuthenticationToken authentication, Long chatId){
 
-        MyUser myUser = userService.getMyUserFromBD(userService.getUserID(authentication));
+        MyUser myUser = userService.getMyUserFromPostgres(authentication);
 
         SupportChat supportChat = supportChatRepository.findById(chatId).orElseThrow(()->new RuntimeException("chat not found"));
 

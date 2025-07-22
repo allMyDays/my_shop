@@ -23,7 +23,7 @@ public class CartService {
 
     public Cart getUserCart(OAuth2AuthenticationToken authentication){
 
-        MyUser user = userService.getMyUserFromBD(userService.getUserID(authentication));
+        MyUser user = userService.getMyUserFromPostgres(authentication);
 
         return cartRepository.findById(user.getId()).orElseGet(()->{
                     Cart cart = new Cart();
