@@ -2,6 +2,7 @@ package com.example.managerapp.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -10,12 +11,14 @@ import java.util.List;
 
 @Entity
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class SupportChat {
     private static final String SEQ_NAME = "support_chat_seq";
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQ_NAME)
     @SequenceGenerator(name= SEQ_NAME, sequenceName = SEQ_NAME, allocationSize = 1)
+    @EqualsAndHashCode.Include
     private Long id;
 
     private LocalDateTime dateOfCreation;

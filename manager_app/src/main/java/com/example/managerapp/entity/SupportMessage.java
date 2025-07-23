@@ -2,15 +2,13 @@ package com.example.managerapp.entity;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Setter
 public class SupportMessage {
 
@@ -19,6 +17,7 @@ public class SupportMessage {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQ_NAME)
     @SequenceGenerator(name= SEQ_NAME, sequenceName = SEQ_NAME, allocationSize = 1)
+    @EqualsAndHashCode.Include
     private Long id;
 
     private LocalDateTime dateOfCreation;

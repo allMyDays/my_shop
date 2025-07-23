@@ -30,7 +30,7 @@ public class ProductController {
 
 
 
-    @PreAuthorize("hasAuthority('SELLER')")
+    @PreAuthorize("hasRole('SELLER')")
     @PostMapping("/product_create")
     public String createProduct(NewProductPayload product,
                                Model model,
@@ -58,10 +58,12 @@ public class ProductController {
         model.addAttribute("selectedCategoryId",categoryId);
         return "products";
     }
-    @GetMapping("/product_create")
+
+
+  /*  @GetMapping("/product_create")
     public String newProductPage(){
         return "catalogue/products/new_product";
-    }
+    }*/
 
 
 

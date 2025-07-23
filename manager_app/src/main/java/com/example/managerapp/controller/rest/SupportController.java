@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,16 +37,21 @@ public class SupportController {
 
 
     @MessageMapping("/handle_user_message")
-    public void handleSupportUserMessage(SupportMessageDTO payload){
+    @PreAuthorize("isAuthenticated()")
+    public void handleSupportUserMessage(SupportMessageDTO payload, OAuth2AuthenticationToken authenticationToken){
 
-        SupportMessage supportMessage =  supportService.saveMessage(payload.getChatId(),payload.getMessage(),true);
+        if(supportService.isSupportMessageCreationLimited(payload.getChatId())) return;
 
-        // переслать сообщение агенту
-        messagingTemplate.convertAndSend("/topic/support_chat/"+payload.getChatId(), supportMessageMapper.toSupportMessageDTO(supportMessage) );
+        Optional<SupportMessage> supportMessage =  supportService.saveMessage(authenticationToken, payload.getChatId(),payload.getMessage(),true);
+
+        supportMessage.ifPresent(message ->
+                messagingTemplate.convertAndSend("/topic/support_chat/" + payload.getChatId(), supportMessageMapper.toSupportMessageDTO(message)));
+
 
     }
 
     @MessageMapping("/typing_status")
+    @PreAuthorize("isAuthenticated()")
     public void handleTypingStatus(SupportChatTypingStatusDTO typingStatusDTO){
 
         messagingTemplate.convertAndSend("/topic/support_chat/"+typingStatusDTO.getChatId()+"/typing", typingStatusDTO);
@@ -54,6 +60,7 @@ public class SupportController {
 
 
     @GetMapping("/handle_message_check_limit")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> handleMessageCheckLimit(OAuth2AuthenticationToken authentication, @RequestParam Long chatId){
         if(supportService.isSupportMessageCreationLimited(chatId)){
             return ResponseEntity
@@ -68,7 +75,13 @@ public class SupportController {
     }
 
     @GetMapping("/create_chat")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createChat(OAuth2AuthenticationToken authentication, @RequestParam String topic){
+
+        ResponseEntity<?> limitResponse = createChatCheckLimit(authentication);
+
+        if(limitResponse.getStatusCode().value()==429) return limitResponse;
+
         Map<String, Long> result = supportService.createSupportChat(authentication, topic);
 
         return ResponseEntity
@@ -79,6 +92,7 @@ public class SupportController {
     }
 
     @GetMapping("/create_chat_check_limit")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createChatCheckLimit(OAuth2AuthenticationToken authentication){
            if(supportService.isSupportChatCreationLimited(authentication)){
               return ResponseEntity
@@ -93,12 +107,17 @@ public class SupportController {
     }
 
     @GetMapping("/get_user_chats")
-    public List<SupportChatDTO> getAllUserChats(OAuth2AuthenticationToken authentication, @RequestParam(required = false) Long userId){
-        return supportChatMapper.toSupportChatDTOList(supportService.getAllUserSupportChats(authentication,userId));
+    @PreAuthorize("isAuthenticated()")
+    public List<SupportChatDTO> getAllUserChats(OAuth2AuthenticationToken authentication){
+        return supportChatMapper.toSupportChatDTOList(supportService.getAllUserSupportChats(authentication,null));
 
     }
 
+
+
+
     @GetMapping("/get_chat_messages")
+    @PreAuthorize("isAuthenticated()")
     public List<SupportMessageDTO> getAllChatMessages(OAuth2AuthenticationToken authentication, @RequestParam Long chatId){
 
         return supportMessageMapper.toSupportMessageDTOList(supportService.getAllChatMessages(authentication,chatId));
@@ -107,7 +126,7 @@ public class SupportController {
     }
 
     @DeleteMapping("/delete_chat")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> deleteChat(OAuth2AuthenticationToken authentication, @RequestParam Long chatId){
 
         if(supportService.deleteSupportChat(authentication,chatId)){
@@ -124,24 +143,29 @@ public class SupportController {
 
 
 
+    @GetMapping("/get_user_chats/{userId:\\d+}")
+    @PreAuthorize("hasAnyRole('AGENT','ADMIN')")
+    public List<SupportChatDTO> getAllUserChatsByAgent(@PathVariable Long userId, OAuth2AuthenticationToken authenticationToken){
+        return supportChatMapper.toSupportChatDTOList(supportService.getAllUserSupportChats(authenticationToken,userId));
 
+    }
 
 
     @GetMapping("/get_active_chats")
     @PreAuthorize("hasAnyRole('AGENT','ADMIN')")
-    public List<SupportChatDTO> getAllActiveChats(OAuth2AuthenticationToken authentication){
-        return supportChatMapper.toSupportChatDTOList(supportService.getAllActiveChats(authentication));
+    public List<SupportChatDTO> getAllActiveChats(){
+        return supportChatMapper.toSupportChatDTOList(supportService.getAllActiveChats());
 
     }
 
     @MessageMapping("/handle_agent_message")
     @PreAuthorize("hasAnyRole('AGENT','ADMIN')")
-    public void handleSupportAgentMessage(SupportMessageDTO payload){
+    public void handleSupportAgentMessage(SupportMessageDTO payload, OAuth2AuthenticationToken authenticationToken){
 
-        SupportMessage supportMessage = supportService.saveMessage(payload.getChatId(),payload.getMessage(),false);
+        Optional<SupportMessage> supportMessage = supportService.saveMessage(authenticationToken,payload.getChatId(),payload.getMessage(),false);
 
-        // переслать сообщение юзеру
-        messagingTemplate.convertAndSend("/topic/support_chat/"+payload.getChatId(), supportMessageMapper.toSupportMessageDTO(supportMessage));
+
+        supportMessage.ifPresent(message -> messagingTemplate.convertAndSend("/topic/support_chat/" + payload.getChatId(), supportMessageMapper.toSupportMessageDTO(message)));
 
     }
 

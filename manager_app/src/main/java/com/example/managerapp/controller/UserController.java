@@ -13,6 +13,7 @@ import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailSendException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,12 +38,14 @@ public class UserController {
     }
 
     @GetMapping("/registration")
+    @PreAuthorize("!isAuthenticated()")
     public String showRegistrationForm() {
         return "registration";
     }
 
 
     @GetMapping("/my_profile")
+    @PreAuthorize("isAuthenticated()")
     public String profile(Model model, OAuth2AuthenticationToken authentication) {
         Optional<GetUserDTO> userOptional =  userService.collectUserInfo(authentication);
         if(userOptional.isEmpty()) return "redirect:/login";
@@ -53,6 +56,7 @@ public class UserController {
 
     @PostMapping("/my_profile")
     @ResponseBody
+    @PreAuthorize("isAuthenticated()")
     public Map<String, Object> editProfile(@Valid EditUserDTO userDTO,
                                            BindingResult res,
                                            @RequestParam boolean isVerified,
@@ -99,6 +103,7 @@ public class UserController {
 
     @PostMapping("/registration")
     @ResponseBody
+    @PreAuthorize("!isAuthenticated()")
     public Map<String, Object> register(@Validated RegistrationUserDTO userDTO,BindingResult bindingResult, @RequestParam boolean isVerified) {
 
         Map<String, Object> response = new HashMap<>();

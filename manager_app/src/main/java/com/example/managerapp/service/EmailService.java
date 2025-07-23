@@ -48,8 +48,6 @@ public class EmailService {
 
     }
 
-
-    @Async
     public void sendRandomCodeToEmail(String to) throws MailSendException {
 
         String code = generate6DigitsCode();

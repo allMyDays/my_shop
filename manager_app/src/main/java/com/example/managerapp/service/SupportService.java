@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -69,17 +70,15 @@ public class SupportService {
 
     }
 
-    public SupportMessage saveMessage(Long chatId, String message, boolean isUserMessage){
+    public Optional<SupportMessage> saveMessage(OAuth2AuthenticationToken authenticationToken, Long chatId, String message, boolean isUserMessage){
 
         SupportChat supportChat = supportChatRepository.findById(chatId).orElseThrow(()->new RuntimeException("chat not found"));
 
-        SupportMessage supportMessage = new SupportMessage();
-
-        supportMessage.setMessage(message);
-        supportMessage.setUserMessage(isUserMessage);
-        supportMessage.setChat(supportChat);
 
         if(isUserMessage){
+
+            if(!supportChat.getUser().equals(userService.getMyUserFromPostgres(authenticationToken))) return Optional.empty();
+
             redisService.saveTemp(REDIS_KEY_MESSAGE_LIMIT +chatId,"",120);
             supportChat.setNeedsAnswer(true);
             emailService.sendSimpleMail(agent_email,"Новое сообщение в чат поддержки № %d".formatted(chatId),"Сообщение:\n %s".formatted(message));
@@ -87,9 +86,17 @@ public class SupportService {
         else{
             supportChat.setNeedsAnswer(false);
         }
+
+        SupportMessage supportMessage = new SupportMessage();
+
+
+        supportMessage.setMessage(message);
+        supportMessage.setUserMessage(isUserMessage);
+        supportMessage.setChat(supportChat);
+
         supportChatRepository.save(supportChat);
 
-        return supportMessageRepository.save(supportMessage);
+        return Optional.of(supportMessageRepository.save(supportMessage));
 
 
     }
@@ -99,8 +106,6 @@ public class SupportService {
         MyUser myUser;
 
         if(userId!=null){
-            if(!userService.isUserAgentOrAdmin(authentication)) return List.of();
-
             myUser = userService.getMyUserFromPostgres(userId).orElseThrow(()->new RuntimeException("user not found"));
         }
 
@@ -139,7 +144,7 @@ public class SupportService {
 
     }
 
-    public List<SupportChat> getAllActiveChats(OAuth2AuthenticationToken authentication){
+    public List<SupportChat> getAllActiveChats(){
 
         return supportChatRepository.findAllByNeedsAnswerTrueOrderByIdAsc();
 

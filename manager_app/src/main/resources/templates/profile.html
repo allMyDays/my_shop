@@ -120,7 +120,7 @@
 
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("userId", userId);
+       // formData.append("userId", userId);
 
         fetch("api/images/save_user_avatar", {
             method: "POST",
@@ -144,7 +144,7 @@
     function deleteAvatar() {
         const params = new URLSearchParams({ userId: userId });
 
-        fetch("api/images/delete_user_avatar?" + params.toString(), {
+        fetch("api/images/delete_user_avatar", {
             method: "DELETE"
         })
             .then(res => {

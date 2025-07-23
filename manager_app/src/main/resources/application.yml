@@ -48,6 +48,10 @@ spring:
              - microprofile-jwt
              - view_catalogue
              - edit_catalogue
+
+
+
+
   data:
     redis:
       host: localhost

@@ -3,9 +3,11 @@ package com.example.managerapp.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Entity
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class CartItem {
 
 
@@ -14,6 +16,7 @@ public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQ_NAME)
     @SequenceGenerator(name = SEQ_NAME, sequenceName = SEQ_NAME, allocationSize = 1)
+    @EqualsAndHashCode.Include
     private Long id;
 
 

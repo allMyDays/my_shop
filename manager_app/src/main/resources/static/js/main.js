@@ -474,7 +474,7 @@ function openSupportChatList(needsUserId){
     bootstrap.Modal.getInstance(document.getElementById("supportModal")).hide();
 
 
-    fetch(`/api/support${isStaff() === true ? (needsUserId === true ? `/get_user_chats?userId=${supportChatCreatorId}` : '/get_active_chats') : '/get_user_chats'}`)
+    fetch(`/api/support${isStaff() === true ? (needsUserId === true ? `/get_user_chats/${supportChatCreatorId}` : '/get_active_chats') : '/get_user_chats'}`)
 
 
         .then(res => res.json())

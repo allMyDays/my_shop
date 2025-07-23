@@ -3,6 +3,7 @@ package com.example.catalogue_service.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "products")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Product {
 
     private static final String SEQ_NAME = "product_seq";
@@ -21,6 +23,7 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQ_NAME)
     @SequenceGenerator(name= SEQ_NAME, sequenceName = SEQ_NAME, allocationSize = 1)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column

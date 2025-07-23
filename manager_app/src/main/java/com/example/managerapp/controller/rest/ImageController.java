@@ -9,6 +9,8 @@ import com.example.managerapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +30,8 @@ public class ImageController {
     private final ImageService imageService;
 
     @PostMapping("/save_product_image")
-    public ResponseEntity<Void> saveProductImage(@RequestParam MultipartFile file,@RequestParam Long productId, @RequestParam boolean isPreview) throws IOException {
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<Void> saveProductImage(@RequestParam MultipartFile file, @RequestParam Long productId, @RequestParam boolean isPreview, OAuth2AuthenticationToken authenticationToken) throws IOException {
        // Long fileID =  minioService.saveFile(file,MinIO_bucket.products);
        // return Map.of("ID",fileID);
         return ResponseEntity.ok()
@@ -36,9 +39,10 @@ public class ImageController {
     }
 
     @PostMapping("/save_user_avatar")
-    public ResponseEntity<Void> saveUserAvatar(@RequestParam("file") MultipartFile file, @RequestParam Long userId) throws IOException {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> saveUserAvatar(@RequestParam("file") MultipartFile file, OAuth2AuthenticationToken authenticationToken) throws IOException {
 
-        imageService.saveUserAvatar(file, userId);
+        imageService.saveUserAvatar(file, authenticationToken);
 
         return ResponseEntity.ok()
                 .build();
@@ -46,9 +50,10 @@ public class ImageController {
     }
 
     @DeleteMapping("delete_user_avatar")
-    public ResponseEntity<Void> deleteUserAvatar(@RequestParam Long userId){
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteUserAvatar(OAuth2AuthenticationToken authenticationToken) throws IOException {
 
-        imageService.deleteUserAvatar(userId);
+        imageService.deleteUserAvatar(authenticationToken);
 
         return ResponseEntity.ok()
                 .build();
