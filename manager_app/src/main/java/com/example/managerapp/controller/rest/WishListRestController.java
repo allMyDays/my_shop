@@ -16,14 +16,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/wish-list")
 @RequiredArgsConstructor
-public class WishListController {
+@PreAuthorize("isAuthenticated()")
+public class WishListRestController {
 
     private final WishListService wishListService;
     private final WishListMapper wishListMapper;
 
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
     public WishListDTO getWishList(OAuth2AuthenticationToken authentication) {
 
         return wishListMapper.toWishListDTO(wishListService.getUserWishList(authentication));
@@ -31,7 +31,6 @@ public class WishListController {
     }
 
     @GetMapping("/items")
-    @PreAuthorize("isAuthenticated()")
     public List<WishItemDTO> getWishListItems(OAuth2AuthenticationToken authentication) {
 
         return getWishList(authentication).getItemsDTOList();
@@ -40,14 +39,12 @@ public class WishListController {
 
 
     @GetMapping("/size")
-    @PreAuthorize("isAuthenticated()")
     public Map<String, Integer> getListSize(OAuth2AuthenticationToken authenticationToken){
         return Map.of("count",wishListService.getUserWishList(authenticationToken).getProductIDs().size());
     }
 
 
     @PostMapping("/add")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> addToWishList(@RequestParam Long productId, OAuth2AuthenticationToken authenticationToken){
 
         wishListService.addItemToWishList(authenticationToken, productId);
@@ -56,7 +53,6 @@ public class WishListController {
     }
 
     @DeleteMapping("/{productId}")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> removeFromCart(@PathVariable Long productId, OAuth2AuthenticationToken authenticationToken){
         wishListService.removeItemFromWishList(authenticationToken,productId);
         return ResponseEntity.ok().build();

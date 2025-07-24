@@ -57,8 +57,12 @@ spring:
       host: localhost
       port: 6379
 
+  threads:
+   virtual:
+     enabled: true
 
-
+  main:
+   keep-alive: true
 
 
 my_shop:

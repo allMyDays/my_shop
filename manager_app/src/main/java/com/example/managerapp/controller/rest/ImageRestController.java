@@ -1,11 +1,9 @@
 package com.example.managerapp.controller.rest;
 
 
-import com.example.managerapp.entity.MyUser;
 import com.example.managerapp.entity.enums.MinIO_bucket;
 import com.example.managerapp.service.ImageService;
 import com.example.managerapp.service.MinioService;
-import com.example.managerapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLConnection;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/images")
-public class ImageController {
+public class ImageRestController {
 
     private final MinioService minioService;
 

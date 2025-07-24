@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RestController
 @AllArgsConstructor
-public class EmailController {
+public class EmailRestController {
 
     private final UserService userService;
     private final RedisService redisService;

@@ -11,10 +11,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequiredArgsConstructor
 public class MainController {
+
+
+    @GetMapping("/test_threads")
+    @ResponseBody
+    public String test(){
+        return Thread.currentThread().toString();
+
+    }
 
 
 

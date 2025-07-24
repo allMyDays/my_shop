@@ -31,6 +31,13 @@ spring:
   freemarker:
     enabled: false
 
+  threads:
+    virtual:
+      enabled: true
+
+  main:
+    keep-alive: true # не хавершит приложение,если все активные потоки - виртуальные
+
 logging:
   level:
     org:
