@@ -2,9 +2,9 @@
 package com.example.managerapp.controller;
 
 
-import com.example.managerapp.dto.EditUserDTO;
-import com.example.managerapp.dto.GetUserDTO;
-import com.example.managerapp.dto.RegistrationUserDTO;
+import com.example.managerapp.dto.user.UserEditProfileDTO;
+import com.example.managerapp.dto.user.UserResponseDTO;
+import com.example.managerapp.dto.user.UserRegistrationDTO;
 import com.example.managerapp.service.EmailService;
 import com.example.managerapp.service.UserService;
 import jakarta.validation.Valid;
@@ -47,7 +47,7 @@ public class UserController {
     @GetMapping("/my_profile")
     @PreAuthorize("isAuthenticated()")
     public String profile(Model model, OAuth2AuthenticationToken authentication) {
-        Optional<GetUserDTO> userOptional =  userService.collectUserInfo(authentication);
+        Optional<UserResponseDTO> userOptional =  userService.collectUserInfo(authentication);
         if(userOptional.isEmpty()) return "redirect:/login";
         model.addAttribute("user", userOptional.get());
         return "profile";
@@ -57,7 +57,7 @@ public class UserController {
     @PostMapping("/my_profile")
     @ResponseBody
     @PreAuthorize("isAuthenticated()")
-    public Map<String, Object> editProfile(@Valid EditUserDTO userDTO,
+    public Map<String, Object> editProfile(@Valid UserEditProfileDTO userDTO,
                                            BindingResult res,
                                            @RequestParam boolean isVerified,
                                            OAuth2AuthenticationToken auth) {
@@ -104,7 +104,7 @@ public class UserController {
     @PostMapping("/registration")
     @ResponseBody
     @PreAuthorize("!isAuthenticated()")
-    public Map<String, Object> register(@Validated RegistrationUserDTO userDTO,BindingResult bindingResult, @RequestParam boolean isVerified) {
+    public Map<String, Object> register(@Validated UserRegistrationDTO userDTO, BindingResult bindingResult, @RequestParam boolean isVerified) {
 
         Map<String, Object> response = new HashMap<>();
 

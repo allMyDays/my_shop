@@ -2,10 +2,11 @@ package com.example.managerapp.controller;
 
 
 
+import com.example.managerapp.client.grpc.ProductGrpcClient;
 import com.example.managerapp.controller.payload.NewProductPayload;
-import com.example.managerapp.entity.ProductRecord;
+import com.example.managerapp.dto.product.ProductResponseDTO;
 import com.example.managerapp.exception.BadRequestException;
-import com.example.managerapp.rest.ProductRestClient;
+import com.example.managerapp.client.rest.ProductRestClient;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,13 +26,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductController {
 
-
-    private final ProductRestClient productRestClient;
-
+    private final ProductGrpcClient productGrpcClient;
 
 
 
-    @PreAuthorize("hasRole('SELLER')")
+
+   /* @PreAuthorize("hasRole('SELLER')")
     @PostMapping("/product_create")
     public String createProduct(NewProductPayload product,
                                Model model,
@@ -40,19 +41,19 @@ public class ProductController {
                                 HttpServletResponse response
                                ) {
        try{
-           ProductRecord dataBaseProductRecord = productRestClient.createProduct(product, file1, file2, file3);
-           return "redirect:/catalogue/products/%d".formatted(dataBaseProductRecord.id());
+           ProductResponseDTO productResponseDTO = productRestClient.createProduct(product, file1, file2, file3);
+           return "redirect:/catalogue/products/%d".formatted(productResponseDTO.getId());
        } catch (BadRequestException exception) {
         model.addAttribute("payload", product);
         model.addAttribute("errors", exception.getErrors());
         return "catalogue/products/new_product";}  // todo
 
-    }
+    }*/
 
 
     @GetMapping("/products_page")
-    public String list(Model model, @RequestParam(name="filter",required = false) String filter, @RequestParam(name = "categoryId",required = false) Long categoryId) {
-        List<ProductRecord> list = productRestClient.getAllProducts(categoryId,filter);
+    public String list(Model model, @RequestParam String filter, @RequestParam(required = false) Long categoryId) {
+        List<ProductResponseDTO> list = productGrpcClient.getAllProducts(categoryId,filter);
         model.addAttribute("products",list);
         model.addAttribute("filter",filter);
         model.addAttribute("selectedCategoryId",categoryId);
@@ -69,9 +70,18 @@ public class ProductController {
 
     @GetMapping("/product_page/{id:\\d+}")
     public String productInfo(@PathVariable Long id, Model model){
-        Optional<ProductRecord> productRecord = productRestClient.getProductByID(id);
-        if(productRecord.isEmpty()) return "redirect:/products_page";
-        model.addAttribute("product",productRecord.get());
+        Optional<ProductResponseDTO> productOptional = productGrpcClient.getProductById(id);
+        if(productOptional.isEmpty()) return "redirect:/products_page";
+
+        ProductResponseDTO product = productOptional.get();
+
+        List<String> allProductImages = new ArrayList<>(product.getImageFileNames());
+        allProductImages.add(product.getPreviewImageFileName());
+
+        product.setImageFileNames(allProductImages);
+
+
+        model.addAttribute("product",product);
         return "product";
 
     }

@@ -1,8 +1,8 @@
 package com.example.managerapp.service;
 
-import com.example.managerapp.dto.EditUserDTO;
-import com.example.managerapp.dto.GetUserDTO;
-import com.example.managerapp.dto.RegistrationUserDTO;
+import com.example.managerapp.dto.user.UserEditProfileDTO;
+import com.example.managerapp.dto.user.UserResponseDTO;
+import com.example.managerapp.dto.user.UserRegistrationDTO;
 import com.example.managerapp.entity.MyUser;
 import com.example.managerapp.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
@@ -62,7 +62,7 @@ public class UserService {
 
     }
 
-    public boolean createUser(RegistrationUserDTO userDTO){
+    public boolean createUser(UserRegistrationDTO userDTO){
         UserRepresentation user = new UserRepresentation();
         user.setUsername(userDTO.getNickName());
         user.setFirstName(userDTO.getFirstName());
@@ -91,7 +91,7 @@ public class UserService {
         return true;
 
     }
-    public void updateUserData(String userId, EditUserDTO userDTO) {
+    public void updateUserData(String userId, UserEditProfileDTO userDTO) {
         UserResource userResource = keycloak.realm(realm).users().get(userId);
 
         UserRepresentation user = userResource.toRepresentation();
@@ -156,7 +156,7 @@ public class UserService {
 
     }
 
-    public Optional<GetUserDTO> collectUserInfo(OAuth2AuthenticationToken authentication) {
+    public Optional<UserResponseDTO> collectUserInfo(OAuth2AuthenticationToken authentication) {
         if (authentication == null) return Optional.empty();
 
         String userID = getUserKeycloakID(authentication);
@@ -167,7 +167,7 @@ public class UserService {
         try {
             UserRepresentation userRep = userResource.toRepresentation();
 
-            GetUserDTO user = new GetUserDTO();
+            UserResponseDTO user = new UserResponseDTO();
             user.setEmail(userRep.getEmail());
             user.setFirstName(userRep.getFirstName());
             user.setLastName(userRep.getLastName());
@@ -217,7 +217,7 @@ public class UserService {
     }
 
     public boolean isUserEmailChanged(OAuth2AuthenticationToken authentication, String newEmail){
-        Optional<GetUserDTO> userOptional = collectUserInfo(authentication);
+        Optional<UserResponseDTO> userOptional = collectUserInfo(authentication);
         return !newEmail.equalsIgnoreCase(userOptional.get().getEmail());
 
 

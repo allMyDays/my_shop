@@ -1,6 +1,6 @@
 package com.example.managerapp.mapper;
 
-import com.example.managerapp.dto.CartItemDTO;
+import com.example.managerapp.dto.cart.CartItemDTO;
 import com.example.managerapp.entity.CartItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

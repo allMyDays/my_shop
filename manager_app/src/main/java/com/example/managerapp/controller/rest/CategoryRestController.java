@@ -1,7 +1,8 @@
 package com.example.managerapp.controller.rest;
 
-import com.example.managerapp.entity.CategoryRecord;
-import com.example.managerapp.rest.CategoryRestClient;
+import com.example.managerapp.client.grpc.CategoryGrpcClient;
+import com.example.managerapp.client.rest.CategoryRestClient;
+import com.example.managerapp.dto.category.CategoryResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,12 +15,12 @@ import java.util.List;
 @RequestMapping("/api/categories")
 public class CategoryRestController {
 
-    private final CategoryRestClient categoryRestClient;
+    private final CategoryGrpcClient categoryGrpcClient;
 
 
     @GetMapping
-    public List<CategoryRecord> getAllCategories() {
-        return categoryRestClient.getAllCategories();
+    public List<CategoryResponseDTO> getAllCategories() {
+        return categoryGrpcClient.getAllCategories();
     }
 
 

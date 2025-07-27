@@ -16,8 +16,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-//@Slf4j
-public class ProductService {//implements com.example.catalogue_service.service.i.ProductService {
+public class ProductService {
 
     private final ProductRepository productRepository;
 
@@ -25,7 +24,9 @@ public class ProductService {//implements com.example.catalogue_service.service.
 
     public List<Product> getAll(Long categoryId, String title) {
 
-        return productRepository.findByCategoryAndTitle(categoryId, title);
+        if(categoryId==0) categoryId=null;
+
+        return productRepository.findByTitleAndOptionalCategory(title, categoryId);
     }
 
     public List<Product> getProductsByIDs(List<Long> ids) {

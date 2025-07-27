@@ -1,13 +1,12 @@
 package com.example.managerapp.config;
 
-import com.example.managerapp.rest.ProductRestClient;
+import com.example.managerapp.client.rest.ProductRestClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
-import org.springframework.web.client.RestClient;
 
 import static org.mockito.Mockito.mock;
 

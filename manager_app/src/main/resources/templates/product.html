@@ -82,8 +82,8 @@
 
         <div class="container product-view-container">
             <!-- Список миниатюр -->
-            <div class="thumbnail-container">
-                <button class="scroll-btn up" onclick="scrollThumbnails(-1)">▲</button>
+            <div th:if="${product.imageFileNames.size()>1}" class="thumbnail-container">
+                <button th:if="${product.imageFileNames.size()>6}" class="scroll-btn up" onclick="scrollThumbnails(-1)">▲</button>
                 <div class="thumbnails" id="thumbnailList">
                     <img th:each="img : ${product.imageFileNames}"
                          th:src="@{/api/images/get_product_image/{file}(file=${img})}"
@@ -91,7 +91,7 @@
                          alt="thumb"
                          class="thumbnail-img">
                 </div>
-                <button class="scroll-btn down" onclick="scrollThumbnails(1)">▼</button>
+                <button th:if="${product.imageFileNames.size()>6}" class="scroll-btn down" onclick="scrollThumbnails(1)">▼</button>
             </div>
 
             <!-- Главное изображение -->
@@ -136,10 +136,7 @@
                     <a href="/login">
                         <button type="button" class="btn btn-outline-danger">Войти на сайт</button>
                     </a>
-                </
-
-
-                div>
+                </div>
             </div>
         </div>
     </div>

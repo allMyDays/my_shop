@@ -48,6 +48,30 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 });
 
+function mainSearchFind(){
+
+    const input = document.getElementById("main-search-input");
+
+    const categoryId = document.getElementById("categorySelect").value;
+
+    const value = input.value.trim();
+
+    if(!value||value.length<2) return;
+
+
+    const params = new URLSearchParams();
+
+    params.append("filter", value);
+    if (categoryId) params.append("categoryId", categoryId);
+
+    window.location.href = "/products_page?" + params.toString();
+
+
+}
+
+
+
+
 function isStaff(){
     if(!userRoles) return false;
     return (userRoles.includes("ROLE_AGENT") || userRoles.includes("ROLE_ADMIN"));

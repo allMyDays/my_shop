@@ -1,6 +1,6 @@
 package com.example.managerapp.mapper;
 
-import com.example.managerapp.dto.SupportChatDTO;
+import com.example.managerapp.dto.support.SupportChatDTO;
 import com.example.managerapp.entity.SupportChat;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

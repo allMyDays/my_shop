@@ -1,7 +1,7 @@
 package com.example.managerapp.controller.ws;
 
-import com.example.managerapp.dto.SupportChatTypingStatusDTO;
-import com.example.managerapp.dto.SupportMessageDTO;
+import com.example.managerapp.dto.support.SupportChatTypingStatusDTO;
+import com.example.managerapp.dto.support.SupportMessageDTO;
 import com.example.managerapp.entity.SupportMessage;
 import com.example.managerapp.mapper.SupportMessageMapper;
 import com.example.managerapp.service.SupportService;

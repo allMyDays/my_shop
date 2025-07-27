@@ -1,12 +1,13 @@
 package com.example.managerapp.mapper;
 
 
-import com.example.managerapp.dto.CartDTO;
-import com.example.managerapp.dto.CartItemDTO;
+import com.example.managerapp.client.grpc.ProductGrpcClient;
+import com.example.managerapp.dto.cart.CartItemDTO;
+import com.example.managerapp.dto.cart.CartDTO;
+import com.example.managerapp.dto.product.ProductResponseDTO;
 import com.example.managerapp.entity.Cart;
 import com.example.managerapp.entity.CartItem;
-import com.example.managerapp.entity.ProductRecord;
-import com.example.managerapp.rest.ProductRestClient;
+import com.example.managerapp.client.rest.ProductRestClient;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public abstract class CartMapper {
     
     @Autowired
-    protected ProductRestClient productRestClient;
+    protected ProductGrpcClient productGrpcClient;
 
     @Autowired
     protected CartItemMapper cartItemMapper;
@@ -40,18 +41,18 @@ public abstract class CartMapper {
                 .map(CartItem::getProductId)
                 .toList();
 
-        List<ProductRecord> productRecords = productRestClient.getProductsByIDs(productIds);
+        List<ProductResponseDTO> productRecords = productGrpcClient.getProductsByIds(productIds);
 
-        Map<Long, ProductRecord> productMap = productRecords.stream()
-                .collect(Collectors.toMap(ProductRecord::id, Function.identity()));
+        Map<Long, ProductResponseDTO> productMap = productRecords.stream()
+                .collect(Collectors.toMap(ProductResponseDTO::getId, Function.identity()));
 
         for(CartItemDTO dto : dtoList){
 
-            ProductRecord productRecord = productMap.get(dto.getProductId());
+            ProductResponseDTO productRecord = productMap.get(dto.getProductId());
             if(productRecord != null){
-                dto.setTitle(productRecord.title());
-                dto.setPrice(productRecord.price());
-                dto.setPreviewImageFileName(productRecord.previewImageFileName());
+                dto.setTitle(productRecord.getTitle());
+                dto.setPrice(productRecord.getPrice());
+                dto.setPreviewImageFileName(productRecord.getPreviewImageFileName());
 
             }
         }

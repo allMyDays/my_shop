@@ -1,20 +1,74 @@
 package com.example.catalogue_service.mapper;
 
-import com.example.catalogue_service.dto.GetProductDTO;
-import com.example.catalogue_service.dto.SendProductDTO;
+import com.example.catalogue.grpc.ProductResponse;
+import com.example.catalogue_service.dto.ProductRequestDTO;
+import com.example.catalogue_service.dto.ProductResponseDTO;
 import com.example.catalogue_service.entity.Product;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import com.google.protobuf.Timestamp;
 
 @Mapper(componentModel = "spring")
-public interface ProductMapper {
+public abstract class ProductMapper {
 
-    SendProductDTO toSendProductDTO(Product product);
 
-    Product toProduct(GetProductDTO sendProductDTO);
+     public abstract ProductResponseDTO toResponseProductDTO(Product product);
 
-    List<SendProductDTO> toSendProductDTOList(List<Product> all);
+     public abstract Product toProduct(ProductRequestDTO sendProductDTO);
+
+     public abstract List<ProductResponseDTO> toResponseProductDTOList(List<Product> all);
+
+
+
+
+
+
+
+
+
+     @Named("toProductResponse")
+     public ProductResponse toProductResponse(Product product){
+
+       return ProductResponse.newBuilder()
+                  .setId(product.getId())
+                  .setTitle(product.getTitle())
+                  .setDescription(product.getDescription())
+                  .setPrice(product.getPrice())
+                  .setPreviewImageFileName(product.getPreviewImageFileName())
+                  .addAllImageFileNames(product.getImageFileNames())
+                  .setDateOfCreation(toProtoTimeStamp(product.getDateOfCreation()))
+
+
+                .build();
+
+    }
+
+
+    public abstract List<ProductResponse> toProductResponseList(List<Product> products);
+
+
+
+    protected Timestamp toProtoTimeStamp(LocalDateTime localDateTime){
+
+        Instant instant = localDateTime.toInstant(ZoneOffset.UTC);
+        return Timestamp.newBuilder()
+                .setSeconds(instant.getEpochSecond())
+                .setNanos(instant.getNano())
+                .build();
+
+    }
+
+
+
+
+
 
 
 }

@@ -20,8 +20,8 @@ public interface ProductRepository extends JpaRepository<Product,Long> {
 
     @Query("SELECT DISTINCT p FROM Product p " +
             "LEFT JOIN p.categories c " +
-            "WHERE (:categoryId IS NULL OR c.id = :categoryId) " +
-            "AND (:title IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :title, '%')))")
-    List<Product> findByCategoryAndTitle(Long categoryId, String title);
+            "WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :title, '%')) " +
+            "AND (:categoryId IS NULL OR c.id = :categoryId)")
+    List<Product> findByTitleAndOptionalCategory(String title,Long categoryId);
 
 }

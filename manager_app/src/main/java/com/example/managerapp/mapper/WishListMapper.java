@@ -1,10 +1,11 @@
 package com.example.managerapp.mapper;
 
-import com.example.managerapp.dto.WishItemDTO;
-import com.example.managerapp.dto.WishListDTO;
-import com.example.managerapp.entity.ProductRecord;
+import com.example.managerapp.client.grpc.ProductGrpcClient;
+import com.example.managerapp.dto.product.ProductResponseDTO;
+import com.example.managerapp.dto.wish.WishItemDTO;
+import com.example.managerapp.dto.wish.WishListDTO;
 import com.example.managerapp.entity.WishList;
-import com.example.managerapp.rest.ProductRestClient;
+import com.example.managerapp.client.rest.ProductRestClient;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import java.util.List;
 public abstract class WishListMapper {
 
     @Autowired
-    protected ProductRestClient productRestClient;
+    protected ProductGrpcClient productGrpcClient;
 
     @Mapping(target = "itemsDTOList", expression = "java(mapListItems(list.getProductIDs()))")
     @Mapping(target = "totalQuantity", expression = "java(list.getProductIDs().size())")
@@ -28,14 +29,14 @@ public abstract class WishListMapper {
 
         List<WishItemDTO> wishItemDTOs = new ArrayList<>();
 
-        List<ProductRecord> products = productRestClient.getProductsByIDs(IDs);
+        List<ProductResponseDTO> products = productGrpcClient.getProductsByIds(IDs);
 
-        for(ProductRecord product : products){
+        for(ProductResponseDTO product : products){
             WishItemDTO wishItemDTO = new WishItemDTO();
-            wishItemDTO.setProductId(product.id());
-            wishItemDTO.setTitle(product.title());
-            wishItemDTO.setPrice(product.price());
-            wishItemDTO.setPreviewImageFileName(product.previewImageFileName());
+            wishItemDTO.setProductId(product.getId());
+            wishItemDTO.setTitle(product.getTitle());
+            wishItemDTO.setPrice(product.getPrice());
+            wishItemDTO.setPreviewImageFileName(product.getPreviewImageFileName());
 
             wishItemDTOs.add(wishItemDTO);
         }

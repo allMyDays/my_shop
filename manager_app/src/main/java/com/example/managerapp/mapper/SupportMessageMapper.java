@@ -1,6 +1,6 @@
 package com.example.managerapp.mapper;
 
-import com.example.managerapp.dto.SupportMessageDTO;
+import com.example.managerapp.dto.support.SupportMessageDTO;
 import com.example.managerapp.entity.SupportMessage;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

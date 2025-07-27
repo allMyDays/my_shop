@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+option java_package="com.example.catalogue.grpc";
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+
+import "category.proto";
+
+
+
+service ProductService{
+
+  rpc GetProductById (ProductRequestById) returns (ProductResponse);
+
+  rpc GetAllProducts (ProductRequestByFilterAndCategory) returns (ProductResponseList);
+
+  rpc GetProductsByIds (ProductRequestByIds) returns (ProductResponseList);
+
+
+}
+
+message ProductRequestById{
+  int64 id = 1;
+}
+
+message ProductRequestByIds{
+
+  repeated int64 ids = 1;
+
+}
+message ProductRequestByFilterAndCategory{
+
+  string filter = 2;
+
+  optional int64 category_id = 1;
+
+}
+
+message ProductResponse{
+
+  int64 id = 1;
+
+  string title = 2;
+
+  string description =3;
+
+  int32 price = 4;
+
+  repeated CategoryResponse categories = 5;
+
+  google.protobuf.Timestamp date_of_creation = 6;
+
+  string preview_image_file_name = 7;
+
+  repeated string image_file_names = 8;
+
+
+}
+
+message ProductResponseList{
+
+  repeated ProductResponse products = 1;
+
+}
+

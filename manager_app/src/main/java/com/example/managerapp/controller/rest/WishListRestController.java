@@ -1,7 +1,7 @@
 package com.example.managerapp.controller.rest;
 
-import com.example.managerapp.dto.WishItemDTO;
-import com.example.managerapp.dto.WishListDTO;
+import com.example.managerapp.dto.wish.WishItemDTO;
+import com.example.managerapp.dto.wish.WishListDTO;
 import com.example.managerapp.mapper.WishListMapper;
 import com.example.managerapp.service.WishListService;
 import lombok.RequiredArgsConstructor;

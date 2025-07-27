@@ -1,8 +1,8 @@
 package com.example.managerapp.controller.rest;
 
 
-import com.example.managerapp.dto.SupportChatDTO;
-import com.example.managerapp.dto.SupportMessageDTO;
+import com.example.managerapp.dto.support.SupportChatDTO;
+import com.example.managerapp.dto.support.SupportMessageDTO;
 import com.example.managerapp.mapper.SupportChatMapper;
 import com.example.managerapp.mapper.SupportMessageMapper;
 import com.example.managerapp.service.SupportService;

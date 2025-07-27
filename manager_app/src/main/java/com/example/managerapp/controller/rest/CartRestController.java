@@ -1,7 +1,7 @@
 package com.example.managerapp.controller.rest;
 
-import com.example.managerapp.dto.CartDTO;
-import com.example.managerapp.dto.CartItemDTO;
+import com.example.managerapp.dto.cart.CartDTO;
+import com.example.managerapp.dto.cart.CartItemDTO;
 import com.example.managerapp.mapper.CartMapper;
 import com.example.managerapp.service.CartService;
 import lombok.RequiredArgsConstructor;
