@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         .then(res => res.json())
         .then(roles => {
             userRoles=roles;
-            if (isStaff()) {
+            if (isUserStaff()) {
                 agentSupportButtons.style.display = "block";
                 userSupportButtons.style.display = "none";
             } else {
@@ -48,33 +48,37 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 });
 
+
+
 function mainSearchFind(){
 
     const input = document.getElementById("main-search-input");
 
     const categoryId = document.getElementById("categorySelect").value;
 
-    const value = input.value.trim();
+    const inputValue = input.value.trim();
 
-    if(!value||value.length<2) return;
+    if(!inputValue||inputValue.length<2) return;
 
 
     const params = new URLSearchParams();
 
-    params.append("filter", value);
+    params.append("filter", inputValue);
     if (categoryId) params.append("categoryId", categoryId);
 
     window.location.href = "/products_page?" + params.toString();
-
-
 }
 
 
 
 
-function isStaff(){
+
+function isUserStaff(){
     if(!userRoles) return false;
     return (userRoles.includes("ROLE_AGENT") || userRoles.includes("ROLE_ADMIN"));
+}
+function isUserAuthenticated() {
+    return userRoles!=null;
 }
 
 
@@ -185,14 +189,14 @@ function sendTypingStatus(isTyping) {
     supportStompClient.send("/app/typing_status", {}, JSON.stringify({
         chatId: supportChatId,
         typing: isTyping,
-        agent: isStaff()
+        agent: isUserStaff()
     }));
 }
 
 // 👁️ Показ и анимация
 function showTypingIndicator(isTyping, agent) {
 
-    if((isStaff()&&agent)||(!isStaff()&&!agent)) return;
+    if((isUserStaff()&&agent)||(!isUserStaff()&&!agent)) return;
 
 
     if (isTyping) {
@@ -283,7 +287,7 @@ function openSupportChat(topic) {
 
     document.getElementById("support-chat-topic-display").textContent = topic;
     document.getElementById("support-chat").style.display = "flex";
-    if(isStaff()===true){
+    if(isUserStaff()===true){
         document.getElementById("support-chat-agent-buttons").style.display = "block";
 
     }
@@ -390,7 +394,7 @@ function appendMessage(message, isUser, timestampStr) {
     const msgContainer = document.getElementById("support-chat-body");
 
     const div = document.createElement("div");
-    if(isStaff()===true) isUser=!isUser;
+    if(isUserStaff()===true) isUser=!isUser;
     div.className = (isUser ? "chat-message user" : "chat-message agent");
 
     const msgText = document.createElement("div");
@@ -457,7 +461,7 @@ async function sendSupportMessage() {
 
     if (!message || !supportChatId) return;
 
-    if(isStaff()===false) {
+    if(isUserStaff()===false) {
         try {
             const response = await fetch(`/api/support/handle_message_check_limit?chatId=${supportChatId}`, {
                 method: "GET"
@@ -487,7 +491,7 @@ async function sendSupportMessage() {
         message: message
     };
 
-    supportStompClient.send("/app/"+(isStaff()?"handle_agent_message":"handle_user_message"), {}, JSON.stringify(payload));
+    supportStompClient.send("/app/"+(isUserStaff()?"handle_agent_message":"handle_user_message"), {}, JSON.stringify(payload));
 
 }
 
@@ -498,7 +502,7 @@ function openSupportChatList(needsUserId){
     bootstrap.Modal.getInstance(document.getElementById("supportModal")).hide();
 
 
-    fetch(`/api/support${isStaff() === true ? (needsUserId === true ? `/get_user_chats/${supportChatCreatorId}` : '/get_active_chats') : '/get_user_chats'}`)
+    fetch(`/api/support${isUserStaff() === true ? (needsUserId === true ? `/get_user_chats/${supportChatCreatorId}` : '/get_active_chats') : '/get_user_chats'}`)
 
 
         .then(res => res.json())
@@ -515,7 +519,7 @@ function renderSupportChatList(chatList,needsUserId) {
     const container = document.getElementById("chat-list-container");
 
     const listName = document.getElementById("chatListModalLabel");
-    if(isStaff()===true) listName.textContent="Эти чаты ждут ваш ответ!";
+    if(isUserStaff()===true) listName.textContent="Эти чаты ждут ваш ответ!";
     if(needsUserId===true) listName.textContent="Чаты пользователя";
 
     container.innerHTML = ""; // Очистить список
@@ -540,7 +544,7 @@ function renderSupportChatList(chatList,needsUserId) {
             : (chat.needsAnswer ? "text-warning" : "text-success"));
         statusSpan.textContent = chat.closed
             ? "Закрыт"
-            : (chat.needsAnswer ? (isStaff()===true?"Ждёт ваш ответ":"На рассмотрении") : "Есть ответ");
+            : (chat.needsAnswer ? (isUserStaff()===true?"Ждёт ваш ответ":"На рассмотрении") : "Есть ответ");
         left.appendChild(statusSpan);
 
         // Правая часть: дата + крестик
@@ -553,7 +557,7 @@ function renderSupportChatList(chatList,needsUserId) {
 
         right.appendChild(dateDiv);
 
-        if(isStaff()===false){
+        if(isUserStaff()===false){
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "btn btn-link p-0 m-0 text-dark";
         deleteBtn.style.textDecoration = "none"; // убираем подчёркивание

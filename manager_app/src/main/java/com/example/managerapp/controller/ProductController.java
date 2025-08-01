@@ -3,21 +3,18 @@ package com.example.managerapp.controller;
 
 
 import com.example.managerapp.client.grpc.ProductGrpcClient;
-import com.example.managerapp.controller.payload.NewProductPayload;
 import com.example.managerapp.dto.product.ProductResponseDTO;
-import com.example.managerapp.exception.BadRequestException;
-import com.example.managerapp.client.rest.ProductRestClient;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,15 +47,43 @@ public class ProductController {
 
     }*/
 
-
     @GetMapping("/products_page")
-    public String list(Model model, @RequestParam String filter, @RequestParam(required = false) Long categoryId) {
-        List<ProductResponseDTO> list = productGrpcClient.getAllProducts(categoryId,filter);
-        model.addAttribute("products",list);
+    public String productsPage(Model model, @RequestParam String filter, @RequestParam(required = false) Long categoryId) {
         model.addAttribute("filter",filter);
-        model.addAttribute("selectedCategoryId",categoryId);
         return "products";
     }
+
+    @GetMapping(value = "/products/lazy", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter productsLazyLoad(@RequestParam String filter, @RequestParam(required = false) Long categoryId, @RequestParam int offset) {
+                                                                                                     // SseEmitter - технология, позволяющая серверу отрпавлять данные в браузер в реальном времени по http без необходимости постоянных запросов от клиента.
+
+        SseEmitter emitter = new SseEmitter();
+
+        System.out.println("offset: "+offset);
+        System.out.println("category: "+categoryId);
+
+        productGrpcClient.lazyLoadProductBatchStream(categoryId, filter, offset, productResponseDTO -> {
+                          try {
+                              emitter.send(productResponseDTO);
+
+                          } catch (IOException e) {
+                              emitter.completeWithError(e);
+                          }
+
+
+    }, emitter::complete);  // чтобы завершить работу sseEmitter
+
+
+      return emitter;   // если не вернуть, spring закроет http соединение сразу после выполнения контроллера и браузер ничего не получит
+    }
+
+
+
+
+
+
+
+
 
 
   /*  @GetMapping("/product_create")

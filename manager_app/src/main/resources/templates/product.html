@@ -118,6 +118,7 @@
             </div>
 
             <!-- Кнопки -->
+            <div id="single-product-buttons">
             <div class="mt-4 d-flex gap-3">
                 <div sec:authorize="isAuthenticated()">
                     <button type="button"
@@ -137,6 +138,7 @@
                         <button type="button" class="btn btn-outline-danger">Войти на сайт</button>
                     </a>
                 </div>
+            </div>
             </div>
         </div>
     </div>
@@ -162,6 +164,12 @@
 <script src="/js/cards_interactions.js"></script>
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        bindProductButtons(document.getElementById("single-product-buttons"));
+
+    });
+
     function scrollThumbnails(direction) {
         const container = document.getElementById("thumbnailList");
         const scrollAmount = 70;

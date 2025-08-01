@@ -72,6 +72,9 @@ my_shop:
     catalogue:
       uri: http://localhost:8082
       registration-id: keycloak
+      grpc:
+        port: 82
+        name: localhost
 
 keycloak:
   server-uri: http://localhost:8084
@@ -81,3 +84,4 @@ minio:
   url: http://localhost:9000
   access-key: minioadmin
   secret-key: minioadmin
+

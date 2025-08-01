@@ -5,11 +5,15 @@ import com.example.managerapp.dto.product.ProductResponseDTO;
 import com.example.managerapp.mapper.ProductMapper;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +21,9 @@ public class ProductGrpcClient {
 
     private final ProductMapper productMapper;
 
-    private final ProductServiceGrpc.ProductServiceBlockingStub productStub;
+    private final ProductServiceGrpc.ProductServiceBlockingStub productBlockingStub;
+
+    private final ProductServiceGrpc.ProductServiceStub productAsyncStub;
 
 
     public Optional<ProductResponseDTO> getProductById(Long id){
@@ -29,7 +35,7 @@ public class ProductGrpcClient {
 
         try{
 
-        ProductResponse productResponse = productStub.getProductById(productRequest);
+        ProductResponse productResponse = productBlockingStub.getProductById(productRequest);
 
         return Optional.of(productMapper.toProductResponseDTO(productResponse));
 
@@ -41,11 +47,11 @@ public class ProductGrpcClient {
         }
 
     }
-
-    public List<ProductResponseDTO> getAllProducts(Long categoryId, String filter) {
+    public void lazyLoadProductBatchStream(Long categoryId, String filter, int offset, Consumer<ProductResponseDTO> consumer, Runnable onComplete){
 
         ProductRequestByFilterAndCategory.Builder productRequestBuilder = ProductRequestByFilterAndCategory
                 .newBuilder()
+                .setOffset(offset)
                 .setFilter(filter);
 
         if(categoryId != null){
@@ -53,24 +59,92 @@ public class ProductGrpcClient {
         }
 
 
-        ProductResponseList productResponseList = productStub.getAllProducts(productRequestBuilder.build());
+        productAsyncStub.getAllProducts(productRequestBuilder.build(), new StreamObserver<ProductResponse>() {
 
-        return productMapper.toProductResponseDTOList(productResponseList.getProductsList());
+
+            @Override
+            public void onNext(ProductResponse productResponse) {
+
+                consumer.accept(productMapper.toProductResponseDTO(productResponse));  // отдать товар наружу
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                onComplete.run();
+            }
+
+            @Override
+            public void onCompleted() {   // когда все товары получены
+                onComplete.run();   //  чтобы вызвать emitter.complete();
+
+            }
+        });
 
     }
 
-
-    public List<ProductResponseDTO> getProductsByIds(List<Long> ids){
+    public List<ProductResponseDTO> getProductsByIdsFullList(List<Long> ids){
 
         ProductRequestByIds productRequest = ProductRequestByIds
                 .newBuilder()
                 .addAllIds(ids)
+                .setLimit(10_000)
+                .setOffset(0)
                 .build();
 
 
-        ProductResponseList productResponseList = productStub.getProductsByIds(productRequest);
+        Iterator<ProductResponse> productResponseIterator = productBlockingStub.getProductsByIds(productRequest);
 
-        return productMapper.toProductResponseDTOList(productResponseList.getProductsList());
+        List<ProductResponseDTO> productResponseDTOS = new ArrayList<>();
+
+        while(productResponseIterator.hasNext()){
+            productResponseDTOS.add(productMapper.toProductResponseDTO(productResponseIterator.next()));
+        }
+
+        return productResponseDTOS;
+
+    }
+
+    public void getProductsByIdsStream(List<Long> ids, int limit, int offset, Consumer<ProductResponseDTO> consumer, Runnable onComplete){
+
+        ProductRequestByIds productRequest = ProductRequestByIds
+                .newBuilder()
+                .addAllIds(ids)
+                .setLimit(limit)
+                .setOffset(offset)
+                .build();
+
+        productAsyncStub.getProductsByIds(productRequest, new StreamObserver<ProductResponse>() {
+
+
+            @Override
+            public void onNext(ProductResponse productResponse) {
+
+                consumer.accept(productMapper.toProductResponseDTO(productResponse));  // отдать товар наружу
+
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                onComplete.run();
+            }
+
+            @Override
+            public void onCompleted() {
+                onComplete.run();
+
+            }
+        });
+
+
+
+
+
+
+
+
+
+
 
     }
 

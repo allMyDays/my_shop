@@ -15,6 +15,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,17 +26,22 @@ public class ProductsRestController {
      private final ProductMapper productMapper;
 
     @GetMapping
-    public List<ProductResponseDTO> findProducts(@RequestParam(name = "categoryId",required = false) Long categoryId, @RequestParam(name = "filter", required = false) String filter) {
+    public List<ProductResponseDTO> findProducts(@RequestParam(required = false) Long categoryId, @RequestParam String filter, @RequestParam int offset) {
 
-        System.out.println("!!!!!!!!!!!!!!!"+categoryId);
-        return productMapper.toResponseProductDTOList(productService.getAll(categoryId,filter));
+        try(Stream<Product> productStream = productService.getAll(categoryId,filter,offset)){
+        return productMapper.toResponseProductDTOList(productStream.toList());
+        }
 
     }
 
     @PostMapping("/get-by-ids")
-    public List<ProductResponseDTO> getProductByIDs(@RequestBody List<Long> IDs) {
+    public List<ProductResponseDTO> getProductByIDs(@RequestBody List<Long> IDs, @RequestParam int offset, @RequestParam int limit) {
 
-        return productMapper.toResponseProductDTOList(productService.getProductsByIDs(IDs));
+       try(Stream<Product> productStream = productService.getProductsByIDs(IDs,limit,offset)){
+           return productMapper.toResponseProductDTOList(productStream.toList());
+       }
+
+
 
     }
 

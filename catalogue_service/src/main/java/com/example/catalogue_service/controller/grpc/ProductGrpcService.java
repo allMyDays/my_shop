@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -46,35 +47,38 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     }
 
     @Override
-    public void getProductsByIds(ProductRequestByIds request,StreamObserver<ProductResponseList> responseObserver) {
+    public void getProductsByIds(ProductRequestByIds request,StreamObserver<ProductResponse> responseObserver) {
 
-       List<Product> products = productService.getProductsByIDs(request.getIdsList());
+        try(Stream<Product> productStream = productService.getProductsByIDs(request.getIdsList(), request.getLimit(), request.getOffset())){
 
-       ProductResponseList productResponseListObject = ProductResponseList
-               .newBuilder()
-               .addAllProducts(productMapper.toProductResponseList(products))
-               .build();
+            productStream.forEach(product -> {
 
+                        responseObserver.onNext(productMapper.toProductResponse(product));
 
-        responseObserver.onNext(productResponseListObject);
-        responseObserver.onCompleted();
+                    }
+            );
+
+            responseObserver.onCompleted();
+        };
 
 
     }
 
     @Override
-    public void getAllProducts(ProductRequestByFilterAndCategory request, StreamObserver<ProductResponseList> responseObserver) {
+    public void getAllProducts(ProductRequestByFilterAndCategory request, StreamObserver<ProductResponse> responseObserver) {
 
-        List<Product> products = productService.getAll(request.getCategoryId(), request.getFilter());
+        try(Stream<Product> productStream = productService.getAll(request.getCategoryId(), request.getFilter(), request.getOffset())){
 
-        ProductResponseList productResponseListObject = ProductResponseList
-                .newBuilder()
-                .addAllProducts(productMapper.toProductResponseList(products))
-                .build();
+            productStream.forEach(product -> {
 
+                        responseObserver.onNext(productMapper.toProductResponse(product));
 
-        responseObserver.onNext(productResponseListObject);
-        responseObserver.onCompleted();
+                        }
+                    );
+
+            responseObserver.onCompleted();
+               };
+
 
     }
 

@@ -7,7 +7,6 @@ import com.example.managerapp.dto.cart.CartDTO;
 import com.example.managerapp.dto.product.ProductResponseDTO;
 import com.example.managerapp.entity.Cart;
 import com.example.managerapp.entity.CartItem;
-import com.example.managerapp.client.rest.ProductRestClient;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,7 @@ public abstract class CartMapper {
                 .map(CartItem::getProductId)
                 .toList();
 
-        List<ProductResponseDTO> productRecords = productGrpcClient.getProductsByIds(productIds);
+        List<ProductResponseDTO> productRecords = productGrpcClient.getProductsByIdsFullList(productIds);
 
         Map<Long, ProductResponseDTO> productMap = productRecords.stream()
                 .collect(Collectors.toMap(ProductResponseDTO::getId, Function.identity()));

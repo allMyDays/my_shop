@@ -5,7 +5,6 @@ import com.example.managerapp.dto.product.ProductResponseDTO;
 import com.example.managerapp.dto.wish.WishItemDTO;
 import com.example.managerapp.dto.wish.WishListDTO;
 import com.example.managerapp.entity.WishList;
-import com.example.managerapp.client.rest.ProductRestClient;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public abstract class WishListMapper {
 
         List<WishItemDTO> wishItemDTOs = new ArrayList<>();
 
-        List<ProductResponseDTO> products = productGrpcClient.getProductsByIds(IDs);
+        List<ProductResponseDTO> products = productGrpcClient.getProductsByIdsFullList(IDs);
 
         for(ProductResponseDTO product : products){
             WishItemDTO wishItemDTO = new WishItemDTO();

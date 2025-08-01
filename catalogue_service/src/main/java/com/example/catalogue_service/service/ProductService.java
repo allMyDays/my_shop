@@ -5,6 +5,7 @@ import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,6 +14,7 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -22,16 +24,32 @@ public class ProductService {
 
 
 
-    public List<Product> getAll(Long categoryId, String title) {
+    public Stream<Product> getAll(Long categoryId, String title, int offset) {
 
-        if(categoryId==0) categoryId=null;
+        System.out.println("categoryId: " + categoryId);
+        System.out.println("title: " + title);
+        System.out.println("offset: " + offset);
 
-        return productRepository.findByTitleAndOptionalCategory(title, categoryId);
+        if(categoryId==0){
+            categoryId=null;
+        }
+        if(title==null||title.length()<2){
+            return Stream.empty();
+        }
+
+        int limit = 40;
+
+        int page = offset/limit;
+
+
+        return productRepository.findByTitleAndOptionalCategory(title, categoryId, PageRequest.of(page, limit));
     }
 
-    public List<Product> getProductsByIDs(List<Long> ids) {
+    public Stream<Product> getProductsByIDs(List<Long> ids, int limit, int offset) {
 
-        return productRepository.findAllByIdIn(ids);
+        int page = offset/limit;
+
+        return productRepository.findAllByIdIn(ids, PageRequest.of(page, limit));
     }
 
 
