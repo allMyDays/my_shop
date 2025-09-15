@@ -1,0 +1,21 @@
+package com.example.common.mapper.grpc;
+
+import com.example.common.dto.CategoryResponseDTO;
+import com.example.common.grpc.category.Category;
+import org.mapstruct.Mapper;
+import org.mapstruct.NullValueCheckStrategy;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import java.util.List;
+
+@Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+public abstract class CategoryMapper {
+
+    public abstract CategoryResponseDTO toCategoryResponseDTO(Category.CategoryResponse category);
+
+    public abstract List<CategoryResponseDTO> toCategoryResponseDTOList(List<Category.CategoryResponse> categoryList);
+
+
+
+
+}

@@ -1,0 +1,43 @@
+server:
+  port: 8078
+  grpc:
+    port: 78
+
+spring:
+  application:
+    name: media-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8084/realms/my_realm
+  threads:
+    virtual:
+      enabled: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: user-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  #десериализация любых объектов
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+
+eureka:
+   client:
+     service-url:
+      defaultZone:
+        http://localhost:8761/eureka/
+   instance:
+     metadata-map:
+       grpc-port: ${server.grpc.port}

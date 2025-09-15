@@ -1,0 +1,78 @@
+server:
+  port: 8077
+  grpc:
+    port: 77
+
+spring:
+  application:
+    name: user-service
+
+  security:
+     oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8084/realms/my_realm
+
+      client:
+        provider:
+          keycloak:
+
+            issuer-uri: http://localhost:8084/realms/my_realm
+            user-name-attribute: preferred_username
+
+        registration:
+          keycloak:
+            client-id: user_service
+            client-secret: 8Rd7sCzg6nS01tHnM8pg1XwBGZfP4vte
+            scope:
+              - openid
+              - microprofile-jwt
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/postgres
+    username: postgres
+    password: igor333333
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  threads:
+    virtual:
+      enabled: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: user-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  #десериализация любых объектов
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone:
+        http://localhost:8761/eureka/
+
+  instance:
+    metadata-map:
+      grpc-port: ${server.grpc.port}
+

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml" >
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+<div th:insert="~{fragments/menu :: #nav-menu}"></div>
+<main>
+
+    <div class="container-fluid main">
+
+        <h1 class="pt-5">Уже зарегистрированы? Войдите на сайт!</h1>
+
+        <div class="main-input">
+            <form class="pt-5" id="login-form">
+           <label for="nickName" class="col-sm-2 col-form-label"><h6>Никнейм: </h6></label>
+            <input class="form-control" name="nickName" id="nickName">
+            <br/>
+            <label for="password" class="col-sm-2 col-form-label"><h6>Пароль: </h6></label>
+            <input type="password"  class="form-control" name="password" id="password">
+            <br/>
+            <button type="submit" class="btn btn-dark">Войти</button><form/>
+        <div/>
+
+
+            </form>
+
+            <div id="incorrectDataError" style="display:none;" class="alert alert-danger mt-4" role="alert">
+                Неверный никнейм или пароль.
+            </div>
+            <div id="emptyDataError" style="display:none;" class="alert alert-danger mt-4" role="alert">
+                Поля не могут быть пустыми.
+            </div>
+
+        </div>
+
+</main>
+
+<script>
+    document.getElementById('login-form').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        document.getElementById('incorrectDataError').style.display="none";
+        document.getElementById('emptyDataError').style.display="none";
+
+
+        const nickName = document.getElementById('nickName').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        if(!nickName||!password){
+            document.getElementById('emptyDataError').style.display="";
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/users/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({
+                    nickName: nickName,
+                    password: password
+                })
+            });
+            if (response.ok) {
+                window.location.href = '/';
+            } else{
+                document.getElementById('incorrectDataError').style.display="";
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+</script>
+
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>

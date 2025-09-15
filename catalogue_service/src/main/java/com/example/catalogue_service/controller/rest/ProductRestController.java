@@ -1,27 +1,24 @@
 package com.example.catalogue_service.controller.rest;
 
-import com.example.catalogue_service.dto.ProductRequestDTO;
-import com.example.catalogue_service.dto.ProductResponseDTO;
 import com.example.catalogue_service.entity.Product;
-import com.example.catalogue_service.mapper.ProductMapper;
+import com.example.catalogue_service.mapper.LocalProductMapper;
 import com.example.catalogue_service.service.ProductService;
-import jakarta.validation.Valid;
+import com.example.common.dto.product.ProductResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindException;
-import org.springframework.validation.BindingResult;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.NoSuchElementException;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("catalogue-api/products/{productId:\\d+}")
+@RequestMapping("api/catalogue/products/{productId:\\d+}")
 public class ProductRestController {
 
     private final ProductService productService;
 
-    private final ProductMapper productMapper;
+    private final LocalProductMapper productMapper;
 
     @ModelAttribute("product")
     public Product getProduct(@PathVariable("productId") Long productId) {
@@ -35,7 +32,7 @@ public class ProductRestController {
 
     }
 
-    @PatchMapping
+  /*  @PatchMapping
     public ResponseEntity<?> updateProduct(@PathVariable("productId") long productId,
                                               @Valid @RequestBody ProductRequestDTO productDTO,
                                               BindingResult bindingResult) throws BindException {
@@ -50,8 +47,9 @@ public class ProductRestController {
 
         }
 
-    }
+    }*/
     @DeleteMapping
+    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable("productId") long productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.noContent().build();

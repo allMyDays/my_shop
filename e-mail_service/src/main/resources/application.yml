@@ -1,0 +1,47 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: email_service
+  mail:
+    host: smtp.mail.ru
+    port: 465
+    username: tempmailfom@mail.ru
+    password: LXOLtuFoq91qHkNGePmk
+    protocol: smtps
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+    default-encoding: UTF-8
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8084/realms/my_realm
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: email-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  #десериализация любых объектов
+
+
+  threads:
+    virtual:
+      enabled: true
+
+  main:
+    keep-alive: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone:
+        http://localhost:8761/eureka/

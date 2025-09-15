@@ -1,29 +1,22 @@
 package com.example.catalogue_service.controller.rest;
 
-import com.example.catalogue_service.dto.ProductRequestDTO;
-import com.example.catalogue_service.dto.ProductResponseDTO;
 import com.example.catalogue_service.entity.Product;
-import com.example.catalogue_service.mapper.ProductMapper;
+import com.example.catalogue_service.mapper.LocalProductMapper;
 import com.example.catalogue_service.service.ProductService;
-import jakarta.validation.Valid;
+import com.example.common.dto.product.ProductResponseDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindException;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("catalogue-api/products")
+@RequestMapping("api/catalogue/products")
 public class ProductsRestController {
      private final ProductService productService;
 
-     private final ProductMapper productMapper;
+     private final LocalProductMapper productMapper;
 
     @GetMapping
     public List<ProductResponseDTO> findProducts(@RequestParam(required = false) Long categoryId, @RequestParam String filter, @RequestParam int offset) {
@@ -45,7 +38,7 @@ public class ProductsRestController {
 
     }
 
-    @PostMapping
+   /* @PostMapping
     public ResponseEntity<?> createProduct(@Valid @RequestBody ProductRequestDTO productDTO, BindingResult bindingResult, UriComponentsBuilder uriBuilder) throws BindException {
 
         if(bindingResult.hasErrors()) {
@@ -62,5 +55,5 @@ public class ProductsRestController {
                     .body(product);
         }
 
-    }
+    }*/
 }

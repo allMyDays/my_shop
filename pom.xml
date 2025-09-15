@@ -10,8 +10,16 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>manager_app</module>
         <module>catalogue_service</module>
+        <module>common_library</module>
+        <module>support_service</module>
+        <module>media_service</module>
+        <module>e-mail_service</module>
+        <module>user_service</module>
+        <module>cart-wishlist_service</module>
+        <module>frontend_service</module>
+        <module>gateway-api</module>
+        <module>eureka_server</module>
     </modules>
 
     <properties>
@@ -22,14 +30,25 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
 
-        <grpc.version>1.64.0</grpc.version>
-        <protobuf.version>3.25.3</protobuf.version>
+        <grpc.version>1.63.0</grpc.version>
+        <protobuf.version>3.25.1</protobuf.version>
         <protoc.version>3.25.3</protoc.version>
+        <spring-cloud.version>2023.0.2</spring-cloud.version>
 
     </properties>
 
     <dependencyManagement>
+
+
         <dependencies>
+            <!-- Spring Cloud Dependencies -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version> <!-- Или актуальная версия -->
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -37,7 +56,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
 
             <!-- gRPC -->
             <dependency>
@@ -77,25 +95,6 @@
         </extensions>
 
         <plugins>
-            <!-- Protobuf plugin -->
-            <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.1</version>
-                <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
-                    <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>compile-custom</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
 
             <plugin>
                 <groupId>org.springframework.boot</groupId>

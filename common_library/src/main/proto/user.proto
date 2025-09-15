@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option java_package="com.example.common.grpc.user";
+
+service UserService {
+  rpc CheckUserExists (CheckUserRequest) returns (CheckUserResponse) {}
+  rpc GetUserInfo (UserRequest) returns (UserInfoResponse) {}
+  rpc CheckEmailChanged (EmailCheckRequest) returns (StatusResponse) {}
+}
+
+message UserRequest {
+  string user_keycloak_id=2;
+}
+
+message CheckUserRequest {
+  optional string email = 1;
+  optional string username = 2;
+  optional string excluded_user = 3;
+}
+
+message CheckUserResponse {
+  enum ExistenceStatus{
+    NOT_EXISTS = 0;
+    EMAIL_EXISTS = 1;
+    USERNAME_EXISTS = 2;
+  }
+  ExistenceStatus existenceStatus=1;
+}
+message UserInfoResponse {
+  int64 id = 1;
+
+  string nick_name = 2;
+
+  string email = 3;
+
+  string firstName = 4;
+
+  string lastName = 5;
+
+  optional string avatarFileName = 6;
+}
+
+message EmailCheckRequest {
+  string user_keycloak_id =1;
+  string email = 2;
+}
+
+message StatusResponse {
+  bool success = 1;
+}

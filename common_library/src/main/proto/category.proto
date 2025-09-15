@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option java_package = "com.example.common.grpc.category";
+//option java_outer_classname = "CategoryProto";
+
+import "google/protobuf/empty.proto";
+
+
+service CategoryService{
+
+  rpc GetAllCategories (google.protobuf.Empty) returns (CategoryResponseList);
+
+
+}
+
+message CategoryResponse {
+  int64 id = 1;
+  string name = 2;
+}
+
+message CategoryResponseList{
+
+  repeated CategoryResponse categories = 1;
+
+}

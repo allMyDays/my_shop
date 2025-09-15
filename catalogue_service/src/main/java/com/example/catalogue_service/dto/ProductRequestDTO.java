@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class ProductRequestDTO {
-    @NotNull
+   /* @NotNull
     @Size(min = 5, max = 50)
     private String title;
 
@@ -14,7 +14,7 @@ public class ProductRequestDTO {
 
     @NotNull(message = "description must not be null")
     @Size(min = 10, max = 1000)
-    private String description;
+    private String description;*/
 
 
 

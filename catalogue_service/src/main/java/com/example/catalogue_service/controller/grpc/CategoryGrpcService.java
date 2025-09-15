@@ -1,10 +1,10 @@
 package com.example.catalogue_service.controller.grpc;
 
 
-import com.example.catalogue.grpc.CategoryServiceGrpc;
 import com.example.catalogue_service.entity.Category;
-import com.example.catalogue_service.mapper.CategoryMapper;
+import com.example.catalogue_service.mapper.LocalCategoryMapper;
 import com.example.catalogue_service.service.CategoryService;
+import com.example.common.grpc.category.CategoryServiceGrpc;
 import io.grpc.stub.StreamObserver;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,19 +21,19 @@ public class CategoryGrpcService extends CategoryServiceGrpc.CategoryServiceImpl
 
     private final CategoryService categoryService;
 
-    private final CategoryMapper categoryMapper;
+    private final LocalCategoryMapper localCategoryMapper;
 
 
     @Override
-    public void getAllCategories(Empty request, StreamObserver<com.example.catalogue.grpc.Category.CategoryResponseList> responseObserver){
+    public void getAllCategories(Empty request, StreamObserver<com.example.common.grpc.category.Category.CategoryResponseList> responseObserver){
 
         List<Category> categories = categoryService.findAllCategories();
 
         responseObserver.onNext(
 
-                com.example.catalogue.grpc.Category.CategoryResponseList
+                com.example.common.grpc.category.Category.CategoryResponseList
                         .newBuilder()
-                        .addAllCategories(categoryMapper.toCategoryResponseList(categories))
+                        .addAllCategories(localCategoryMapper.toCategoryResponseList(categories))
                         .build());
         responseObserver.onCompleted();
 

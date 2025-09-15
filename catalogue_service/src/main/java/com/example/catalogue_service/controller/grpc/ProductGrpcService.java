@@ -1,17 +1,15 @@
 package com.example.catalogue_service.controller.grpc;
 
-import com.example.catalogue.grpc.*;
 import com.example.catalogue_service.entity.Product;
-import com.example.catalogue_service.mapper.ProductMapper;
-import com.example.catalogue_service.repository.ProductRepository;
+import com.example.catalogue_service.mapper.LocalProductMapper;
 import com.example.catalogue_service.service.ProductService;
+import com.example.common.grpc.product.*;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -22,7 +20,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     private final ProductService productService;
 
-    private final ProductMapper productMapper;
+    private final LocalProductMapper productMapper;
 
 
 
@@ -47,7 +45,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     }
 
     @Override
-    public void getProductsByIds(ProductRequestByIds request,StreamObserver<ProductResponse> responseObserver) {
+    public void getProductsByIds(ProductRequestByIds request, StreamObserver<ProductResponse> responseObserver) {
 
         try(Stream<Product> productStream = productService.getProductsByIDs(request.getIdsList(), request.getLimit(), request.getOffset())){
 
