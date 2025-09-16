@@ -24,7 +24,7 @@ public class MinioService {
     private final RedisAtomicLong redisAtomicLong;
 
 
-    public String saveFile(Long keyFirstPart, MultipartFile file, MinIO_bucket bucket) throws IOException {
+    public String saveFile(Long keyFirstPart, MultipartFile file, MinIO_bucket bucket) throws Exception {
 
         String newFileName = keyFirstPart+":"+redisAtomicLong.incrementAndGet();
 

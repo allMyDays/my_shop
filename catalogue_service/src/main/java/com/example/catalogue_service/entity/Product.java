@@ -51,32 +51,10 @@ public class Product {
     private List<String> imageFileNames = new ArrayList<>();
 
 
-
-   /* @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-    @JoinColumn
-    private MyUser creator;*/
-
     @PrePersist
     private void init(){
         dateOfCreation = LocalDateTime.now();
 
     }
-
-   /* public void addImageToProduct(Image image){
-        image.setProduct(this);
-        images.add(image);
-    }*/
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

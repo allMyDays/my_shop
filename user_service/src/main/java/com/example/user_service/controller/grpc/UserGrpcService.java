@@ -37,7 +37,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
     }
 
-   public void getUserInfo(User.UserRequest userRequest, StreamObserver<User.UserInfoResponse> responseObserver) {
+   public void getUserInfo(User.UserKeycloakIdRequest userRequest, StreamObserver<User.UserInfoResponse> responseObserver) {
 
        UserResponseDTO userResponseDTO;
 
@@ -49,6 +49,21 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
        responseObserver.onNext(userMapper.toUserInfoResponse(userResponseDTO));
        responseObserver.onCompleted();
+
+    }
+
+    public void getUserInfo2(User.UserEntityIdRequest userRequest, StreamObserver<User.UserInfoResponse> responseObserver) {
+
+        UserResponseDTO userResponseDTO;
+
+        try {
+            userResponseDTO = userService.collectCommonUserInfo(userRequest.getUserEntityId());
+        } catch (UserNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        responseObserver.onNext(userMapper.toUserInfoResponse(userResponseDTO));
+        responseObserver.onCompleted();
 
     }
 

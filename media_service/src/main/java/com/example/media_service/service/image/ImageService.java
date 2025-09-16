@@ -1,6 +1,7 @@
 package com.example.media_service.service.image;
 
 
+import com.example.common.client.kafka.ProductKafkaClient;
 import com.example.common.client.kafka.UserKafkaClient;
 import com.example.common.exception.UserNotFoundException;
 import com.example.media_service.entity.enumeration.MinIO_bucket;
@@ -26,8 +27,10 @@ private final MinioService minioService;
 
 private final UserKafkaClient userKafkaClient;
 
+private final ProductKafkaClient productKafkaClient;
 
-public void saveUserAvatar(MultipartFile file, Long userId) throws IOException {
+
+public void saveUserAvatar(MultipartFile file, Long userId) throws Exception {
 
     deleteUserAvatar(false,userId);
 
@@ -37,13 +40,13 @@ public void saveUserAvatar(MultipartFile file, Long userId) throws IOException {
 
 }
 
-public void deleteUserAvatar(boolean kafkaSend, Long userId)  {
+public void deleteUserAvatar(boolean sendToKafka, Long userId)  {
 
     List<String> tempKeys = minioService.findByKeyFirstPart(userId,MinIO_bucket.users);
     if(!tempKeys.isEmpty()){
         minioService.deleteFile(tempKeys.getFirst(), MinIO_bucket.users);
     }
-    if(kafkaSend){
+    if(sendToKafka){
         userKafkaClient.deleteUserAvatar(userId);
     }
 }
@@ -64,19 +67,29 @@ public Map.Entry<byte[],MediaType> getProductImage(String fileName) throws IOExc
     return Map.entry(imageBytes,guessContentType(imageBytes));
 }
 
-public void saveProductImage(Long productId, MultipartFile file, boolean preview, Jwt jwt) throws IOException, UserNotFoundException {
-
-    /*    if(preview){
-            deleteProductImage();
+public void saveProductImage(Long productId, MultipartFile file, boolean previewImage, Long adminId) {
+    String newFileName;
+    try {
+       newFileName = minioService.saveFile(productId,file, MinIO_bucket.products);
+    } catch (Exception e) {
+        //todo;
+        return;
+    } if(previewImage){
+        boolean deleted = minioService.deleteFile(newFileName, MinIO_bucket.products);
+        if(!deleted){
+            //todo
         }
-
-        String newFileName =  minioService.saveFile(productId,file, MinIO_bucket.products);*/  //todo
-
+    } productKafkaClient.setProductImage(productId,newFileName,previewImage);
 
 }
 
-    public void deleteProductImage(Long productId,Jwt jwt, boolean checkAuthority){
-            // minioService.deleteFile(fileName, MinIO_bucket.products);      // todo
+    public void deleteProductImage(Long productId, String fileName, boolean previewImage, Long adminId){
+             boolean deleted = minioService.deleteFile(fileName, MinIO_bucket.products);
+             if(!deleted){
+                 //todo
+                 return;
+             }
+             productKafkaClient.deleteProductImage(productId,fileName,previewImage);
     }
 
 

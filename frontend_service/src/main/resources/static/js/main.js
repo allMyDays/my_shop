@@ -495,6 +495,16 @@ async function collectExistingChat(chatId, topic, closed, needsAnswer, userId) {
 
 }
 
+function openUserPageStaffMethod() {
+    if(!supportChatCreatorId){
+        alert("Произошла ошибка: userId is null");
+        return;
+    }
+    window.location.href = "/admin/profile?userId="+supportChatCreatorId;
+}
+
+
+
 async function sendSupportMessage() {
     const messageInput = document.getElementById("support-chat-input");
 

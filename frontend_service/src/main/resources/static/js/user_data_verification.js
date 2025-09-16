@@ -67,8 +67,8 @@
     .then(data => {
     msg.innerHTML = "";
 
-    if (data.errors) {
-    data.errors.forEach(err => {
+    if (data.ERRORS) {
+    data.ERRORS.forEach(err => {
     msg.innerHTML += `<div class="alert alert-danger">${err}</div>`;
 });
         submitBTN.style.display = "";
@@ -76,7 +76,7 @@
     return;
 }
 
-    if (data.emailSent) {
+    if (data.EMAIL_SENT) {
         loadingIndicator.style.display="none";
     msg.innerHTML = `<div class="alert alert-info">На адрес <b>${formData.get("email")}</b> был отправлен код. Введите его в течение 1 часа.</div>`;
     document.getElementById("email").readOnly = true;
@@ -86,7 +86,7 @@
     startTimer(60 * 60);
 }
 
-    if (data.userSuccess) {
+    if (data.SUCCESS) {
     if(isReg){
         msg.innerHTML = `<div class="alert alert-success">Вы успешно зарегистрировались! Теперь можете <a href="/users/welcome" >войти в свой аккаунт</a>.</div>`;
     }
@@ -121,30 +121,44 @@
     const msg = document.getElementById("message-block");
     msg.innerHTML = "";
 
-    if (data.success) {
-        if(isReg){
-            msg.innerHTML = `<div class="alert alert-success">Email подтверждён! Можете продолжить регистрацию!</div>`;
-        }
-        else{
-            msg.innerHTML = `<div class="alert alert-success">Email подтверждён! Теперь можете сохранить свои новые данные!.</div>`;
+    switch (data){
 
-        }
-    document.getElementById("code-block").style.display = "none";
-    document.getElementById("form-submit-btn").style.display = "";
-} else if (data.expired) {
-    msg.innerHTML = `<div class="alert alert-warning">Срок действия кода истёк. Пожалуйста, запросите новый.</div>`;
-    document.getElementById("code-block").style.display = "none";
-    document.getElementById("email").readOnly = false;
-    document.getElementById("form-submit-btn").style.display = "";
+        case "SUCCESS":
+            if(isReg){
+                msg.innerHTML = `<div class="alert alert-success">Email подтверждён! Можете продолжить регистрацию!</div>`;
+            }
+            else{
+                msg.innerHTML = `<div class="alert alert-success">Email подтверждён! Теперь можете сохранить свои новые данные!.</div>`;
 
-} else if (data.notMatch) {
-    msg.innerHTML = `<div class="alert alert-danger">Введённый код неверен. Попробуйте ещё раз.</div>`;
-} else {
-    msg.innerHTML = `<div class="alert alert-danger">Неизвестная ошибка. Попробуйте позже или перезагрузите страницу.</div>`;
-    document.getElementById("code-block").style.display = "none";
-    document.getElementById("email").readOnly = false;
-    document.getElementById("form-submit-btn").style.display = "";
-}
+            }
+            document.getElementById("code-block").style.display = "none";
+            document.getElementById("form-submit-btn").style.display = "";
+            break;
+
+        case "EXPIRED":
+            msg.innerHTML = `<div class="alert alert-warning">Срок действия кода истёк. Пожалуйста, запросите новый.</div>`;
+            document.getElementById("code-block").style.display = "none";
+            document.getElementById("email").readOnly = false;
+            document.getElementById("form-submit-btn").style.display = "";
+            break;
+
+        case "NOT_MATCH":
+            msg.innerHTML = `<div class="alert alert-danger">Введённый код неверен. Попробуйте ещё раз.</div>`;
+            break;
+
+        case "TOO_MANY_ATTEMPTS":
+            msg.innerHTML = `<div class="alert alert-danger">Слишком много попыток верификации данного email адреса. Попробуйте позже.</div>`;
+            document.getElementById("code-block").style.display = "none";
+            break;
+
+        default:
+            msg.innerHTML = `<div class="alert alert-danger">Неизвестная ошибка. Попробуйте позже или перезагрузите страницу.</div>`;
+            document.getElementById("code-block").style.display = "none";
+            document.getElementById("email").readOnly = false;
+            document.getElementById("form-submit-btn").style.display = "";
+            break;
+
+    }
 })
     .catch(err => {
     console.error("Ошибка при проверке кода:", err);

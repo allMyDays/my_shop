@@ -30,7 +30,7 @@ public class GrpcCatalogueClientBeans {
                 .get(0);
         int port = Integer.parseInt(instanceInfo.getMetadata().get("grpc-port"));
 
-        return ManagedChannelBuilder   // создает канал связи с grpc сервером
+        return ManagedChannelBuilder
                 .forAddress(instanceInfo.getIPAddr(),port)
                 .usePlaintext()
                 .build();

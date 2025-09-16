@@ -1,9 +1,12 @@
 package com.example.media_service.controller.rest.image;
 
 import com.example.common.exception.UserNotFoundException;
+import com.example.media_service.dto.DeleteProductImageDto;
+import com.example.media_service.dto.SaveProductImageDto;
 import com.example.media_service.entity.enumeration.MinIO_bucket;
 import com.example.media_service.service.MinioService;
 import com.example.media_service.service.image.ImageService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,8 @@ import java.net.URLConnection;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.example.common.service.CommonUserService.getMyUserEntityId;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/media/images/product")
@@ -27,14 +32,28 @@ public class ProductImageRestController {
 
     private final ImageService imageService;
 
-    @PostMapping("/save")
-    @PreAuthorize("hasRole('SELLER')")
-    public ResponseEntity<Void> saveProductImage(@RequestParam Long productId, @RequestParam MultipartFile file, @RequestParam boolean preview, @AuthenticationPrincipal Jwt jwt) throws IOException, UserNotFoundException {
+    @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> saveProductImage(@RequestPart("file") MultipartFile file, @RequestPart("data") SaveProductImageDto saveImageDto, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
 
-        imageService.saveProductImage(productId,file,preview,jwt);
+        imageService.saveProductImage(saveImageDto.getProductId(),file,saveImageDto.isPreviewImage(),getMyUserEntityId(jwt));
         return ResponseEntity.ok()
                 .build();
     }
+
+    @DeleteMapping("/delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteProductImage(@RequestBody DeleteProductImageDto deleteImageDto, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+
+        imageService.deleteProductImage(deleteImageDto.getProductId(), deleteImageDto.getFileName(), deleteImageDto.isPreviewImage(), getMyUserEntityId(jwt));
+
+        return ResponseEntity.ok()
+                .build();
+
+    }
+
+
+
     @GetMapping("/get/{fileName}")
     public ResponseEntity<byte[]> getProductImage(@PathVariable String fileName) throws IOException {
 

@@ -3,15 +3,13 @@ package com.example.common.kafka.dto.product;
 import lombok.Data;
 
 @Data
-public class ProductSaveImageDto {
-
-    private Long creatorId;
+public class ProductSetImageDto {
 
     private Long productId;
 
     private String newImageFileName;
 
-    private boolean preview;
+    private boolean previewImage;
 
 
 

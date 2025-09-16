@@ -60,39 +60,51 @@ public class ProductService {
         return productRepository.findById(productID);
     }
 
-
-    public Product createProduct(Principal principal, Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
-       /* Image image1;
-        Image image2;
-        Image image3;
-       // product.setCreator(userService.findByPrincipal(principal));
-
-        if(file1!=null){
-            image1 = toImage(file1);
-            image1.setPreviewImage(true);
-            product.addImageToProduct(image1);
-        }
-        if(file2!=null){
-            image2 = toImage(file2);
-            product.addImageToProduct(image2);
-        }
-        if(file3!=null){
-            image3 = toImage(file3);
-            product.addImageToProduct(image3);
+    public void deleteProductImage(Long productID, String fileName, boolean previewImage) {
+        if(fileName==null){
+            throw new NullPointerException("fileName is null");
         }
 
-     //   log.info("Saving new product. Title:{}",product.getTitle());
-        Product productFromBD = productRepository.save(product);
-        productFromBD.setPreviewImageID(productFromBD.getImages().isEmpty()?null:productFromBD.getImages().get(0).getId());
-        return productRepository.save(productFromBD);*/
-        return null;
+        Optional<Product> product = productRepository.findById(productID);
+        if(product.isPresent()){
+            Product product1 = product.get();
 
+            if(previewImage){
+                product1.setPreviewImageFileName(null);
+            }else{
+                product1.getImageFileNames().removeIf(f->f.equalsIgnoreCase(fileName));
+            }
+            productRepository.save(product1);
+        }
+    }
+
+    public void setProductImage(Long productID, String fileName, boolean previewImage) {
+        if(fileName==null){
+            throw new NullPointerException("fileName is null");
+        }
+        Optional<Product> product = productRepository.findById(productID);
+        if(product.isPresent()){
+            Product product1 = product.get();
+            if(previewImage){
+                product1.setPreviewImageFileName(fileName);
+            }else{
+                product1.getImageFileNames().add(fileName);
+            }
+            productRepository.save(product1);
+        }
     }
 
 
-    public Product updateProduct(Long productID, Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
+
+    public Product createProduct() {
        //todo
-        return product;
+        return null;
+    }
+
+
+    public Product updateProduct() {
+       //todo
+        return null;
     }
 
 
@@ -100,20 +112,6 @@ public class ProductService {
         //todo
     }
 
-  /*  private Image toImage(MultipartFile file){
-        Image image = new Image();
-        image.setName(file.getName());
-        image.setOriginalFileName(file.getOriginalFilename());
-        image.setContentType(file.getContentType());
-        image.setSize(file.getSize());
-        try {
-            image.setBytes(file.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return image;
-
-    }*/
 
 
 

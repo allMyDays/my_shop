@@ -74,6 +74,13 @@ public class UserService {
         return userResponseDTO;
     }
 
+    public UserResponseDTO collectCommonUserInfo(Long userEntityId) throws UserNotFoundException {
+        MyUser userEntity = getUserEntity(userEntityId);
+        return collectCommonUserInfo(userEntity.getKeycloakID());
+    }
+
+
+
     public void updateUserAvatar(Long userId, String fileName){
 
         MyUser userEntity = getUserEntity(userId);

@@ -51,7 +51,7 @@ public class UserGrpcClient {
 
     public UserResponseDTO getUserInfo(String userKeycloakId){
 
-        User.UserRequest oneUserRequest = User.UserRequest
+        User.UserKeycloakIdRequest oneUserRequest = User.UserKeycloakIdRequest
                 .newBuilder()
                 .setUserKeycloakId(userKeycloakId)
                 .build();
@@ -62,6 +62,21 @@ public class UserGrpcClient {
        return userMapper.toUserResponseDTO(userInfoResponse);
 
     }
+
+    public UserResponseDTO getUserInfo2(Long userEntityId){
+
+        User.UserEntityIdRequest oneUserRequest = User.UserEntityIdRequest
+                .newBuilder()
+                .setUserEntityId(userEntityId)
+                .build();
+
+        User.UserInfoResponse userInfoResponse = userBlockingStubObjectProvider.getObject()
+                .getUserInfo2(oneUserRequest);
+
+        return userMapper.toUserResponseDTO(userInfoResponse);
+
+    }
+
 
     public boolean userEmailIsChanged(String email, String userKeycloakId){
 

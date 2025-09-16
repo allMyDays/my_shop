@@ -4,12 +4,16 @@ option java_package="com.example.common.grpc.user";
 
 service UserService {
   rpc CheckUserExists (CheckUserRequest) returns (CheckUserResponse) {}
-  rpc GetUserInfo (UserRequest) returns (UserInfoResponse) {}
+  rpc GetUserInfo (UserKeycloakIdRequest) returns (UserInfoResponse) {}
+  rpc GetUserInfo2 (UserEntityIdRequest) returns (UserInfoResponse) {}
   rpc CheckEmailChanged (EmailCheckRequest) returns (StatusResponse) {}
 }
 
-message UserRequest {
-  string user_keycloak_id=2;
+message UserKeycloakIdRequest {
+  string user_keycloak_id=1;
+}
+message UserEntityIdRequest {
+  int64 user_entity_id=1;
 }
 
 message CheckUserRequest {

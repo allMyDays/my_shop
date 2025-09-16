@@ -8,6 +8,9 @@ import com.example.common.exception.UserNotFoundException;
 import com.example.common.service.CommonUserService;
 import com.example.user_service.dto.LoginRequestDTO;
 import com.example.user_service.dto.VerifyEmailRequestDTO;
+import com.example.user_service.enumeration.EmailConfirmationStatus;
+import com.example.user_service.enumeration.UserCreationStatus;
+import com.example.user_service.enumeration.UserUpdateStatus;
 import com.example.user_service.service.RedisService;
 import com.example.user_service.service.UserKeycloakService;
 import com.example.user_service.service.UserService;
@@ -34,10 +37,11 @@ import java.util.Optional;
 
 import static com.example.common.enumeration.grpc.UserExistenceStatus.EMAIL_EXISTS;
 import static com.example.common.enumeration.grpc.UserExistenceStatus.NOT_EXISTS;
-import static com.example.common.service.CommonUserService.getMyUserEntityId;
 import static com.example.common.service.CommonUserService.getUserKeycloakId;
-import static com.example.user_service.enumeration.RedisSubKeys.CONFIRMED_EMAIL;
-import static com.example.user_service.enumeration.RedisSubKeys.CONFIRMING_EMAIL;
+import static com.example.user_service.enumeration.EmailConfirmationStatus.*;
+import static com.example.user_service.enumeration.RedisSubKeys.*;
+import static com.example.user_service.enumeration.UserCreationStatus.EMAIL_SENT;
+import static com.example.user_service.enumeration.UserCreationStatus.ERRORS;
 
 @RestController
 @RequestMapping("/api/users")
@@ -73,53 +77,41 @@ public class UserRestController {
 
     @PostMapping("/create")
     @PreAuthorize("!isAuthenticated()")
-    public Map<String, Object> createUser(@Validated @RequestBody CreateUserRequestDTO userDTO, BindingResult bindingResult) {
-
-        Map<String, Object> response = new HashMap<>();
+    public Map<UserCreationStatus, Object> createUser(@Validated @RequestBody CreateUserRequestDTO userDTO, BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()) {
-            response.put("errors", bindingResult.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
-            return response;
+            return Map.of(UserCreationStatus.ERRORS, bindingResult.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
 
         }
         UserExistenceStatus existenceStatus = userKeycloakService.userExists(userDTO.getEmail(),userDTO.getNickName(),null);
 
         if (!existenceStatus.equals(NOT_EXISTS)) {
-            response.put("errors", List.of("Пользователь с таким %s уже существует".formatted(existenceStatus.equals(EMAIL_EXISTS)?"email":"никнеймом")));
-            return response;
+            return Map.of(UserCreationStatus.ERRORS, List.of("Пользователь с таким %s уже существует".formatted(existenceStatus.equals(EMAIL_EXISTS)?"email":"никнеймом")));
         }
 
         if (!userService.userEmailIsVerifiedOrSendCodeOtherwise(userDTO.getEmail())) {
-            response.put("emailSent", true);
-            return response;
+            return Map.of(UserCreationStatus.EMAIL_SENT,true);
         }
         boolean success = userService.createCommonUser(userDTO);
-        response.put("userSuccess", success);
-
-        return response;
+        return Map.of(UserCreationStatus.SUCCESS,success);
 
     }
    @PostMapping("/update")
     @PreAuthorize("isAuthenticated()")
-    public Map<String, Object> updateUser(@Validated @RequestBody UpdateUserRequestDTO userDTO, BindingResult res, @AuthenticationPrincipal Jwt jwt) {
-
-        Map<String, Object> response = new HashMap<>();
+    public Map<UserUpdateStatus, Object> updateUser(@Validated @RequestBody UpdateUserRequestDTO userDTO, BindingResult res, @AuthenticationPrincipal Jwt jwt) {
 
        if (res.hasErrors()) {
-            response.put("errors", res.getAllErrors().stream()
+            return Map.of(UserUpdateStatus.ERRORS, res.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
-            return response;
         }
 
         if(userDTO.getEmail()!=null){
             if(userKeycloakService.userEmailIsChanged(getUserKeycloakId(jwt), userDTO.getEmail())){
                 if(userKeycloakService.userExists(userDTO.getEmail(), null, getUserKeycloakId(jwt)).equals(EMAIL_EXISTS)){
-                    response.put("errors", List.of("Пользователь с таким email уже существует."));
-                    return response;
+                    return Map.of(UserUpdateStatus.ERRORS, List.of("Пользователь с таким email уже существует."));
                 }
                 if(!userService.userEmailIsVerifiedOrSendCodeOtherwise(userDTO.getEmail())){
-                    response.put("emailSent", true);
-                    return response;
+                    return Map.of(UserUpdateStatus.EMAIL_SENT,true);
                 }
             } else{
                 userDTO.setEmail(null);
@@ -127,28 +119,33 @@ public class UserRestController {
         }
 
        boolean success = userKeycloakService.updateUserData(getUserKeycloakId(jwt), userDTO);
-       response.put("userSuccess", success);
-       return response;
+       return Map.of(UserUpdateStatus.SUCCESS,success);
 
     }
 
     @PostMapping("verify_email")
-    public Map<String, Boolean> verifyUserEmail(@RequestBody VerifyEmailRequestDTO emailDto){
+    public EmailConfirmationStatus verifyUserEmail(@RequestBody VerifyEmailRequestDTO emailDto){
 
-        Map<String, Boolean> res = new HashMap<>();
         String expectedCode = redisService.get(CONFIRMING_EMAIL+":"+emailDto.getEmail());
 
 
         if (expectedCode == null) {
-            res.put("expired", true);
+            return EXPIRED;
         } else if (!expectedCode.trim().equals(emailDto.getUserCode().trim())) {
-            res.put("notMatch", true);
-        } else {
-            res.put("success", true);
-            redisService.saveTemp(CONFIRMED_EMAIL+":"+emailDto.getEmail(),"",3600);
-        }
+            String attemptNumber= redisService.get(CONFIRMING_EMAIL_ATTEMPT_NUMBER+":"+emailDto.getEmail());
+            int attemptNumberInt = attemptNumber==null?0:Integer.parseInt(attemptNumber);
+            if(attemptNumberInt>=4){
+                return TOO_MANY_ATTEMPTS;
+            }
+            else{
+                redisService.saveTemp(CONFIRMING_EMAIL_ATTEMPT_NUMBER+":"+emailDto.getEmail(), String.valueOf(++attemptNumberInt),3600);
+                return NOT_MATCH;
+            }
 
-        return res;
+        } else {
+            redisService.saveTemp(CONFIRMED_EMAIL+":"+emailDto.getEmail(),"",3600);
+            return SUCCESS;
+        }
     }
 
 
@@ -190,7 +187,7 @@ public class UserRestController {
                 .secure(false)
                 .path("/")
                 .sameSite("Strict")
-                .maxAge(Duration.ofHours(118))
+                .maxAge(Duration.ofHours(4))
                 .build();
 
         return ResponseEntity.ok()

@@ -1,17 +1,17 @@
 package com.example.common.client.kafka;
 
-import com.example.common.kafka.dto.product.ProductSaveImageDto;
+import com.example.common.kafka.dto.product.ProductDeleteImageDto;
+import com.example.common.kafka.dto.product.ProductSetImageDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import static com.example.common.kafka.constant.Topics.PRODUCT_TOPIC;
-import static com.example.common.kafka.constant.keys.ProductKeys.SAVE_PRODUCT_IMAGE;
+import static com.example.common.kafka.constant.keys.ProductKeys.DELETE_PRODUCT_IMAGE;
+import static com.example.common.kafka.constant.keys.ProductKeys.SET_PRODUCT_IMAGE;
 
 @Service
 @ConditionalOnClass(KafkaTemplate.class)
@@ -26,14 +26,23 @@ public class ProductKafkaClient {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void saveProductImage(long creatorId, long productId, String imageFileName, boolean preview) {
-        ProductSaveImageDto productSaveImageDto = new ProductSaveImageDto();
-        productSaveImageDto.setCreatorId(creatorId);
-        productSaveImageDto.setProductId(productId);
-        productSaveImageDto.setNewImageFileName(imageFileName);
-        productSaveImageDto.setPreview(preview);
+    public void setProductImage(long productId, String imageFileName, boolean previewImage) {
+        ProductSetImageDto productSetImageDto = new ProductSetImageDto();
+        productSetImageDto.setProductId(productId);
+        productSetImageDto.setNewImageFileName(imageFileName);
+        productSetImageDto.setPreviewImage(previewImage);
 
-        kafkaTemplate.send(PRODUCT_TOPIC, SAVE_PRODUCT_IMAGE, productSaveImageDto);
+        kafkaTemplate.send(PRODUCT_TOPIC, SET_PRODUCT_IMAGE, productSetImageDto);
+
+    }
+
+    public void deleteProductImage(long productId, String imageFileName, boolean previewImage) {
+        ProductDeleteImageDto productDeleteImageDto = new ProductDeleteImageDto();
+        productDeleteImageDto.setProductId(productId);
+        productDeleteImageDto.setImageFileName(imageFileName);
+        productDeleteImageDto.setPreviewImage(previewImage);
+
+        kafkaTemplate.send(PRODUCT_TOPIC, DELETE_PRODUCT_IMAGE, productDeleteImageDto);
 
     }
 

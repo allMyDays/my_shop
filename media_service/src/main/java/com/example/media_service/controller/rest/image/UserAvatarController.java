@@ -27,7 +27,7 @@ public class UserAvatarController {
 
     @PostMapping("/save")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> saveUserAvatar(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Jwt jwt) throws IOException, UserNotFoundException {
+    public ResponseEntity<Void> saveUserAvatar(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Jwt jwt) throws Exception, UserNotFoundException {
 
         imageService.saveUserAvatar(file, getMyUserEntityId(jwt));
 

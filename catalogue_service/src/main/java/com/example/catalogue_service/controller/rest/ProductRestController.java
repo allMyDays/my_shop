@@ -49,7 +49,7 @@ public class ProductRestController {
 
     }*/
     @DeleteMapping
-    @PreAuthorize("hasAnyRole('SELLER','ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable("productId") long productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.noContent().build();
