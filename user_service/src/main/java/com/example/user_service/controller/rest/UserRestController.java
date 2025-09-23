@@ -140,10 +140,7 @@ public class UserRestController {
        if (res.hasErrors()) {
             return Map.of(UserUpdateStatus.ERRORS, res.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
-        } if(!userDTO.getPassword().equals(userDTO.getRepeatedPassword())){
-           return Map.of(UserUpdateStatus.ERRORS, List.of("Пароли не совпадают."));
-       }
-
+        }
         if(userDTO.getEmail()!=null){
             if(userKeycloakService.userEmailIsChanged(getUserKeycloakId(jwt), userDTO.getEmail())){
                 if(userKeycloakService.userExists(userDTO.getEmail(), null, getUserKeycloakId(jwt)).equals(EMAIL_EXISTS)){

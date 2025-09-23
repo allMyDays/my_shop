@@ -25,7 +25,7 @@ public class UserController {
 
     @GetMapping("/registration")
     @PreAuthorize("!isAuthenticated()")
-    public String showRegistrationForm(Model model) {
+    public String showRegistrationForm() {
         return "registration";
     }
 
@@ -44,8 +44,7 @@ public class UserController {
     }
 
     @GetMapping("/reset_password")
-    @PreAuthorize("!isAuthenticated()")
-    public String reset_password(Model model) {
+    public String reset_password() {
         return "password_reset";
     }
 

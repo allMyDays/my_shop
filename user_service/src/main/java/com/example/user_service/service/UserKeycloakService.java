@@ -143,11 +143,6 @@ public class UserKeycloakService {
                 userRep.setEmailVerified(true);
                 updated = true;
             }
-
-            if(userDTO.getPassword() != null){
-                setUserPassword(userKeycloakId, userDTO.getPassword());
-                updated = true;
-            }
             if(updated){
                 userResource.update(userRep);
             }

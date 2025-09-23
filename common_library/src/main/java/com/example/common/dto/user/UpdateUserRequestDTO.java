@@ -20,13 +20,6 @@ public class UpdateUserRequestDTO {
     @Email(message = "Вы ввели некорректный email")
     private String email;
 
-
-    @Size(min=8, max=40, message = "Пароль должен иметь длину от 8 до 40 символов")
-    private String password;
-
-    @Size(min=8, max=40, message = "Повторный пароль должен иметь длину от 8 до 40 символов")
-    private String repeatedPassword;
-
     public void setFirstName(String firstName) {
         if(firstName==null||firstName.trim().isEmpty()){
             this.firstName = null;
@@ -50,12 +43,5 @@ public class UpdateUserRequestDTO {
             return;
         }
         this.email = XssSanitizer.sanitize(email);
-    }
-
-    public void setPassword(String password) {
-        this.password = (password==null||password.trim().isEmpty())?null:password;
-    }
-    public void setRepeatedPassword(String repeatedPassword) {
-        this.repeatedPassword = (repeatedPassword==null||repeatedPassword.trim().isEmpty())?null:repeatedPassword;
     }
 }
