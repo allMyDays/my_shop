@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 import static com.example.common.service.CommonUserService.getUserKeycloakId;
 
 @Controller
@@ -23,7 +25,7 @@ public class UserController {
 
     @GetMapping("/registration")
     @PreAuthorize("!isAuthenticated()")
-    public String showRegistrationForm() {
+    public String showRegistrationForm(Model model) {
         return "registration";
     }
 
@@ -33,9 +35,6 @@ public class UserController {
         return "my_login";
     }
 
-
-
-
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public String profile(Model model, @AuthenticationPrincipal Jwt jwt){
@@ -43,6 +42,13 @@ public class UserController {
         model.addAttribute("user", userResponseDTO);
         return "profile";
     }
+
+    @GetMapping("/reset_password")
+    @PreAuthorize("!isAuthenticated()")
+    public String reset_password(Model model) {
+        return "password_reset";
+    }
+
 
 
 

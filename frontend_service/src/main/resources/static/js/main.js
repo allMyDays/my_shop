@@ -59,7 +59,9 @@ function mainSearchFind(){
 
     const inputValue = input.value.trim();
 
-    if(!inputValue||inputValue.length<2) return;
+    if(!inputValue||inputValue.length<2){
+        alert("Необходимо ввести запрос в строку поиска.");
+        return;}
 
     const params = new URLSearchParams();
 

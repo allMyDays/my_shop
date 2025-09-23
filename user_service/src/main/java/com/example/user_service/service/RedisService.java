@@ -5,6 +5,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -22,6 +23,17 @@ public class RedisService {
 
     public String get(String key) {
         return stringRedisTemplate.opsForValue().get(key);
+    }
+
+    public void delete(String key) {
+        if (key!=null){
+         stringRedisTemplate.delete(key);
+        }
+    }
+    public void delete(List<String> keys) {
+        if (keys!=null){
+         stringRedisTemplate.delete(keys);
+        }
     }
 
 

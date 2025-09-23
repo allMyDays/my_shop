@@ -1,7 +1,4 @@
-
-    let myTimer;
-
-    document.getElementById("profile-form").addEventListener("submit", function (e) {
+document.getElementById("profile-form").addEventListener("submit", function (e) {
         e.preventDefault();
         const form = e.target;
         const formData = new FormData(form);
@@ -16,9 +13,9 @@
     const msg = document.getElementById("message-block");
         msg.innerHTML = ""; //очистить все ошибки
 
-    const isReg = form.action.includes("users/registration")
+    const isRegistrationPage = form.action.includes("users/registration")
 
-    if(isReg){
+    if(isRegistrationPage){
         if(!password||!repeatedPassword){
             msg.innerHTML += `<div class="alert alert-danger">Пожалуйте, заполните все строки ввода пароля.</div>`;
             submitBTN.style.display = "";
@@ -50,7 +47,7 @@
 
 
 
-    fetch("/api/users/"+(isReg?"create":"update"), {
+    fetch("/api/users/"+(isRegistrationPage?"create":"update"), {
     method: "POST",
     headers: {
         'Content-type':'application/json'
@@ -87,7 +84,7 @@
 }
 
     if (data.SUCCESS) {
-    if(isReg){
+    if(isRegistrationPage){
         msg.innerHTML = `<div class="alert alert-success">Вы успешно зарегистрировались! Теперь можете <a href="/users/welcome" >войти в свой аккаунт</a>.</div>`;
     }
     else {
@@ -99,91 +96,3 @@
 }
 });
     });
-    function verifyCode(isReg) {
-
-    const email = document.getElementById("email").value;
-    const code = document.getElementById("code").value;
-
-    fetch("/api/users/verify_email", {
-        method: "POST",
-        headers: {
-            'Content-type':'application/json'
-        },
-        body: JSON.stringify({email:email,userCode:code})
-
-    })
-    .then(res => {
-    if (!res.ok) throw new Error("Ошибка ответа от сервера");
-    return res.json();
-})
-    .then(data => {
-    console.log("Ответ сервера:", data);
-    const msg = document.getElementById("message-block");
-    msg.innerHTML = "";
-
-    switch (data){
-
-        case "SUCCESS":
-            if(isReg){
-                msg.innerHTML = `<div class="alert alert-success">Email подтверждён! Можете продолжить регистрацию!</div>`;
-            }
-            else{
-                msg.innerHTML = `<div class="alert alert-success">Email подтверждён! Теперь можете сохранить свои новые данные!.</div>`;
-
-            }
-            document.getElementById("code-block").style.display = "none";
-            document.getElementById("form-submit-btn").style.display = "";
-            break;
-
-        case "EXPIRED":
-            msg.innerHTML = `<div class="alert alert-warning">Срок действия кода истёк. Пожалуйста, запросите новый.</div>`;
-            document.getElementById("code-block").style.display = "none";
-            document.getElementById("email").readOnly = false;
-            document.getElementById("form-submit-btn").style.display = "";
-            break;
-
-        case "NOT_MATCH":
-            msg.innerHTML = `<div class="alert alert-danger">Введённый код неверен. Попробуйте ещё раз.</div>`;
-            break;
-
-        case "TOO_MANY_ATTEMPTS":
-            msg.innerHTML = `<div class="alert alert-danger">Слишком много попыток верификации данного email адреса. Попробуйте позже.</div>`;
-            document.getElementById("code-block").style.display = "none";
-            break;
-
-        default:
-            msg.innerHTML = `<div class="alert alert-danger">Неизвестная ошибка. Попробуйте позже или перезагрузите страницу.</div>`;
-            document.getElementById("code-block").style.display = "none";
-            document.getElementById("email").readOnly = false;
-            document.getElementById("form-submit-btn").style.display = "";
-            break;
-
-    }
-})
-    .catch(err => {
-    console.error("Ошибка при проверке кода:", err);
-    document.getElementById("message-block").innerHTML =
-    `<div class="alert alert-danger">Произошла ошибка при отправке запроса.</div>`;
-});
-}
-
-    function startTimer(duration) {
-    let timer = duration;
-    let display = document.getElementById("code-timer-text");
-    if(myTimer){
-        clearInterval(myTimer);
-    }
-
-    myTimer = setInterval(() => {
-    let minutes = String(Math.floor(timer / 60)).padStart(2, '0');
-    let seconds = String(timer % 60).padStart(2, '0');
-    display.textContent = `Осталось времени: ${minutes}:${seconds}`;
-
-    if (--timer < 0) {
-    clearInterval(myTimer);
-    document.getElementById("common-block").style.display = "none";
-    document.getElementById("email").readOnly = false;
-    document.getElementById("form-submit-btn").style.display = "";
-}
-}, 1000);
-}

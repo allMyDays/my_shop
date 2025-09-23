@@ -5,6 +5,7 @@ import com.example.common.dto.user.UserResponseDTO;
 import com.example.common.enumeration.grpc.UserExistenceStatus;
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.core.Response;
+import org.apache.kafka.common.quota.ClientQuotaAlteration;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -41,10 +43,13 @@ public class UserKeycloakService {
     @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
     private String issuerUri;
 
+    private final JwtDecoder jwtDecoder;
+
 
     @Autowired
-    public UserKeycloakService(ObjectProvider<KeycloakBuilder> keycloakBuilderProvider){
+    public UserKeycloakService(ObjectProvider<KeycloakBuilder> keycloakBuilderProvider, JwtDecoder jwtDecoder){
         this.keycloakBuilderProvider = keycloakBuilderProvider;
+        this.jwtDecoder = jwtDecoder;
     }
 
     @PostConstruct
@@ -92,7 +97,7 @@ public class UserKeycloakService {
       }
     }
 
-    public void setUserPassword(String userId, String newPassword) {
+    public boolean setUserPassword(String userId, String newPassword) {
         try{
             CredentialRepresentation credential = new CredentialRepresentation();
             credential.setType(CredentialRepresentation.PASSWORD);
@@ -103,9 +108,9 @@ public class UserKeycloakService {
                     .users()
                     .get(userId)
                     .resetPassword(credential);
-
+            return true;
         }catch(Exception e){
-            throw new RuntimeException(e);
+            return false;
         }
     }
 
@@ -154,6 +159,32 @@ public class UserKeycloakService {
 
         }
     }
+
+    public Optional<UserRepresentation > getUser(String username){
+
+        if(username==null||username.isEmpty()) return Optional.empty();
+
+        int first = 0;
+        int maxResults = 100;
+
+        while (true) {
+            List<UserRepresentation> users = keycloakClientInstance.realm(realm).users().list(first, maxResults);
+
+            if (users.isEmpty()) {
+                break;
+            }
+
+            for (UserRepresentation user : users) {
+                if (username.equalsIgnoreCase(user.getUsername())) return Optional.of(user);
+            }
+
+            first += maxResults;
+        }
+
+        return Optional.empty();
+
+    }
+
 
     public UserExistenceStatus userExists(String email, String username, String excludedUser){
 
@@ -235,7 +266,7 @@ public class UserKeycloakService {
 
     }
 
-    public Optional<String> generateJwtToken(String nickName, String password){
+    public Optional<Jwt> generateJwtToken(String nickName, String password){
         try(Keycloak keycloak = keycloakBuilderProvider
                     .getObject()
                     .grantType(PASSWORD)
@@ -243,11 +274,9 @@ public class UserKeycloakService {
                     .username(nickName)
                     .build()) {
 
-                AccessTokenResponse token = keycloak
-                    .tokenManager()
-                    .getAccessToken();
+            Jwt jwt = jwtDecoder.decode(keycloak.tokenManager().getAccessTokenString());
+            return Optional.of(jwt);
 
-               return Optional.of(token.getToken());
         }catch (Exception e){
             return Optional.empty();
         }

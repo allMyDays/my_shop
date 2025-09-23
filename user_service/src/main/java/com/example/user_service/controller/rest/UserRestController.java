@@ -7,8 +7,10 @@ import com.example.common.enumeration.grpc.UserExistenceStatus;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.service.CommonUserService;
 import com.example.user_service.dto.LoginRequestDTO;
+import com.example.user_service.dto.ResetPasswordDTO;
 import com.example.user_service.dto.VerifyEmailRequestDTO;
 import com.example.user_service.enumeration.EmailConfirmationStatus;
+import com.example.user_service.enumeration.PasswordResettingStatus;
 import com.example.user_service.enumeration.UserCreationStatus;
 import com.example.user_service.enumeration.UserUpdateStatus;
 import com.example.user_service.service.RedisService;
@@ -16,6 +18,7 @@ import com.example.user_service.service.UserKeycloakService;
 import com.example.user_service.service.UserService;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
@@ -30,18 +33,16 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static com.example.common.enumeration.grpc.UserExistenceStatus.EMAIL_EXISTS;
 import static com.example.common.enumeration.grpc.UserExistenceStatus.NOT_EXISTS;
+import static com.example.common.service.CommonUserService.getMyUserEntityId;
 import static com.example.common.service.CommonUserService.getUserKeycloakId;
 import static com.example.user_service.enumeration.EmailConfirmationStatus.*;
 import static com.example.user_service.enumeration.RedisSubKeys.*;
-import static com.example.user_service.enumeration.UserCreationStatus.EMAIL_SENT;
-import static com.example.user_service.enumeration.UserCreationStatus.ERRORS;
 
 @RestController
 @RequestMapping("/api/users")
@@ -82,6 +83,8 @@ public class UserRestController {
         if(bindingResult.hasErrors()) {
             return Map.of(UserCreationStatus.ERRORS, bindingResult.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
 
+        } if(!userDTO.getPassword().equals(userDTO.getRepeatedPassword())){
+            return Map.of(UserCreationStatus.ERRORS, List.of("Пароли не совпадают."));
         }
         UserExistenceStatus existenceStatus = userKeycloakService.userExists(userDTO.getEmail(),userDTO.getNickName(),null);
 
@@ -96,6 +99,40 @@ public class UserRestController {
         return Map.of(UserCreationStatus.SUCCESS,success);
 
     }
+
+    @PostMapping("/reset_password")
+    @PreAuthorize("!isAuthenticated()")
+    public Map<PasswordResettingStatus, Object> resetUserPassword(@Validated @RequestBody ResetPasswordDTO passwordDTO, BindingResult res) {
+
+        if (res.hasErrors()) {
+            return Map.of(PasswordResettingStatus.ERRORS, res.getAllErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
+        } if(!passwordDTO.getNewPassword().equals(passwordDTO.getRepeatedPassword())){
+            return Map.of(PasswordResettingStatus.ERRORS, List.of("Пароли не совпадают."));
+        }
+        Optional<UserRepresentation> optionalUser = userKeycloakService.getUser(passwordDTO.getNickName());
+        if (optionalUser.isEmpty()){
+           return Map.of(PasswordResettingStatus.ERRORS, List.of("Пользователь с таким никнеймом не найден."));
+        }
+        UserRepresentation userRep = optionalUser.get();
+          if(!passwordDTO.getEmail().equalsIgnoreCase(userRep.getEmail())){
+              return Map.of(PasswordResettingStatus.ERRORS, List.of("Введенный email не совпадает с тем, который привязан к аккаунту с таким никнеймом."));
+          }
+          if(userService.userEmailIsVerifiedOrSendCodeOtherwise(userRep.getEmail())){
+             if(userKeycloakService.setUserPassword(userRep.getId(),passwordDTO.getNewPassword())){
+                 return Map.of(PasswordResettingStatus.SUCCESS,true);
+             } else{
+                 return Map.of(PasswordResettingStatus.ERRORS,List.of("Не удалось изменить пароль. Пожалуйста, попробуйте позже."));
+             }
+        } else{
+            int atIndex = userRep.getEmail().indexOf('@');
+            String resultEmail = userRep.getEmail().charAt(0) + "*".repeat(atIndex - 1) + userRep.getEmail().substring(atIndex);  //заблюриваю емаил
+            return Map.of(PasswordResettingStatus.EMAIL_SENT,resultEmail);
+        }
+
+    }
+
+
    @PostMapping("/update")
     @PreAuthorize("isAuthenticated()")
     public Map<UserUpdateStatus, Object> updateUser(@Validated @RequestBody UpdateUserRequestDTO userDTO, BindingResult res, @AuthenticationPrincipal Jwt jwt) {
@@ -103,7 +140,9 @@ public class UserRestController {
        if (res.hasErrors()) {
             return Map.of(UserUpdateStatus.ERRORS, res.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
-        }
+        } if(!userDTO.getPassword().equals(userDTO.getRepeatedPassword())){
+           return Map.of(UserUpdateStatus.ERRORS, List.of("Пароли не совпадают."));
+       }
 
         if(userDTO.getEmail()!=null){
             if(userKeycloakService.userEmailIsChanged(getUserKeycloakId(jwt), userDTO.getEmail())){
@@ -144,6 +183,7 @@ public class UserRestController {
 
         } else {
             redisService.saveTemp(CONFIRMED_EMAIL+":"+emailDto.getEmail(),"",3600);
+            redisService.delete(CONFIRMING_EMAIL+":"+emailDto.getEmail());
             return SUCCESS;
         }
     }
@@ -164,25 +204,31 @@ public class UserRestController {
 
     @PostMapping("/login")
     @PreAuthorize("!isAuthenticated()")
-    public ResponseEntity<?> login(@RequestBody @Validated LoginRequestDTO loginRequestDTO, BindingResult bindingResult){
+    public ResponseEntity<?> login(@RequestBody @Validated LoginRequestDTO loginRequestDTO, BindingResult bindingResult) throws UserNotFoundException {
 
         if (bindingResult.hasErrors()) {
-            return ResponseEntity
-                    .badRequest()
+            return ResponseEntity.badRequest()
                     .body(bindingResult.getAllErrors()
                             .stream()
                             .map(DefaultMessageSourceResolvable::getDefaultMessage)
                             .toList());
         }
 
-        Optional<String> optionalToken = userKeycloakService.generateJwtToken(loginRequestDTO.getNickName(), loginRequestDTO.getPassword());
+        Optional<Jwt> optionalToken = userKeycloakService.generateJwtToken(loginRequestDTO.getNickName(), loginRequestDTO.getPassword());
 
-        if(optionalToken.isEmpty()) {
+        if(optionalToken.isEmpty()){
             return ResponseEntity.badRequest()
-                    .build();
+                    .body(List.of("Не удалось войти. Проверьте правильность введенных данных."));
+        }
+        Jwt token = optionalToken.get();
+
+        if(userService.getUserOptionalEntity(getMyUserEntityId(token)).isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(List.of("Данные пользователя отсутствуют в основной базе данных. Пожалуйста, сообщите в поддержку."));
+
         }
 
-        ResponseCookie responseCookie = ResponseCookie.from("jwt", optionalToken.get())
+        ResponseCookie responseCookie = ResponseCookie.from("jwt", token.getTokenValue())
                 .httpOnly(true)
                 .secure(false)
                 .path("/")

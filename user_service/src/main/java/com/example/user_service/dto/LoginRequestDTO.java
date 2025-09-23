@@ -8,10 +8,10 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class LoginRequestDTO {
-    @NotBlank(message = "nickName cannot be blank")
+    @NotBlank(message = "Никнейм не может быть пустым.")
     private String nickName;
 
-    @NotBlank(message = "password cannot be blank")
+    @NotBlank(message = "Пароль не может быть пустым.")
     private String password;
 
 

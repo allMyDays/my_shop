@@ -16,11 +16,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.mail.MailSendException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
-import static com.example.user_service.enumeration.RedisSubKeys.CONFIRMED_EMAIL;
-import static com.example.user_service.enumeration.RedisSubKeys.CONFIRMING_EMAIL;
+import static com.example.user_service.enumeration.RedisSubKeys.*;
 
 @Service
 @RequiredArgsConstructor
@@ -100,8 +100,12 @@ public class UserService {
     public boolean userEmailIsVerifiedOrSendCodeOtherwise(String userEmail) throws MailSendException {
 
         if(redisService.get(CONFIRMED_EMAIL +":"+ userEmail)!=null){
+            redisService.delete(List.of(
+                     CONFIRMED_EMAIL +":"+ userEmail
+                    ,CONFIRMING_EMAIL+":"+userEmail
+                    ,CONFIRMING_EMAIL_ATTEMPT_NUMBER+":"+userEmail));
             return true;
-        };
+        }
 
         int newCode = 100_000 + new Random().nextInt(900_000);
 
@@ -111,11 +115,6 @@ public class UserService {
 
         return false;
     }
-
-
-
-
-
 
     public MyUser getUserEntity(String keycloakID) {
 
