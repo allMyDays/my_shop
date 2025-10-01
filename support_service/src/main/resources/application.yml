@@ -6,15 +6,19 @@ server:
 spring:
   application:
     name: support-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8084/realms/my_realm
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8084}/realms/${KEYCLOAK_REALM:my_realm}
   datasource:
-    url: jdbc:postgresql://localhost:5433/postgres
-    username: postgres
-    password: igor333333
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/${POSTGRES_DB_NAME:postgres}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:igor333333}
     driver-class-name: org.postgresql.Driver
 
 
@@ -36,7 +40,7 @@ spring:
     keep-alive: true # не хавершит приложение,если все активные потоки - виртуальные
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
     consumer:
       group-id: user-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -54,7 +58,7 @@ eureka:
   client:
      service-url:
       defaultZone:
-         http://localhost:8761/eureka/
+        http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
 
   instance:
     metadata-map:

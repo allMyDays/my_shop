@@ -11,27 +11,26 @@ spring:
      oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8084/realms/my_realm
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8084}/realms/${KEYCLOAK_REALM:my_realm}
 
       client:
         provider:
           keycloak:
-
-            issuer-uri: http://localhost:8084/realms/my_realm
+            issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8084}/realms/${KEYCLOAK_REALM:my_realm}
             user-name-attribute: preferred_username
 
         registration:
           keycloak:
             client-id: user_service
-            client-secret: 8Rd7sCzg6nS01tHnM8pg1XwBGZfP4vte
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:pmSMR6uIoQwkKoHA9K6lHjxcfZOL7L6U}
             scope:
               - openid
               - microprofile-jwt
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/postgres
-    username: postgres
-    password: igor333333
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/${POSTGRES_DB_NAME:postgres}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:igor333333}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -45,15 +44,15 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   threads:
     virtual:
       enabled: true
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
     consumer:
       group-id: user-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -70,7 +69,7 @@ eureka:
   client:
     service-url:
       defaultZone:
-        http://localhost:8761/eureka/
+        http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
 
   instance:
     metadata-map:

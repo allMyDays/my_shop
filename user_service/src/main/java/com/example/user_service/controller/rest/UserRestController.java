@@ -125,9 +125,7 @@ public class UserRestController {
                  return Map.of(PasswordResettingStatus.ERRORS,List.of("Не удалось изменить пароль. Пожалуйста, попробуйте позже."));
              }
         } else{
-            int atIndex = userRep.getEmail().indexOf('@');
-            String resultEmail = userRep.getEmail().charAt(0) + "*".repeat(atIndex - 1) + userRep.getEmail().substring(atIndex);  //заблюриваю емаил
-            return Map.of(PasswordResettingStatus.EMAIL_SENT,resultEmail);
+            return Map.of(PasswordResettingStatus.EMAIL_SENT,true);
         }
 
     }

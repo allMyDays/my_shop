@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/loadingSpinner.css">
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 </head>
@@ -167,35 +168,65 @@
     document.addEventListener('DOMContentLoaded', () => {
 
         bindProductButtons(document.getElementById("single-product-buttons"));
+        const mainPreview = document.getElementById('previewImage');
+        const modalImage = document.getElementById('modalImage');
+        const modalEl = document.getElementById('imageModal');
+        const bsModal = new bootstrap.Modal(modalEl);
 
-    });
 
-    function scrollThumbnails(direction) {
-        const container = document.getElementById("thumbnailList");
-        const scrollAmount = 70;
-        container.scrollBy({
-            top: scrollAmount * direction,
-            behavior: "smooth"
-        });
-    }
+        function resolveImgUrl(imgEl) {
 
-    function changePreview(imgElement) {
-        const newSrc = imgElement.src;
-        const mainPreview = document.getElementById("previewImage");
-        mainPreview.src = newSrc;
+            let src = imgEl.currentSrc || imgEl.src || imgEl.getAttribute('src') || '';
+            if (!src) return src;
+            try {
 
-        // Обновляем картинку в модалке, но не показываем модалку
-        document.getElementById("modalImage").src = newSrc;
-    }
+                return new URL(src, window.location.href).href;
+            } catch (e) {
+                return src;
+            }
+        }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        // При клике на главное изображение — открываем модалку
-        document.getElementById("previewImage").addEventListener("click", () => {
-            const modal = new bootstrap.Modal(document.getElementById("imageModal"));
-            modal.show();
+
+        function openImageModalWithSrc(src) {
+            console.log('[image modal] setting src ->', src);
+            modalImage.onload = () => console.log('[image modal] loaded OK:', modalImage.src, 'naturalWidth=', modalImage.naturalWidth);
+            modalImage.onerror = () => {
+                console.error('[image modal] failed to load:', modalImage.src);
+                // Для отладки — выведем ещё раз текущие значения mainPreview и modalImage
+                console.log('[debug] preview.src =', resolveImgUrl(mainPreview));
+                console.log('[debug] modal.src =', modalImage.src);
+            };
+
+
+            modalImage.src = src;
+            bsModal.show();
+        }
+
+
+        if (mainPreview) {
+            mainPreview.addEventListener('click', (e) => {
+                const src = resolveImgUrl(mainPreview);
+                openImageModalWithSrc(src);
+            });
+
+            try {
+                modalImage.src = resolveImgUrl(mainPreview);
+                console.log('[init] modalImage prefilled with', modalImage.src);
+            } catch (err) {
+                console.warn('[init] could not prefill modalImage:', err);
+            }
+        }
+
+
+        document.querySelectorAll('.thumbnail-img').forEach(thumb => {
+            thumb.addEventListener('click', function () {
+                const src = resolveImgUrl(this);
+                console.log('[thumb click] setting preview and modal to', src);
+                mainPreview.src = src;
+                modalImage.src = src;
+            });
         });
     });
 </script>
-
 </body>
 </html>

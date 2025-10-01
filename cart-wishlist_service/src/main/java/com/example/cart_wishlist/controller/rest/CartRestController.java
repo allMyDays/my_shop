@@ -25,9 +25,8 @@ public class CartRestController {
     private final CartMapper cartMapper;
 
     @GetMapping
-    public CartResponseDTO getCart(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+    public CartResponseDTO getCart(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException{
         return cartMapper.toCartDTO(cartService.getUserCart(jwt));
-
     }
     @GetMapping("/items")
     public List<CartItemResponseDTO> getCartItems(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {

@@ -1,33 +1,41 @@
 
     function loadCart() {
-    fetch("/api/cart")
-        .then(res => {
-            if(!res.ok){
-                alert("Ошибка загрузки корзины.");
-                return;
-            }
-            return res.json()
-        })
-        .then(cartDTO => {
-            const tableBody = document.getElementById("cart-items-table");
-            const badge = document.getElementById("cart-count-badge");
+        const tableBody = document.getElementById("cart-items-table");
+        tableBody.innerHTML="";
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                        
+                  <td colspan="5" class="text-center text-muted">Подождите, идёт загрузка...</td>
+                    `;
+        tableBody.appendChild(row);
 
-            tableBody.innerHTML = "";
-            badge.textContent = cartDTO.totalQuantity;
+      fetch("/api/cart")
+            .then(res => {
+                if (!res.ok) {
+                    alert("Ошибка загрузки корзины.");
+                    return;
+                }
+                return res.json()
+            })
+            .then(cartDTO => {
+                const badge = document.getElementById("cart-count-badge");
 
-            if (cartDTO.itemsDTOList.length === 0) {
-                const row = document.createElement("tr");
-                row.innerHTML = `
+                tableBody.innerHTML = "";
+                badge.textContent = cartDTO.totalQuantity;
+
+                if (cartDTO.itemsDTOList.length === 0) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
                         <td colspan="5" class="text-center text-muted">Корзина пуста</td>
                     `;
-                tableBody.appendChild(row);
-                return;
-            }
+                    tableBody.appendChild(row);
+                    return;
+                }
 
-            cartDTO.itemsDTOList.forEach((item, index) => {
-                const row = document.createElement("tr");
+                cartDTO.itemsDTOList.forEach((item, index) => {
+                    const row = document.createElement("tr");
 
-                row.innerHTML = `
+                    row.innerHTML = `
                         <th scope="row">${index + 1}</th>
                         <td><img src="/api/media/images/product/get/${item.previewImageFileName}" width="60"></td>
                         <td>${item.title}</td>
@@ -35,11 +43,21 @@
                         <td><i class="fa-solid fa-trash text-danger" style="cursor:pointer"
                                onclick="removeFromCart(${item.productId})"></i></td>
                     `;
-                tableBody.appendChild(row);
+                    tableBody.appendChild(row);
+                });
             });
-        });
-}
+    }
+
     function loadWishList() {
+
+        const tableBody =  document.getElementById("wish-items-table");
+        tableBody.innerHTML="";
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                        
+                  <td colspan="5" class="text-center text-muted">Подождите, идёт загрузка...</td>
+                    `;
+        tableBody.appendChild(row);
 
         fetch("/api/wish-list")
             .then(res => {
@@ -50,7 +68,6 @@
                 return res.json()
             })
             .then(wishListDTO => {
-                const tableBody = document.getElementById("wish-items-table");
                 const badge = document.getElementById("wish-count-badge");
 
                 tableBody.innerHTML = "";

@@ -15,7 +15,7 @@ services:
     container_name: my_keycloak
     command: start-dev
     ports:
-      - "8085:8080"
+      - "8084:8080"
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -64,5 +64,167 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  eureka:
+    image: eureka:1.0
+    ports:
+      - "8761:8761"
+
+  cart-wishlist-service:
+    image: cart-wishlist-service:1.0
+    ports:
+      - "8080:8080"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=igor333333
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - KEYCLOAK_HOST=keycloak
+      - KEYCLOAK_PORT=8080
+    depends_on:
+      - postgres
+      - keycloak
+      - eureka
+
+  user-service:
+    image: user-service:1.0
+    ports:
+      - "8077:8077"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=igor333333
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - KEYCLOAK_HOST=keycloak
+      - KEYCLOAK_PORT=8080
+      - KEYCLOAK_CLIENT_SECRET=6DlpPd9Klby2eHwVrJUHX9pKeibJfuwq
+      - KAFKA_HOST=kafka
+      - KAFKA_PORT=9092
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - postgres
+      - keycloak
+      - kafka
+      - redis
+      - eureka
+
+  support-service:
+      image: support-service:1.0
+      ports:
+        - "8079:8079"
+      environment:
+        - POSTGRES_HOST=postgres
+        - POSTGRES_PORT=5432
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=igor333333
+        - EUREKA_HOST=eureka
+        - EUREKA_PORT=8761
+        - KEYCLOAK_HOST=keycloak
+        - KEYCLOAK_PORT=8080
+        - KAFKA_HOST=kafka
+        - KAFKA_PORT=9092
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
+
+      depends_on:
+        - postgres
+        - keycloak
+        - kafka
+        - eureka
+
+  media-service:
+    image: media-service:1.0
+    ports:
+      - "8078:8078"
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - KEYCLOAK_HOST=keycloak
+      - KEYCLOAK_PORT=8080
+      - KAFKA_HOST=kafka
+      - KAFKA_PORT=9092
+      - MINIO_HOST=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+    depends_on:
+      - keycloak
+      - kafka
+      - minio
+      - redis
+      - eureka
+
+  catalogue-service:
+    image: catalogue-service:1.0
+    ports:
+      - "8082:8082"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=igor333333
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - KEYCLOAK_HOST=keycloak
+      - KEYCLOAK_PORT=8080
+      - KAFKA_HOST=kafka
+      - KAFKA_PORT=9092
+
+    depends_on:
+      - postgres
+      - keycloak
+      - kafka
+      - eureka
+
+
+  email-service:
+    image: email-service:1.0
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - KEYCLOAK_HOST=keycloak
+      - KEYCLOAK_PORT=8080
+      - KAFKA_HOST=kafka
+      - KAFKA_PORT=9092
+
+    depends_on:
+      - keycloak
+      - kafka
+      - eureka
+
+  frontend-service:
+    image: frontend-service:1.0
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - KEYCLOAK_HOST=keycloak
+      - KEYCLOAK_PORT=8080
+
+    depends_on:
+      - keycloak
+      - eureka
+
+
+  gateway-api:
+    image: gateway-api:1.0
+    ports:
+      - "8087:8087"
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+    depends_on:
+      - eureka
+
+

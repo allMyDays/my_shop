@@ -44,7 +44,7 @@ public void deleteUserAvatar(boolean sendToKafka, Long userId)  {
 
     List<String> tempKeys = minioService.findByKeyFirstPart(userId,MinIO_bucket.users);
     if(!tempKeys.isEmpty()){
-        minioService.deleteFile(tempKeys.getFirst(), MinIO_bucket.users);
+        minioService.deleteFile(tempKeys.get(0), MinIO_bucket.users);
     }
     if(sendToKafka){
         userKafkaClient.deleteUserAvatar(userId);

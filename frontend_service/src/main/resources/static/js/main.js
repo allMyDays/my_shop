@@ -96,22 +96,25 @@ function userIsAuthenticated() {
 
 
 function loadCartSize() {
+    const badge = document.getElementById("cart-count-badge");
+    badge.textContent = '0';
     fetch(`/api/cart/size`, {
         method: "GET"
     }).then(res => res.json())
         .then(data => {
-            const badge = document.getElementById("cart-count-badge");
             badge.textContent = data.count;
 
         });
 }
 
 function loadWishListSize() {
+    const badge = document.getElementById("wish-count-badge");
+    badge.textContent = '0';
+
     fetch(`/api/wish-list/size`, {
         method: "GET"
     }).then(res => res.json())
         .then(data => {
-            const badge = document.getElementById("wish-count-badge");
             badge.textContent = data.count;
 
         });
@@ -329,6 +332,10 @@ async function tryCreateNewSupportChat() {
     const response = await fetch(`/api/support/chat/creation_check_limit`);
     if (response.status === 429) {
         alert("К сожалению, чаты нельзя создавать так часто. Пожалуйста, попробуйте позже.");
+        return;
+    }
+    if (!response.ok) {
+        alert("Произошла ошибка. Пожалуйста, попробуйте позже.");
         return;
     }
 

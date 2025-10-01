@@ -11,3 +11,4 @@ public class CartAndWishListServiceApplication {
         SpringApplication.run(CartAndWishListServiceApplication.class, args);
     }
 }
+
