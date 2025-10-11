@@ -25,7 +25,7 @@ public class MyUser {
 
 
     @Column(unique = true)
-    private String keycloakID;
+    private String keycloakId;
 
     @Column(unique = true)
     private String avatarFileName;

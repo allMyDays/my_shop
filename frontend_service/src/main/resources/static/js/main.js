@@ -1,11 +1,8 @@
 
 let userRoles=null;
+let authenticated=false;
 
 document.addEventListener("DOMContentLoaded", async function () {
-
-    loadCartSize();
-    loadWishListSize();
-
 
     const urlParams = new URLSearchParams(window.location.search);  // загрузить категории на фронт
     const selectedCategoryId = urlParams.get('categoryId');
@@ -30,22 +27,26 @@ document.addEventListener("DOMContentLoaded", async function () {
     const userSupportButtons = document.getElementById("support-user-buttons");
     const agentSupportButtons = document.getElementById("support-agent-buttons");
 
-    fetch("/api/users/get_roles")
-        .then(res => res.json())
-        .then(roles => {
-            userRoles=roles;
-            if (userIsStaff()) {
-                agentSupportButtons.style.display = "block";
-                userSupportButtons.style.display = "none";
-            } else {
-                agentSupportButtons.style.display = "none";
-                userSupportButtons.style.display = "block";
-            }
-        })
-        .catch(err => {
-            console.error("Ошибка при получении ролей:", err);
+    const response = await fetch('/api/users/get_roles');
+
+    if (response.ok) {
+        authenticated = true;
+        userRoles = await response.json();
+
+        if (userIsStaff()) {
+            agentSupportButtons.style.display = "block";
+            userSupportButtons.style.display = "none";
+        } else {
+            agentSupportButtons.style.display = "none";
             userSupportButtons.style.display = "block";
-        });
+        }
+    } else {
+        authenticated = false;
+        console.error('Ошибка при получении ролей:', response.status);
+    }
+
+    loadCartSize();
+    loadWishListSize();
 
 });
 
@@ -91,7 +92,7 @@ function userIsStaff(){
     return (userRoles.includes("ROLE_AGENT") || userRoles.includes("ROLE_ADMIN"));
 }
 function userIsAuthenticated() {
-    return userRoles!=null;
+    return authenticated;
 }
 
 
@@ -100,9 +101,14 @@ function loadCartSize() {
     badge.textContent = '0';
     fetch(`/api/cart/size`, {
         method: "GET"
-    }).then(res => res.json())
-        .then(data => {
-            badge.textContent = data.count;
+    }).then(res => {
+        if(!res.ok){
+            return;
+        }
+        return res.json();
+    })
+        .then(size => {
+            badge.textContent = size;
 
         });
 }
@@ -113,9 +119,14 @@ function loadWishListSize() {
 
     fetch(`/api/wish-list/size`, {
         method: "GET"
-    }).then(res => res.json())
-        .then(data => {
-            badge.textContent = data.count;
+    }).then(res => {
+        if(!res.ok){
+            return;
+        }
+        return res.json()
+    })
+        .then(size => {
+            badge.textContent = size;
 
         });
 }

@@ -1,8 +1,6 @@
 package com.example.cart_wishlist.entity;
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,10 +18,10 @@ public class WishList {
 
     @Id
     @EqualsAndHashCode.Include
-    private Long userID;
+    private Long userId;
 
-    @ElementCollection
-    private List<Long> productIDs = new ArrayList<>();
+    @OneToMany(mappedBy = "wishList", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<WishItem> items = new ArrayList<>();
 
 
 

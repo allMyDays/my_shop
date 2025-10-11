@@ -3,6 +3,7 @@ const limit = 40;
 let loading = false;
 let noMoreGoods=false;
 let noSuchGoods=true;
+let productsToProcess= new Set();
 
 
 const filter = document.getElementById("main-search-input").value.trim();
@@ -22,36 +23,43 @@ function loadMoreProducts() {
     if (categoryId) params.append("categoryId", categoryId);
     params.append("offset",currentOffset);
 
+    let loadingIndicator = document.getElementById("products-loading-indicator");
+    loadingIndicator.style.display = "";
+
 
     const eventSource = new EventSource("/products/lazy?"+params.toString());
 
     eventSource.onmessage = function (event) {
         const product = JSON.parse(event.data);
         appendProductCard(product);
+        productsToProcess.add(product.id);
         noMoreGoods=false;
         noSuchGoods=false;
     };
 
     eventSource.onerror = function () {
         eventSource.close();
-        document.getElementById("products-loading-indicator").style.display = "none";
+        startLoadRating(productsToProcess);
+        productsToProcess.clear();
         loading = false;
+        loadingIndicator.style.display = "none";
         if(noSuchGoods){
             document.getElementById("no-such-goods").style.display="";
         }
     };
 
     eventSource.onopen = function () {
-        document.getElementById("products-loading-indicator").style.display = "block";
+
     };
 
     eventSource.addEventListener("complete", () => {
-        document.getElementById("products-loading-indicator").style.display = "none";
         eventSource.close();
+        startLoadRating(productsToProcess);
+        productsToProcess.clear();
         loading = false;
+        loadingIndicator.style.display = "none";
     });
 }
-
 function appendProductCard(product) {
     const container = document.getElementById("product-grid");
 
@@ -59,37 +67,55 @@ function appendProductCard(product) {
     col.className = "col";
 
     col.innerHTML = `
-        <div class="card h-100">
-            <a href="/products/get/${product.id}" target="_blank">
-                <img src="/api/media/images/product/get/${product.previewImageFileName}" 
-                     class="card-img-top" 
-                     alt="product_photo" 
-                     width="200" 
-                     height="370">
-            </a>
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title">${product.price}₽</h5>
-                <p class="card-text flex-grow-1">${product.title}</p>
-
-                <div class="d-flex justify-content-between mt-auto">
-                    ${userIsAuthenticated() ? `
-                        <div>
-                            <button class="btn btn-dark cart-btn" data-product-id="${product.id}">
-                                В корзину <i class="fa-solid fa-cart-shopping"></i>
-                            </button>
-                            <button class="btn btn-light wish-btn" data-product-id="${product.id}">
-                                <i class="fa-solid fa-heart"></i>
-                            </button>
-                        </div>
-                    ` : `
-                        <a href="/users/welcome">
-                            <button type="button" class="btn btn-outline-danger">Войти на сайт</button>
-                        </a>
-                    `}
+    <div class="card h-100">
+        <a href="/products/get/${product.id}" target="_blank">
+            <img src="/api/media/get/${product.previewImageFileName}" 
+                 class="card-img-top" 
+                 alt="product_photo" 
+                 width="200" 
+                 height="370">
+        </a>
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">${product.price}₽</h5>
+            <p class="card-text flex-grow-1">${product.title}</p> 
+            
+            <!-- Блок рейтинга и отзывов (изначально скрыт) -->
+            <div class="product-rating-container" data-product-id="${product.id}" style="display: none;">
+                <div class="rating-stars mb-1">
+                    <div class="stars-wrapper">
+                        ${Array(5).fill(0).map((_, i) => `
+                            <i class="far fa-star" data-star-index="${i + 1}"></i>
+                        `).join('')}
+                    </div>
+                    <div class="stars-active" style="width: 0%">
+                        ${Array(5).fill(0).map((_, i) => `
+                            <i class="fas fa-star" data-star-index="${i + 1}"></i>
+                        `).join('')}
+                    </div>
                 </div>
+                <span class="reviews-count text-muted small"></span>
+            </div>
+
+            <div class="d-flex justify-content-between mt-auto">
+                ${userIsAuthenticated() ? `
+                    <div>
+                        <button class="btn btn-dark cart-btn" data-product-id="${product.id}">
+                            В корзину <i class="fa-solid fa-cart-shopping"></i>
+                        </button>
+                        <button class="btn btn-light wish-btn" data-product-id="${product.id}">
+                            <i class="fa-solid fa-heart"></i>
+                        </button>
+                    </div>
+                ` : `
+                    <a href="/users/welcome">
+                        <button type="button" class="btn btn-outline-danger">Войти на сайт</button>
+                    </a>
+                `}
             </div>
         </div>
-    `;
+    </div>
+`;
+
 
     container.appendChild(col);
     bindProductButtons(col)

@@ -28,13 +28,13 @@
 
                 <div class="text-center my-4">
                     <div class="avatar-wrapper">
-                        <img th:src="${user.avatarFileName == null} ? '/images/default-avatar.jpg' : '/api/media/images/user/avatar/get/' + ${user.avatarFileName}"
+                        <img th:src="${user.avatarFileName == null} ? '/images/default-avatar.jpg' : '/api/media/get/' + ${user.avatarFileName}"
                              id="user-avatar" alt="User Avatar">
 
                         <div class="avatar-overlay">
                             <label class="btn btn-sm btn-light mb-1">
                                 Загрузить
-                                <input type="file" onchange="uploadAvatar(this)" hidden>
+                                <input type="file" onchange="uploadAvatar(this)" hidden multiple accept="image/*">
                             </label>
 
                             <button id="deleteBtn"
@@ -144,7 +144,12 @@
                 if (data.EMAIL_SENT) {
                     loadingIndicator.style.display="none";
                     msg.innerHTML = `<div class="alert alert-info">На адрес <b>${formData.get("email")}</b> был отправлен код. Введите его в течение 1 часа.</div>`;
-                    document.getElementById("email").readOnly = true;
+                    const inputs = form.querySelectorAll('input, textarea, select');
+
+                    inputs.forEach(input=>{
+                        input.readOnly=true;
+                    });
+
                     document.getElementById("code-block").style.display = "block";
 
 
@@ -177,15 +182,18 @@
         const formData = new FormData();
         formData.append("file", file);
 
-        fetch("/api/media/images/user/avatar/save", {
+        fetch("/api/users/avatar/upload", {
             method: "POST",
             body: formData
         })
             .then(res => {
                 if (res.ok) {
                     return res.text();
+                }else if(res.status===413){
+                    throw new Error("Файл слишком тяжелый. Убедитесь, что он не превышает 2 мб.");
+
                 }
-                throw new Error("Ошибка при загрузке аватара");
+                else throw new Error("Ошибка при загрузке аватара");
 
             })
             .then(() => {
@@ -199,7 +207,7 @@
 
     function deleteAvatar() {
 
-        fetch("/api/media/images/user/avatar/delete", {
+        fetch("/api/users/avatar/delete", {
             method: "DELETE",
             credentials: "include"
         })

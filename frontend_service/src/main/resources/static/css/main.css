@@ -6,11 +6,12 @@ body{
     background-color: var(--bg-color) ;
     color: var(--text-color) ;
 }
+
 .header-top{
     margin-top: 10px;
 }
 #offcanvasHeart, #offcanvasCart, #offcanvasWish{
-    width: 700px;
+    width: 800px;
 }
 .offcanvas-body img{
     max-width: 100px;
@@ -26,14 +27,25 @@ a:hover{
     border-radius: 0;
 }
 
+.btn-pink {
+    background-color: #ff69b4; /* ярко-розовый (HotPink) */
+    color: white;
+    font-weight: bold;
+}
+
+.btn-pink:hover {
+    background-color: #ff1493; /* DeepPink при наведении */
+    color: white;
+}
+
 .entrance-buttons a{
    color:white;
 }
 
-
-
-
-
+#offcanvasCart .offcanvas-body {
+    max-height: 80vh;
+    overflow-y: auto;
+}
 
 /* блок чата поддержки */
 .chat-timestamp {
@@ -166,6 +178,18 @@ a:hover{
 .chat-item:hover {
     background-color: #f8f9fa;
     cursor: pointer;
+}
+
+#nav-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Чтобы меню было поверх остального */
+    background-color: #b9babf;
+}
+body {
+    padding-top: 70px; /* Отодвинуть содержимое, чтобы оно не залезало под меню */
 }
 
 

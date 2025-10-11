@@ -1,7 +1,7 @@
 package com.example.catalogue_service.mapper;
 import com.example.catalogue_service.entity.Product;
 import com.example.common.grpc.product.ProductResponse;
-import com.example.common.dto.product.ProductResponseDTO;
+import com.example.common.dto.product.rest.ProductResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 
@@ -14,18 +14,11 @@ import com.google.protobuf.Timestamp;
 @Mapper(componentModel = "spring")
 public abstract class LocalProductMapper {
 
-
      public abstract ProductResponseDTO toResponseProductDTO(Product product);
 
      //public abstract Product toProduct(ProductRequestDTO sendProductDTO);
 
      public abstract List<ProductResponseDTO> toResponseProductDTOList(List<Product> all);
-
-
-
-
-
-
 
 
 

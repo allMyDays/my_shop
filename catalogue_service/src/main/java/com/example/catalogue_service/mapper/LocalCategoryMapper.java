@@ -1,6 +1,6 @@
 package com.example.catalogue_service.mapper;
 import com.example.common.grpc.category.Category;
-import com.example.common.dto.CategoryResponseDTO;
+import com.example.common.dto.category.rest.CategoryResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 

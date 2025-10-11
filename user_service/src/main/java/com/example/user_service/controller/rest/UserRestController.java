@@ -1,9 +1,9 @@
 package com.example.user_service.controller.rest;
 
-import com.example.common.dto.user.UpdateUserRequestDTO;
-import com.example.common.dto.user.CreateUserRequestDTO;
-import com.example.common.dto.user.UserResponseDTO;
-import com.example.common.enumeration.grpc.UserExistenceStatus;
+import com.example.common.dto.user.rest.UpdateUserRequestDTO;
+import com.example.common.dto.user.rest.CreateUserRequestDTO;
+import com.example.common.dto.user.rest.UserResponseDTO;
+import com.example.common.enumeration.user_service.UserExistenceStatus;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.service.CommonUserService;
 import com.example.user_service.dto.LoginRequestDTO;
@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.example.common.enumeration.grpc.UserExistenceStatus.EMAIL_EXISTS;
-import static com.example.common.enumeration.grpc.UserExistenceStatus.NOT_EXISTS;
+import static com.example.common.enumeration.user_service.UserExistenceStatus.EMAIL_EXISTS;
+import static com.example.common.enumeration.user_service.UserExistenceStatus.NOT_EXISTS;
 import static com.example.common.service.CommonUserService.getMyUserEntityId;
 import static com.example.common.service.CommonUserService.getUserKeycloakId;
 import static com.example.user_service.enumeration.EmailConfirmationStatus.*;
@@ -217,12 +217,11 @@ public class UserRestController {
         }
         Jwt token = optionalToken.get();
 
-        if(userService.getUserOptionalEntity(getMyUserEntityId(token)).isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(List.of("Данные пользователя отсутствуют в основной базе данных. Пожалуйста, сообщите в поддержку."));
+        Long userId = getMyUserEntityId(token);
 
+        if(userService.getUserOptionalEntity(userId).isEmpty()){
+            userService.getOrCreateMyUser(userId, getUserKeycloakId(token));
         }
-
         ResponseCookie responseCookie = ResponseCookie.from("jwt", token.getTokenValue())
                 .httpOnly(true)
                 .secure(false)

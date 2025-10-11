@@ -20,6 +20,7 @@
         <module>frontend_service</module>
         <module>gateway-api</module>
         <module>eureka_server</module>
+        <module>review-rating_service</module>
     </modules>
 
     <properties>

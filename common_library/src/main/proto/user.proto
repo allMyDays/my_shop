@@ -4,9 +4,10 @@ option java_package="com.example.common.grpc.user";
 
 service UserService {
   rpc CheckUserExists (CheckUserRequest) returns (CheckUserResponse) {}
-  rpc GetUserInfo (UserKeycloakIdRequest) returns (UserInfoResponse) {}
-  rpc GetUserInfo2 (UserEntityIdRequest) returns (UserInfoResponse) {}
+  rpc GetUserInfoByUserKeycloakId (UserKeycloakIdRequest) returns (UserInfoResponse) {}
+  rpc GetUserInfoByUserEntityId (UserEntityIdRequest) returns (UserInfoResponse) {}
   rpc CheckEmailChanged (EmailCheckRequest) returns (StatusResponse) {}
+  rpc GetUserMinimalInfo (UserEntityIdsRequest) returns (UserMinimalInfoOuterResponse){}
 }
 
 message UserKeycloakIdRequest {
@@ -14,6 +15,10 @@ message UserKeycloakIdRequest {
 }
 message UserEntityIdRequest {
   int64 user_entity_id=1;
+}
+
+message UserEntityIdsRequest {
+  repeated int64 user_entity_ids=1;
 }
 
 message CheckUserRequest {
@@ -43,6 +48,23 @@ message UserInfoResponse {
 
   optional string avatarFileName = 6;
 }
+
+message UserMinimalInfoOuterResponse{
+
+  repeated UserMinimalInfoInnerResponse user_minimal_info=1;
+}
+message UserMinimalInfoInnerResponse{
+
+  int64 user_id = 1;
+
+  string user_visible_name = 2;
+
+  optional string avatar_file_name=3;
+
+
+}
+
+
 
 message EmailCheckRequest {
   string user_keycloak_id =1;

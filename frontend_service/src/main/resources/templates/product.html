@@ -10,73 +10,169 @@
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/loadingSpinner.css">
+    <link rel="stylesheet" href="/css/rating.css">
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <style>
+        .product-view-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .thumbnail-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+            max-height: 500px;
+        }
+        .thumbnails {
+            overflow: hidden;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scroll-behavior: smooth;
+        }
+        .thumbnail-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border 0.3s;
+        }
+        .thumbnail-img:hover {
+            border: 2px solid #333;
+        }
+        .scroll-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #555;
+            padding: 5px;
+        }
+        .scroll-btn:hover {
+            color: black;
+        }
+        .main-preview {
+            height: 500px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .product-view-container .product-rating-container {
+            margin: 15px 0;
+        }
+
+        .product-view-container .rating-stars {
+            font-size: 18px; /* Увеличиваем звезды на странице товара */
+        }
+
+        .product-view-container .reviews-count {
+            font-size: 16px;
+            vertical-align: middle;
+        }
+
+        .rating-stars {
+            position: relative;
+            display: inline-block;
+            color: #d51029;
+            font-size: 25px;
+            text-shadow: 0 0 1px rgba(0, 0, 0, 0.3); /* Легкая обводка */
+        }
+
+        .reviews-count{
+            font-weight: bold;
+            font-size: 22px;
+        }
+        .review-body p {
+            margin-bottom: .25rem;
+        }
+        .review-photos img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 5px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        /* preview */
+        .preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .preview-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+        }
+        .preview-name {
+            width: 100px;
+            font-size: 11px;
+            color: #495057;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #review-form .form-control,
+        #review-form .form-select {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #review-form .mb-3 {
+            width: 100%;
+        }
+        #star-rating i {
+            cursor: pointer;
+        }
+        .dropdown .active {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+
+
+
+
+
+
+
+    </style>
 </head>
 <body>
 <div th:insert="~{fragments/menu :: #nav-menu}"></div>
 
-<style>
-    .product-view-container {
-        display: flex;
-        gap: 20px;
-        margin-top: 40px;
-        justify-content: center;
-        align-items: flex-start;
-    }
-
-    .thumbnail-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 80px;
-        max-height: 500px;
-    }
-
-    .thumbnails {
-        overflow: hidden;
-        max-height: 400px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        scroll-behavior: smooth;
-    }
-
-    .thumbnail-img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: border 0.3s;
-    }
-
-    .thumbnail-img:hover {
-        border: 2px solid #333;
-    }
-
-    .scroll-btn {
-        background: none;
-        border: none;
-        font-size: 24px;
-        cursor: pointer;
-        color: #555;
-        padding: 5px;
-    }
-
-    .scroll-btn:hover {
-        color: black;
-    }
-
-    .main-preview {
-        width: 400px;
-        height: 500px;
-        object-fit: contain;
-        border-radius: 10px;
-        border: 1px solid #ccc;
-        cursor: pointer;
-    }
-</style>
+<input type="hidden" id="currentUserId" th:if="${currentUserId!=null}" th:value="${currentUserId}">
 
 <main class="container py-5">
     <div class="row justify-content-center">
@@ -87,7 +183,7 @@
                 <button th:if="${product.imageFileNames.size()>6}" class="scroll-btn up" onclick="scrollThumbnails(-1)">▲</button>
                 <div class="thumbnails" id="thumbnailList">
                     <img th:each="img : ${product.imageFileNames}"
-                         th:src="@{/api/media/images/product/get/{file}(file=${img})}"
+                         th:src="@{/api/media/get/{file}(file=${img})}"
                          onclick="changePreview(this)"
                          alt="thumb"
                          class="thumbnail-img">
@@ -97,11 +193,10 @@
 
             <!-- Главное изображение -->
             <div class="col-md-6">
-                <img th:src="@{/api/media/images/product/get/{file}(file=${product.previewImageFileName})}"
+                <img th:src="@{/api/media/get/{file}(file=${product.previewImageFileName})}"
                      class="img-fluid rounded shadow main-preview"
                      id="previewImage"
-                     alt="Фото товара"
-                     style="cursor: pointer;">
+                     alt="Фото товара">
             </div>
         </div>
 
@@ -109,7 +204,31 @@
         <div class="col-md-6 d-flex flex-column justify-content-between my-5">
             <div>
                 <h1 th:text="${product.title}" class="fw-bold mb-3"></h1>
-                <p class="text-muted"
+                <!-- БЛОК РЕЙТИНГА-->
+                <div class="product-rating-container mb-3" th:data-product-id="${product.id}" style="display: none;">
+                    <div class="rating-stars d-inline-block">
+                        <div class="stars-wrapper">
+                            <i class="far fa-star" data-star-index="1"></i>
+                            <i class="far fa-star" data-star-index="2"></i>
+                            <i class="far fa-star" data-star-index="3"></i>
+                            <i class="far fa-star" data-star-index="4"></i>
+                            <i class="far fa-star" data-star-index="5"></i>
+                        </div>
+                        <div class="stars-active" style="width: 0%">
+                            <i class="fas fa-star" data-star-index="1"></i>
+                            <i class="fas fa-star" data-star-index="2"></i>
+                            <i class="fas fa-star" data-star-index="3"></i>
+                            <i class="fas fa-star" data-star-index="4"></i>
+                            <i class="fas fa-star" data-star-index="5"></i>
+                        </div>
+                    </div>
+                    <span class="reviews-count text-muted ms-2"></span>
+                </div>
+
+
+
+
+                <p class="text-muted fw-bold"
                    style="white-space: pre-line; word-wrap: break-word;"
                    th:text="${product.description}"></p>
 
@@ -118,9 +237,8 @@
                 </h1>
             </div>
 
-            <!-- Кнопки -->
-            <div id="single-product-buttons">
-            <div class="mt-4 d-flex gap-3">
+        <!-- Кнопки -->
+            <div id="single-product-buttons" class="mt-4 d-flex gap-3">
                 <div sec:authorize="isAuthenticated()">
                     <button type="button"
                             class="btn btn-dark cart-btn"
@@ -136,10 +254,9 @@
                 </div>
                 <div sec:authorize="!isAuthenticated()">
                     <a href="/users/welcome">
-                        <button type="button" class="btn btn-outline-danger">Войти на сайт</button>
+                        <button type="button" class="btn btn-outline-danger">Войдите на сайт, чтобы заказать товар</button>
                     </a>
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -147,86 +264,663 @@
 
 <div th:insert="~{fragments/support_chat :: #support-chat}"></div>
 
-<!-- Модальное окно с изображением -->
+<!-- Модалка с изображением -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content bg-transparent border-0">
             <div class="modal-body text-center p-0">
-                <img id="modalImage" class="img-fluid rounded" alt="full_image">
+                <img id="modalImage" class="img-fluid rounded" alt="Фото товара">
             </div>
         </div>
     </div>
 </div>
 
+
+<!-- блок отзывов -->
+<div class="container my-5">
+
+    <!-- Заголовок блока -->
+    <div class="d-flex flex-column align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Отзывы о товаре</h3>
+        <h6 class="fw-bold mb-0 mt-3" id="noReviewsExistLable" style="display: none">Отзывов пока нет. Станьте первым, кто поделится мнением о товаре.</h6>
+        <h6 class="fw-bold mb-0 mt-3" id="noUserReviewLable" style="display: none">Вы не оставляли отзыв об этом товаре. Но вы можете это исправить!</h6>
+        <h6 class="fw-bold mb-0 mt-3" id="noPhotoReviewsExistLable" style="display: none">Отзывов с фотографиями пока нет. Станьте первым, кто оставит такой отзыв!</h6>
+        <div class="mt-2">
+            <div sec:authorize="isAuthenticated()">
+                <button class="btn btn-outline-dark" id="writeReviewBtn">
+                    <i class="bi bi-pencil-square me-1"></i> Написать отзыв
+                </button>
+            </div>
+
+            <div sec:authorize="!isAuthenticated()">
+                <a href="/users/welcome">
+                    <button type="button" class="btn btn-outline-danger">Войдите на сайт, чтобы написать отзыв</button>
+                </a>
+            </div>
+        </div>
+        <div class="mt-2">
+            <div class="dropdown">
+                <button class="btn btn-outline-dark dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Сначала с высокой оценкой
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                    <li><a class="dropdown-item sort-option active" href="#" data-sort="HIGH_RATING">Сначала с высокой оценкой</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="LOW_RATING">Сначала с низкой оценкой</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="NEWEST">Сначала новые</a></li>
+                    <li><a class="dropdown-item sort-option" href="#" data-sort="WITH_PHOTO">Сначала с фото</a></li>
+                    <li><a sec:authorize="isAuthenticated()" id="my-review-button" class="dropdown-item sort-option" href="#" data-sort="MY_REVIEW">Мой отзыв</a></li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Список отзывов -->
+    <div id="reviewsContainer" class="mx-auto" style="max-width: 800px;">
+        <!-- Отзывы будут подгружаться сюда через JS -->
+    </div>
+
+    <!-- Кнопка подгрузки -->
+    <div class="text-center mt-4">
+        <button class="btn btn-outline-secondary" id="loadMoreBtn">Показать ещё</button>
+    </div>
+</div>
+
+<!-- Шаблон одного отзыва -->
+<template id="reviewTemplate">
+    <div class="card shadow-sm mb-4 border-0" style="border-radius: 12px;">
+        <div class="card-body position-relative">
+            <div class="d-flex align-items-center mb-3">
+                <img src="/images/default-avatar.jpg" class="rounded-circle me-3" width="60" height="60" alt="avatar">
+                <div>
+                    <h6 class="mb-0 fw-bold username"></h6>
+                    <small class="text-muted date"></small>
+                </div>
+                <div class="ms-auto stars fs-4 text-warning" id="review-stars"></div>
+            </div>
+            <p class="mb-1 usage">..</p>
+            <p class="mb-1"><strong>Достоинства:</strong> <span class="advantages"></span></p>
+            <p class="mb-1"><strong>Недостатки:</strong> <span class="disAdvantages"></span></p>
+            <p class="mb-2"><strong>Комментарий:</strong> <span class="comment"></span></p>
+            <div class="review-photos d-flex flex-wrap gap-2 mt-3"></div>
+            <div class="delete-btn-container"></div>
+        </div>
+    </div>
+</template>
+
+<!-- модалка для создания отзыва -->
+
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header">
+                <h5 class="modal-title">Отправить отзыв</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="review-form" enctype="multipart/form-data">
+                    <input type="hidden" id="productId" th:value="${product.id}"/>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Достоинства</label>
+                        <textarea id="advantages" class="form-control" rows="2" minlength="5" maxlength="250"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Недостатки</label>
+                        <textarea id="disAdvantages" class="form-control" rows="2" minlength="5" maxlength="250"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Комментарий</label>
+                        <textarea id="comment" class="form-control" rows="3" minlength="5" maxlength="500"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Срок использования</label>
+                        <select id="usagePeriod" class="form-select" required>
+                            <option value="" disabled selected>Выберите..</option>
+                            <option value="LESS_THAN_WEEK">Менее недели</option>
+                            <option value="LESS_THAN_MONTH">Менее месяца</option>
+                            <option value="LESS_THAN_HALF_YEAR">Менее полугода</option>
+                            <option value="LESS_THAN_YEAR">Менее года</option>
+                            <option value="LESS_THAN_2_YEARS">Менее 2 лет</option>
+                            <option value="MORE_THAN_2_YEARS">Более 2 лет</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Оценка</label>
+                        <div id="star-rating" class="text-warning fs-4">
+                            <i class="bi bi-star" data-value="1"></i>
+                            <i class="bi bi-star" data-value="2"></i>
+                            <i class="bi bi-star" data-value="3"></i>
+                            <i class="bi bi-star" data-value="4"></i>
+                            <i class="bi bi-star" data-value="5"></i>
+                        </div>
+                        <input type="hidden" id="rating" required>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="anonymousReview">
+                        <label class="form-check-label" for="anonymousReview">Анонимно</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Фото (до 5 шт)</label>
+                        <input type="file" id="photos" class="form-control" multiple accept="image/*">
+                        <div id="photo-preview" class="d-flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" id="create-review-btn" class="btn btn-dark">Отправить отзыв</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
 <!-- Скрипты -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/main.js"></script>
-<script src="/js/cart_wish.js"></script>
+<script src="/js/rating_view.js"></script>
 <script src="/js/cards_interactions.js"></script>
+<script src="/js/cart_wish.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const previewImage = document.getElementById("previewImage");
+        const modalImage = document.getElementById("modalImage");
+        const imageModal = new bootstrap.Modal(document.getElementById("imageModal"));
 
-        bindProductButtons(document.getElementById("single-product-buttons"));
-        const mainPreview = document.getElementById('previewImage');
-        const modalImage = document.getElementById('modalImage');
-        const modalEl = document.getElementById('imageModal');
-        const bsModal = new bootstrap.Modal(modalEl);
-
-
-        function resolveImgUrl(imgEl) {
-
-            let src = imgEl.currentSrc || imgEl.src || imgEl.getAttribute('src') || '';
-            if (!src) return src;
-            try {
-
-                return new URL(src, window.location.href).href;
-            } catch (e) {
-                return src;
-            }
-        }
+        //сразу синхронизирую модалку с главным изображением
+        modalImage.src = previewImage.src;
 
 
-        function openImageModalWithSrc(src) {
-            console.log('[image modal] setting src ->', src);
-            modalImage.onload = () => console.log('[image modal] loaded OK:', modalImage.src, 'naturalWidth=', modalImage.naturalWidth);
-            modalImage.onerror = () => {
-                console.error('[image modal] failed to load:', modalImage.src);
-                // Для отладки — выведем ещё раз текущие значения mainPreview и modalImage
-                console.log('[debug] preview.src =', resolveImgUrl(mainPreview));
-                console.log('[debug] modal.src =', modalImage.src);
-            };
+        previewImage.addEventListener("click", () => {
+            modalImage.src = previewImage.src;
+            imageModal.show();
+        });
 
+        // Функция для смены изображения при клике на миниатюру
+        window.changePreview = function(imgElement) {
+            const newSrc = imgElement.src;
+            previewImage.src = newSrc;
+            modalImage.src = newSrc;
+        };
 
-            modalImage.src = src;
-            bsModal.show();
-        }
-
-
-        if (mainPreview) {
-            mainPreview.addEventListener('click', (e) => {
-                const src = resolveImgUrl(mainPreview);
-                openImageModalWithSrc(src);
+        // Скролл миниатюр
+        window.scrollThumbnails = function(direction) {
+            const container = document.getElementById("thumbnailList");
+            const scrollAmount = 70;
+            container.scrollBy({
+                top: scrollAmount * direction,
+                behavior: "smooth"
             });
+        };
 
-            try {
-                modalImage.src = resolveImgUrl(mainPreview);
-                console.log('[init] modalImage prefilled with', modalImage.src);
-            } catch (err) {
-                console.warn('[init] could not prefill modalImage:', err);
-            }
+        const productIdAttr = document.querySelector('.product-rating-container')?.getAttribute('data-product-id');
+        if (productIdAttr) {
+            let productToProcess= new Set();
+            productToProcess.add(parseInt(productIdAttr,10));
+            startLoadRating(productToProcess);
         }
 
+        // Привязка кнопок корзины/избранного
+       setTimeout(()=>{
+           bindProductButtons(document.getElementById("single-product-buttons"));
 
-        document.querySelectorAll('.thumbnail-img').forEach(thumb => {
-            thumb.addEventListener('click', function () {
-                const src = resolveImgUrl(this);
-                console.log('[thumb click] setting preview and modal to', src);
-                mainPreview.src = src;
-                modalImage.src = src;
+
+           },100);
+
+
+    });
+</script>
+<!--блок отзывов-->
+<script>
+    const reviewsContainer = document.getElementById("reviewsContainer");
+    const reviewTemplate = document.getElementById("reviewTemplate");
+    const loadMoreBtn = document.getElementById("loadMoreBtn");
+    const createReviewBtn = document.getElementById("writeReviewBtn");
+
+    let offset = 0;
+    const productIdAttr = document.querySelector('.product-rating-container')?.getAttribute('data-product-id');
+    const productId = parseInt(productIdAttr,10);
+    const defaultAvatar = "/images/default-avatar.jpg";
+    const anonymousAvatar = "/images/anonymous-avatar.jpg";
+
+    const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    if (createReviewBtn) createReviewBtn.addEventListener('click', () => reviewModal.show())
+
+    function reloadReviews(sortType="HIGH_RATING"){
+        offset = 0;
+        reviewsContainer.innerHTML = '';
+        loadReviews(sortType);
+        let productToProcess= new Set();
+        productToProcess.add(document.getElementById('productId').value);
+        startLoadRating(productToProcess);
+        // Прокрутить к элементу с плавной анимацией
+
+    }
+
+
+    function deleteReviewByReviewId(reviewId) {
+        fetch(`/api/review/${reviewId}`, {
+            method: 'DELETE'
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert('Отзыв успешно удалён.');
+                    setTimeout(()=>{
+                        reloadReviews();
+                    },300);
+                } else {
+                    alert('Ошибка при удалении отзыва.');
+                }
+            });
+    }
+
+
+    async function loadReviews(sortType="HIGH_RATING") {
+        let noReviewsExist = document.getElementById("noReviewsExistLable");
+        let noCurrentUserReview =  document.getElementById("noUserReviewLable");
+        let noPhotoReviews =  document.getElementById("noPhotoReviewsExistLable");
+
+        noReviewsExist.style.display="none";
+        noCurrentUserReview.style.display="none";
+        noPhotoReviews.style.display="none";
+
+        loadMoreBtn.style.display="none";
+
+        const response = await fetch(`/api/review/${productId}?sortType=${sortType}&offset=${offset}`);
+        const reviews = await response.json();
+
+        if(offset===0&&reviews.length===0){
+            if(sortType==="MY_REVIEW"){
+                noCurrentUserReview.style.display="";
+            }
+            else if(sortType==="WITH_PHOTO"){
+                noPhotoReviews.style.display="";
+            }
+
+           else noReviewsExist.style.display="";
+
+        }
+
+        const userIdInput = document.getElementById("currentUserId");
+        const currentUserId = userIdInput? parseInt(userIdInput.value):null;
+
+        reviews.forEach(r => {
+            const clone = reviewTemplate.content.cloneNode(true);
+            const avatar = clone.querySelector("img");
+            avatar.src = (r.anonymousReview?anonymousAvatar:(r.userAvatarFileName ? `/api/media/get/${r.userAvatarFileName}`:defaultAvatar));
+            clone.querySelector(".username").textContent = r.userVisibleName;
+            clone.querySelector(".date").textContent = new Date(r.dateOfCreation).toLocaleDateString("ru-RU");
+            clone.querySelector(".usage").innerHTML = `<h6>Срок использования ${r.usagePeriod}</h6>`;
+
+            const adv = clone.querySelector(".advantages");
+            const disAdv = clone.querySelector(".disAdvantages");
+            const comment = clone.querySelector(".comment");
+
+
+            if(r.advantages) adv.textContent = r.advantages;
+            else adv.parentElement.style.display="none";
+
+            if(r.disAdvantages) disAdv.textContent = r.disAdvantages;
+            else disAdv.parentElement.style.display="none";
+
+            if(r.comment) comment.textContent = r.comment;
+            else comment.parentElement.style.display="none";
+
+
+
+            // звёзды
+            const starsContainer = clone.querySelector(".stars");
+            starsContainer.innerHTML = "★".repeat(r.rating) + "☆".repeat(5 - r.rating);
+
+            // фото
+            const photosContainer = clone.querySelector(".review-photos");
+            if (r.photoFileNames && r.photoFileNames.length > 0) {
+                r.photoFileNames.forEach(name => {
+                    const img = document.createElement("img");
+                    img.src = `/api/media/get/${name}`;
+                    img.className = "rounded shadow-sm";
+                    img.style.width = "100px";
+                    img.style.height = "100px";
+                    img.style.objectFit = "cover";
+                    img.style.cursor = "pointer";
+
+                    // При клике — показать в модалке
+                    img.addEventListener("click", () => {
+                        const modalImage = document.getElementById("modalImage");
+                        modalImage.src = img.src; // подставляю то же фото
+                        const modal = new bootstrap.Modal(document.getElementById("imageModal"));
+                        modal.show();
+                    });
+
+                    photosContainer.appendChild(img);
+                });
+            }
+
+            if (currentUserId&&r.userId === currentUserId) {
+                const btnContainer = clone.querySelector('.delete-btn-container');
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-sm btn-outline-dark position-absolute';
+                deleteBtn.style.right = '15px';
+                deleteBtn.style.bottom = '15px';
+                deleteBtn.innerHTML = 'Удалить';
+
+                // Обработчик клика
+                deleteBtn.addEventListener('click', () => {
+                    if (confirm('Вы уверены, что хотите удалить этот отзыв? Отменить действие будет невозможно.')) {
+                        deleteReviewByReviewId(r.id);
+                    }
+                });
+
+                btnContainer.appendChild(deleteBtn);
+            }
+
+
+            reviewsContainer.appendChild(clone);
+        });
+
+        if (reviews.length < 40) loadMoreBtn.style.display = "none";
+        else loadMoreBtn.style.display = "";
+        offset += 40;
+    }
+
+    loadMoreBtn.addEventListener("click", loadReviews);
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Обработчики для сортировки
+        document.querySelectorAll('.sort-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Обновляем активный элемент
+                document.querySelectorAll('.sort-option').forEach(item => {
+                    item.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Обновляем текст кнопки
+                document.querySelector('#sortDropdown').textContent = this.textContent;
+
+                // Перезагружаем отзывы с новой сортировкой
+                reloadReviews(this.dataset.sort);
+            });
+        });
+        loadReviews();
+    });
+
+
+</script>
+
+<!--функции для модального окна создания отзыва-->
+
+<script>
+    // ---- РЕЙТИНГ ЗВЁЗДАМИ в модалке создания отзыва ----
+    document.querySelectorAll('#star-rating i').forEach(star => {
+        star.addEventListener('click', () => {
+            const rating = parseInt(star.getAttribute('data-value'));
+            document.getElementById('rating').value = rating;
+
+            // обновляю подсветку
+            document.querySelectorAll('#star-rating i').forEach((s, i) => {
+                s.classList.toggle('bi-star-fill', i < rating);
+                s.classList.toggle('bi-star', i >= rating);
             });
         });
     });
+
+    <!--скрипт для фото при создании отзыва-->
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const photoInput = document.getElementById('photos');
+        const previewContainer = document.getElementById('photo-preview');
+        const MAX_FILES = 5;
+
+        if (!photoInput || !previewContainer) {
+            console.warn('Не найден #photos или #photo-preview.');
+            return;
+        }
+
+        let selectedFiles = []; // {id, file, url, key}
+        let nextFileId = 1;
+        const keys = new Set(); // для предотвращения дублей
+
+        function fileKey(file) {
+            return `${file.name}_${file.size}_${file.lastModified}`;
+        }
+
+        function renderPreviews() {
+            previewContainer.innerHTML = '';
+            selectedFiles.forEach(obj => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'd-flex flex-column align-items-center';
+
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.dataset.fileId = obj.id;
+
+                const img = document.createElement('img');
+                img.src = obj.url;
+                img.alt = obj.file.name;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'preview-remove';
+                btn.title = 'Удалить фото';
+                btn.innerHTML = '&times;';
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    removeFileById(obj.id);
+                });
+
+                item.appendChild(img);
+                item.appendChild(btn);
+                wrapper.appendChild(item);
+
+                const name = document.createElement('div');
+                name.className = 'preview-name mt-1';
+                name.textContent = obj.file.name;
+                wrapper.appendChild(name);
+
+                previewContainer.appendChild(wrapper);
+            });
+        }
+
+        function removeFileById(id) {
+            const idx = selectedFiles.findIndex(x => x.id === id);
+            if (idx === -1) return;
+            try { URL.revokeObjectURL(selectedFiles[idx].url); } catch (e) {}
+            keys.delete(selectedFiles[idx].key);
+            selectedFiles.splice(idx, 1);
+            renderPreviews();
+        }
+
+        photoInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0) return;
+
+            // Считаю сколько реально новых (не дубли) добавится
+            const newFiles = files.filter(f => !keys.has(fileKey(f)));
+            if (newFiles.length === 0) {
+                photoInput.value = ''; // очищаю, чтобы можно было выбрать заново
+                return;
+            }
+
+            const totalAfter = selectedFiles.length + newFiles.length;
+            if (totalAfter > MAX_FILES) {
+                const overflow = totalAfter - MAX_FILES;
+                const proceed = confirm(
+                    `К сожалению, вы не можете прикрепить к отзыву больше чем ${MAX_FILES} фото.` +
+                    ` Удалить первое фото, чтобы освободить место для нового?`
+                );
+                if (!proceed) {
+                    photoInput.value = '';
+                    return;
+                }
+                // удаляю старые (с начала — самые старые)
+                for (let i = 0; i < overflow; i++) {
+                    if (selectedFiles.length === 0) break;
+                    removeFileById(selectedFiles[0].id);
+                }
+            }
+
+            // Добавляю новые (до лимита)
+            for (const f of newFiles) {
+                if (selectedFiles.length >= MAX_FILES) break;
+                const key = fileKey(f);
+                const url = URL.createObjectURL(f);
+                selectedFiles.push({ id: nextFileId++, file: f, url, key });
+                keys.add(key);
+            }
+
+            renderPreviews();
+            photoInput.value = ''; // важно, чтобы можно было выбрать те же файлы позже
+        });
+
+        // --- интеграция с отправкой формы ---
+        const reviewForm = document.getElementById('review-form');
+        if (reviewForm) {
+            let inProcess = false;
+            // добавляю функционал отправки отзыва к кнопке модалки
+            reviewForm.addEventListener('submit', async (ev) => {
+                if(inProcess) return;
+                try{
+                    inProcess=true;
+                    document.getElementById("create-review-btn").textContent = "Отправка...";
+
+                ev.preventDefault();
+
+                // Валидации
+                const rating = parseInt(document.getElementById('rating').value || '0');
+                const usagePer = document.getElementById("usagePeriod").value;
+                if (!rating) {
+                    alert('Пожалуйста, выберите рейтинг!');
+                    return;
+                }
+                if (!usagePer) {
+                    alert('Пожалуйста, выберите срок использования продукта!');
+                    return;
+                }
+
+                try {
+
+                    const fd = new FormData();
+                    const adv = document.getElementById('advantages').value;
+                    const disAdv = document.getElementById('disAdvantages').value;
+                    const comm = document.getElementById('comment').value;
+
+                    fd.append('productId', document.getElementById('productId').value);
+                    if (adv) fd.append('advantages', adv);
+                    if (disAdv) fd.append('disAdvantages', disAdv);
+                    if (comm) fd.append('comment', comm);
+                    fd.append('rating', rating);
+                    fd.append('usagePeriod', usagePer);
+                    fd.append('anonymousReview', document.getElementById('anonymousReview').checked);
+
+                    // Добавляю изображения (ключ совпадает с @RequestPart в контроллере)
+                    selectedFiles.forEach(obj => fd.append('images', obj.file));
+
+
+                    const resp = await fetch('/api/review/create', {
+                        method: 'POST',
+                        body: fd
+                    });
+                    if (resp.status === 413) {
+                        const text = await resp.text();
+                        alert('Слишком большой размер загружаемых файлов. Убедитесь, что один файл не превышает 2 мб, а совокупность файлов — 8 мб.');
+                        console.log('Слишком тяжелый запрос' + text);
+                        return;
+                    }
+                    if (resp.status === 409) {
+                        const proceed = confirm(
+                            `Упс! Вы ранее уже оставляли отзыв к этому товару. Чтобы оставить новый, придется невозвратно удалить предыдущий. Удалить?`
+                        );
+
+
+                        if (!proceed) {
+                            bootstrap.Modal.getInstance(document.getElementById("reviewModal")).hide();
+                            return;
+                        }
+
+
+                        const resp = await fetch(`/api/review/by_product_id/${document.getElementById('productId').value}`, {
+                            method: 'DELETE'
+                        });
+
+                        if (!resp.ok) {
+                            alert("Не удалось удалить ваш отзыв. Попробуйте сделать это вручную в развеле отзывов.");
+                            return;
+                        }
+                        if (resp.ok) {
+                            alert("Предыдущий отзыв удален! Теперь можете отправить свой новый отзыв.");
+                            return;
+                        }
+                        return;
+                    }
+
+                    if (!resp.ok) {
+                        const text = await resp.text();
+                        alert('Ошибка при отправке отзыва.');
+                        console.log('Ошибка при отправке отзыва.' + text);
+                        return;
+                    }
+
+                    // Успех — очистка
+                    selectedFiles.forEach(f => {
+                        try {
+                            URL.revokeObjectURL(f.url);
+                        } catch (e) {
+                        }
+                    });
+                    selectedFiles = [];
+                    keys.clear();
+                    renderPreviews();
+                    reviewForm.reset();
+
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('reviewModal'));
+                    if (modal) modal.hide();
+
+                    alert('Отзыв отправлен. Он появится на странице через несколько секунд.');
+
+                    setTimeout(() => {
+                        reloadReviews("MY_REVIEW");
+                        // Обновляю кнопку выбора категории на "мой отзыв"
+                        document.querySelectorAll('.sort-option').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        const myReviewBtn = document.getElementById("my-review-button");
+                        myReviewBtn.classList.add('active');
+
+                        document.querySelector('#sortDropdown').textContent = myReviewBtn.textContent;
+                    }, 4000);
+
+
+                } catch (err) {
+                    console.error(err);
+                    alert('Ошибка: ' + (err.message || err));
+                }
+            }finally {
+                    inProcess=false;
+                    document.getElementById("create-review-btn").textContent = "Отправить отзыв";
+
+                }
+              }
+            );
+        }
+    });
 </script>
+
+
+
 </body>
 </html>

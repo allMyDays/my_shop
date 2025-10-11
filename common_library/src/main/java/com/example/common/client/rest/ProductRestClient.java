@@ -1,14 +1,10 @@
 package com.example.common.client.rest;
 
-import com.example.common.dto.product.NewProductRequestDTO;
-import com.example.common.dto.product.ProductResponseDTO;
+import com.example.common.dto.product.rest.NewProductRequestDTO;
+import com.example.common.dto.product.rest.ProductResponseDTO;
 import com.example.common.exception.BadRequestException;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Lazy;

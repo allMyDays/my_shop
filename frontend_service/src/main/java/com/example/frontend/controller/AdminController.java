@@ -1,7 +1,7 @@
 package com.example.frontend.controller;
 
 import com.example.common.client.grpc.UserGrpcClient;
-import com.example.common.dto.user.UserResponseDTO;
+import com.example.common.dto.user.rest.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -21,7 +21,7 @@ public class AdminController {
 
     @GetMapping("/profile")
     public String profile(Model model, @RequestParam Long userId){
-        UserResponseDTO userResponseDTO =  userGrpcClient.getUserInfo2(userId);
+        UserResponseDTO userResponseDTO =  userGrpcClient.getUserInfoByEntityId(userId);
         model.addAttribute("user", userResponseDTO);
         return "profile_admin_page";
     }

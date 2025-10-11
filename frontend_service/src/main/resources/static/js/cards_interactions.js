@@ -1,17 +1,15 @@
 let cartProductIds = new Set();
 let wishProductIds = new Set();
 
-if(userIsAuthenticated()===true){
  document.addEventListener('DOMContentLoaded', () => {
-    Promise.all([
-        fetch('/api/cart/items').then(res => res.json()),
-        fetch('/api/wish-list/items').then(res => res.json())
-    ]).then(([cartItems, wishItems]) => {
-        cartItems.forEach(item => cartProductIds.add(String(item.productId)));
-        wishItems.forEach(item => wishProductIds.add(String(item.productId)));
-    });
+         Promise.all([
+             fetch('/api/cart/get_product_ids').then(res => res.json()),
+             fetch('/api/wish-list/get_product_ids').then(res => res.json())
+         ]).then(([cartItems, wishItems]) => {
+             cartItems.forEach(item => cartProductIds.add(String(item)));
+             wishItems.forEach(item => wishProductIds.add(String(item)));
+         });
   });
-}
 
 function bindProductButtons(element) {
     const cartBtn = element.querySelector('.cart-btn');
@@ -32,7 +30,10 @@ function bindProductButtons(element) {
                     method: 'POST',
                     credentials: "include"
                 }).then(res => {
-                    if (res.ok) {
+                    if(res.status===429){
+                        alert("Вы превысили лимит на добавление товаров в корзину.");
+                    }
+                    else if (res.ok) {
                         cartBtn.textContent = 'Удалить из корзины';
                         cartBtn.classList.add('in-cart', 'btn-danger');
                         cartBtn.classList.remove('btn-dark');
@@ -44,6 +45,7 @@ function bindProductButtons(element) {
                     method: 'DELETE',
                     credentials: "include"
                 }).then(res => {
+
                     if (res.ok) {
                         cartBtn.innerHTML = 'В корзину <i class="fa-solid fa-cart-shopping"></i>';
                         cartBtn.classList.remove('in-cart', 'btn-danger');
@@ -69,7 +71,11 @@ function bindProductButtons(element) {
                     method: 'POST',
                     credentials: "include"
                 }).then(res => {
-                    if (res.ok) {
+                   if(res.status===429){
+                       alert("Вы превысили лимит на добавление товаров в список желаний.");
+
+                   }
+                   else if (res.ok) {
                         icon.classList.add('text-danger');
                         loadWishListSize();
                     }
@@ -111,3 +117,5 @@ document.addEventListener('wishItemRemoved', event => {
         }
     });
 });
+
+

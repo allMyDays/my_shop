@@ -1,7 +1,7 @@
 package com.example.common.client.kafka;
 
-import com.example.common.kafka.dto.product.ProductDeleteImageDto;
-import com.example.common.kafka.dto.product.ProductSetImageDto;
+import com.example.common.dto.product.kafka.ProductDeleteImageDto;
+import com.example.common.dto.product.kafka.ProductSetImageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import static com.example.common.kafka.constant.Topics.PRODUCT_TOPIC;
-import static com.example.common.kafka.constant.keys.ProductKeys.DELETE_PRODUCT_IMAGE;
-import static com.example.common.kafka.constant.keys.ProductKeys.SET_PRODUCT_IMAGE;
+import static com.example.common.constant.kafka.Topics.PRODUCT_REQUEST_TOPIC;
+import static com.example.common.constant.kafka.keys.ProductKeys.DELETE_PRODUCT_IMAGE;
+import static com.example.common.constant.kafka.keys.ProductKeys.SET_PRODUCT_IMAGE;
 
 @Service
 @ConditionalOnClass(KafkaTemplate.class)
@@ -32,7 +32,7 @@ public class ProductKafkaClient {
         productSetImageDto.setNewImageFileName(imageFileName);
         productSetImageDto.setPreviewImage(previewImage);
 
-        kafkaTemplate.send(PRODUCT_TOPIC, SET_PRODUCT_IMAGE, productSetImageDto);
+        kafkaTemplate.send(PRODUCT_REQUEST_TOPIC, SET_PRODUCT_IMAGE, productSetImageDto);
 
     }
 
@@ -42,7 +42,7 @@ public class ProductKafkaClient {
         productDeleteImageDto.setImageFileName(imageFileName);
         productDeleteImageDto.setPreviewImage(previewImage);
 
-        kafkaTemplate.send(PRODUCT_TOPIC, DELETE_PRODUCT_IMAGE, productDeleteImageDto);
+        kafkaTemplate.send(PRODUCT_REQUEST_TOPIC, DELETE_PRODUCT_IMAGE, productDeleteImageDto);
 
     }
 

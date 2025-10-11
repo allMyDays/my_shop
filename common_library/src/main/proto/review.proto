@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option java_package="com.example.common.grpc.review";
+option java_multiple_files = true;
+
+
+service ReviewService{
+
+  rpc GetAllReviews (ReviewRequest) returns (stream ReviewResponse);
+
+}
+
+message ReviewRequest{
+
+  int64 product_id = 1;
+}
+
+message ReviewResponse{
+
+  int64 id=1;
+
+  int64 user_id=2;
+
+  int64 product_id=3;
+
+  string review_text=4;
+
+  int32 rating = 5;
+
+  bool anonymous_review=6;
+
+  ReviewPhotoList photoFileNames=7;
+
+}
+
+message ReviewPhotoList{
+
+  repeated string photos=1;
+
+
+}

@@ -1,56 +1,90 @@
 package com.example.cart_wishlist.service;
 
 import com.example.cart_wishlist.entity.WishList;
+import com.example.cart_wishlist.entity.WishItem;
+import com.example.cart_wishlist.repository.WishItemRepository;
 import com.example.cart_wishlist.repository.WishListRepository;
-import com.example.common.exception.UserNotFoundException;
+import com.example.common.client.grpc.ProductGrpcClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import static com.example.common.service.CommonUserService.getMyUserEntityId;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class WishListService {
 
-    private final WishListRepository wishListRepository;
+    private final WishListRepository listRepository;
+
+    private final WishItemRepository itemRepository;
+
+    private final ProductGrpcClient productGrpcClient;
 
 
 
 
-    public WishList getUserWishList(Jwt jwt) throws UserNotFoundException {
+    public WishList getOrCreateWishList(Long userId) {
 
-        Long userId = getMyUserEntityId(jwt);
-
-        return wishListRepository.findById(userId).orElseGet(()->{
+        return listRepository.findById(userId).orElseGet(()->{
                     WishList wishList = new WishList();
-                    wishList.setUserID(userId);
-                    return wishListRepository.save(wishList);
+                    wishList.setUserId(userId);
+                    return listRepository.save(wishList);
                  }
 
         );
     }
 
-    public void addItemToWishList(Jwt jwt, Long productID) throws UserNotFoundException {
+    public void addItem(Long userId, Long productID){
 
-        WishList wishList = getUserWishList(jwt);
+        if (!productGrpcClient.productExists(productID)){
+            return;
+        }
+        WishList wishList = getOrCreateWishList(userId);
 
-        if(wishList.getProductIDs().contains(productID)) return;
-
-        wishList.getProductIDs().add(productID);
-
-        wishListRepository.save(wishList);
+        Optional<WishItem> wishListItemOptional = itemRepository.findByWishListUserIdAndProductId(userId, productID);
+        if (wishListItemOptional.isEmpty()){
+            WishItem wishItem = new WishItem();
+            wishItem.setProductId(productID);
+            wishItem.setWishList(wishList);
+            itemRepository.save(wishItem);
+        }
 
     }
 
 
-    public void removeItemFromWishList(Jwt jwt, Long productID) throws UserNotFoundException {
+    public void removeItem(Long userId, Long productID){
+        getOrCreateWishList(userId);
 
-        WishList wishList = getUserWishList(jwt);
+        itemRepository.deleteByUserIdAndProductId(userId, productID);
 
-        wishList.getProductIDs().remove(productID);
+    }
 
-        wishListRepository.save(wishList);
+    public List<WishItem> getItems(Long userId, int offset){
+
+        if(offset<0) throw new IllegalArgumentException("offset must be greater than 0");
+
+        getOrCreateWishList(userId);
+
+        int limit = 40;
+
+        Pageable pageable = PageRequest.of(offset/limit, limit);
+
+        return itemRepository.findAllByUserId(userId, pageable);
+
+    }
+
+    public long getListSize(Long userId){
+
+        getOrCreateWishList(userId);
+
+        return itemRepository.countQuantityByUserId(userId);
+    }
+
+    public List<Long> getProductIdsByUserId(Long userId){
+        return itemRepository.findProductIdsByUserId(userId);
     }
 
 

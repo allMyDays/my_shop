@@ -1,0 +1,46 @@
+.product-rating-container {
+    margin: 8px 0;
+}
+
+.rating-stars {
+    position: relative;
+    display: inline-block;
+    color: #ffc107;
+    font-size: 14px;
+}
+
+.stars-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+.stars-active {
+    position: absolute;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    z-index: 2;
+    transition: width 0.3s ease;
+}
+
+.rating-stars .far,
+.rating-stars .fas {
+    margin-right: 1px;
+}
+
+.reviews-count {
+    margin-left: 8px;
+    vertical-align: middle;
+}
+.product-rating-container {
+    margin: 8px 0;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.product-rating-container.show {
+    opacity: 1;
+    transform: translateY(0);
+}

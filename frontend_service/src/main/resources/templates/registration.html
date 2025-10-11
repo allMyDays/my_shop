@@ -111,7 +111,12 @@
               if (data.EMAIL_SENT) {
                 loadingIndicator.style.display="none";
                 msg.innerHTML = `<div class="alert alert-info">На адрес <b>${formData.get("email")}</b> был отправлен код. Введите его в течение 1 часа.</div>`;
-                document.getElementById("email").readOnly = true;
+                const inputs = form.querySelectorAll('input, textarea, select');
+
+                inputs.forEach(input=>{
+                  input.readOnly=true;
+                });
+
                 document.getElementById("code-block").style.display = "block";
 
 

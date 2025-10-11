@@ -1,10 +1,8 @@
 package com.example.common.client.grpc;
 
-import com.example.common.dto.product.ProductResponseDTO;
-import com.example.common.grpc.category.CategoryServiceGrpc;
+import com.example.common.dto.product.rest.ProductResponseDTO;
 import com.example.common.grpc.product.*;
 import com.example.common.mapper.grpc.ProductMapper;
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -13,12 +11,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -45,6 +38,8 @@ public class ProductGrpcClient {
 
 
     public Optional<ProductResponseDTO> getProductById(Long id){
+
+        if(id == null) return Optional.empty();
 
         ProductRequestById productRequest = ProductRequestById
                 .newBuilder()
@@ -158,23 +153,34 @@ public class ProductGrpcClient {
             }
         });
 
-
-
-
-
-
-
-
-
-
-
     }
 
+    public boolean productExists(Long id){
+        if (id==null) return false;
 
+        ProductRequestById productRequest = ProductRequestById
+                .newBuilder()
+                .setId(id)
+                .build();
+        try{
 
+            ProductBooleanResponse productBooleanResponse = productBlockingStubObjectProvider.getObject()
+                    .productExists(productRequest);
+            return productBooleanResponse.getExists();
 
-
-
+        }catch (StatusRuntimeException e){
+                return false;
+            }
+        }
 
 
 }
+
+
+
+
+
+
+
+
+

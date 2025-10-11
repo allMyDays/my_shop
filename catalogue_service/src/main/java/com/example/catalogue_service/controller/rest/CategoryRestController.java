@@ -2,7 +2,7 @@ package com.example.catalogue_service.controller.rest;
 
 import com.example.catalogue_service.mapper.LocalCategoryMapper;
 import com.example.catalogue_service.service.CategoryService;
-import com.example.common.dto.CategoryResponseDTO;
+import com.example.common.dto.category.rest.CategoryResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

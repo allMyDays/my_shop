@@ -1,6 +1,7 @@
 package com.example.catalogue_service.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -27,12 +28,15 @@ public class Product {
     private Long id;
 
     @Column
+    @NotNull
     private String title;
 
     @Column(columnDefinition = "text")
+    @NotNull
     private String description;
 
     @Column
+    @NotNull
     private int price;
 
     @ManyToMany(cascade = CascadeType.ALL)
@@ -42,14 +46,15 @@ public class Product {
     private List<Category> categories;
 
     @Column
+    @NotNull
     private LocalDateTime dateOfCreation;
 
     @Column
+    @NotNull
     private String previewImageFileName;
 
     @ElementCollection
     private List<String> imageFileNames = new ArrayList<>();
-
 
     @PrePersist
     private void init(){

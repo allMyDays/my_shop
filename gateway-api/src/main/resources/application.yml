@@ -69,6 +69,13 @@ spring:
           filters:
             - name: JwtCookieAuthFilter
 
+        - id: review
+          uri: lb://review-service
+          predicates:
+            - Path=/api/review, /api/review/**
+          filters:
+            - name: JwtCookieAuthFilter
+
 
         - id: frontend-static
           uri: lb://frontend-service

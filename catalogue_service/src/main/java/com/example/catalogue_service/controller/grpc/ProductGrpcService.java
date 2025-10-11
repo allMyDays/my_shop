@@ -79,6 +79,17 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
 
     }
+    @Override
+    public void productExists(ProductRequestById request, StreamObserver<ProductBooleanResponse> responseObserver) {
+
+        boolean exists = productService.productExists(request.getId());
+
+        responseObserver.onNext(ProductBooleanResponse.newBuilder()
+                .setExists(exists)
+                .build());
+        responseObserver.onCompleted();
+
+    }
 
 
 

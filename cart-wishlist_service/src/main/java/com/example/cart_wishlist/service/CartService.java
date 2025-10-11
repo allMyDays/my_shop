@@ -4,14 +4,14 @@ import com.example.cart_wishlist.entity.Cart;
 import com.example.cart_wishlist.entity.CartItem;
 import com.example.cart_wishlist.repository.CartItemRepository;
 import com.example.cart_wishlist.repository.CartRepository;
-import com.example.common.exception.UserNotFoundException;
+import com.example.common.client.grpc.ProductGrpcClient;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
-
-import static com.example.common.service.CommonUserService.getMyUserEntityId;
 
 @Service
 @RequiredArgsConstructor
@@ -19,59 +19,99 @@ public class CartService {
 
     private final CartRepository cartRepository;
 
-    private final CartItemRepository cartProductRepository;
 
-    public Cart getUserCart(Jwt jwt) throws UserNotFoundException {
+    private final ProductGrpcClient productGrpcClient;
+    private final CartItemRepository cartItemRepository;
 
-        Long userId = getMyUserEntityId(jwt);
+    public Cart getOrCreateUserCart(Long userId){
 
         return cartRepository.findById(userId).orElseGet(()->{
                     Cart cart = new Cart();
-                    cart.setUserID(userId);
+                    cart.setUserId(userId);
                     return cartRepository.save(cart);
-              }
+                }
         );
     }
-    public void addItemToCart(Jwt jwt, Long productID, int quantity) throws UserNotFoundException {
 
-        Cart cart = getUserCart(jwt);
-        Optional<CartItem> existingProduct = cart.getItems().stream()
-                .filter(p -> p.getProductId().equals(productID))
-                .findFirst();
+    public void addItemToCart(Long userId, Long productID, int quantity) {
 
+        if (!productGrpcClient.productExists(productID)){
+            return;
+        }
+        Cart cart = getOrCreateUserCart(userId);
+
+        Optional<CartItem> existingProduct = cartItemRepository.findByCartUserIdAndProductId(userId,productID);
+
+        CartItem cartItem;
         if(existingProduct.isPresent()){
-
-            existingProduct.get().setQuantity(existingProduct.get().getQuantity()+quantity);
+            cartItem = existingProduct.get();
+            cartItem.setQuantity(cartItem.getQuantity()+quantity);
+            cartRepository.save(cart);
 
         } else {
-            CartItem cartItem = new CartItem();
+            cartItem = new CartItem();
             cartItem.setCart(cart);
             cartItem.setProductId(productID);
             cartItem.setQuantity(quantity);
             cart.getItems().add(cartItem);
+            cartRepository.save(cart);
         }
-        cartRepository.save(cart);
+
     }
 
-    public void removeItemFromCart(Jwt jwt, Long productID) throws UserNotFoundException {
+    public void removeItemFromCart(Long userId, Long productID) {
 
-        Cart cart = getUserCart(jwt);
+        if (!productGrpcClient.productExists(productID)){
+            return;
+        }
+        getOrCreateUserCart(userId);
 
-        cart.getItems().removeIf(p -> p.getProductId().equals(productID));
-        cartRepository.save(cart);
+        cartItemRepository.deleteByUserIdAndProductId(userId,productID);
     }
 
 
+    public List<CartItem> getCartItems(Long userId, int offset){
 
+        if(offset<0) throw new IllegalArgumentException("offset must be greater than 0");
 
+        getOrCreateUserCart(userId);
 
+        int limit = 40;
 
+        Pageable pageable = PageRequest.of(offset/limit, limit);
 
+        return cartItemRepository.findByUserId(userId, pageable);
 
+    }
 
+    public long getCartSize(Long userId){
 
+        getOrCreateUserCart(userId);
 
+        return cartItemRepository.sumQuantityByUserId(userId);
+    }
 
+    public int updateProductQuantity(Long userId, Long productId, boolean increase){
+
+        Optional<CartItem> cartItemOptional = cartItemRepository.findByCartUserIdAndProductId(userId,productId);
+        if (cartItemOptional.isEmpty()) return 0;
+        CartItem cartItem = cartItemOptional.get();
+
+        int quantity = cartItem.getQuantity();
+        quantity+=increase?1:-1;
+        if(quantity<=0){
+            cartItemRepository.deleteByUserIdAndProductId(userId,productId);
+            return 0;
+        }
+        cartItem.setQuantity(quantity);
+        cartItemRepository.save(cartItem);
+        return quantity;
+
+    }
+
+    public List<Long> getProductIdsByUserId(Long userId){
+        return cartItemRepository.findProductIdsByUserId(userId);
+    }
 
 
 

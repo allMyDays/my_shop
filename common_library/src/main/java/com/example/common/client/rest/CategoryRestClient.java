@@ -1,12 +1,9 @@
 package com.example.common.client.rest;
 
-import com.example.common.dto.CategoryResponseDTO;
-import com.netflix.appinfo.InstanceInfo;
+import com.example.common.dto.category.rest.CategoryResponseDTO;
 import com.netflix.discovery.EurekaClient;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Lazy;

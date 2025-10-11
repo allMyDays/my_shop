@@ -1,35 +1,65 @@
 package com.example.media_service.service;
 
-import com.example.media_service.entity.enumeration.MinIO_bucket;
+import com.example.common.enumeration.media_service.BucketEnum;
+import com.example.common.dto.media.kafka.FileDataDTO;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.support.atomic.RedisAtomicLong;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class MinioService {
 
-    private final S3Client s3;
+    private final S3Client s3Client;
 
     private final RedisAtomicLong redisAtomicLong;
 
+    private final static String fileNameSeparator = "_";
 
-    public String saveFile(Long keyFirstPart, MultipartFile file, MinIO_bucket bucket) throws Exception {
+    public MediaType guessContentType(byte[] imageBytes) {
+        try {
+            return MediaType.parseMediaType(Optional.ofNullable(
+                            URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(imageBytes)))
+                    .orElse("application/octet-stream"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        String newFileName = keyFirstPart+":"+redisAtomicLong.incrementAndGet();
+
+    }
+    public BucketEnum extractBucket(String fileName) throws RuntimeException{
+        try {
+            return BucketEnum.valueOf(fileName.split(fileNameSeparator)[0]);
+        }catch (Exception e){
+            throw new RuntimeException("cannot find bucket");
+        }
+
+    }
+
+    String generateNewFileKey(BucketEnum bucket){
+        return bucket.name()+fileNameSeparator+redisAtomicLong.incrementAndGet();
+    }
+
+    public String uploadFile(FileDataDTO file, BucketEnum bucket) throws Exception {
+
+        String newFileName = generateNewFileKey(bucket);
 
 
-        s3.putObject(PutObjectRequest.builder()
+        s3Client.putObject(PutObjectRequest.builder()
                         .bucket(bucket.name())
                         .key(newFileName)
                         .contentType(file.getContentType())
@@ -38,35 +68,27 @@ public class MinioService {
         return newFileName;
     }
 
-    public byte[] getFile(String fileName, MinIO_bucket bucket) {
 
-        ResponseBytes<GetObjectResponse> objectBytes = s3.getObjectAsBytes(GetObjectRequest
-                  .builder()
-                          .bucket(bucket.name())
-                          .key(fileName)
-                  .build());
-        return objectBytes.asByteArray();
+    public Map.Entry<byte[], MediaType> getFile(String fileName) {
 
-    }
+        BucketEnum bucket=extractBucket(fileName);
 
-    public List<String> findByKeyFirstPart(Long keyFirstPart, MinIO_bucket bucket) {
-        ListObjectsV2Request request = ListObjectsV2Request.builder()
+        ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(GetObjectRequest
+                .builder()
                 .bucket(bucket.name())
-                .prefix(keyFirstPart.toString()+":")
-                .delimiter("/") // файлы не в подпапках
-                .build();
+                .key(fileName)
+                .build());
 
-        ListObjectsV2Response response = s3.listObjectsV2(request);
+        byte[] imageBytes = objectBytes.asByteArray();
 
-        return response.contents().stream().map(S3Object::key).toList();
+
+        return Map.entry(imageBytes,guessContentType(imageBytes));
     }
 
+    public boolean deleteFile(String fileName){
+        BucketEnum bucket=extractBucket(fileName);
 
-
-
-    public boolean deleteFile(String fileName, MinIO_bucket bucket){
-
-       try{ s3.deleteObject(DeleteObjectRequest
+        try{ s3Client.deleteObject(DeleteObjectRequest
                 .builder()
                         .bucket(bucket.name())
                         .key(fileName)
@@ -78,12 +100,54 @@ public class MinioService {
        }
     }
 
+    public int deleteMultipleFiles(@NonNull List<String> keys) {
+        if(keys.isEmpty()||keys.size()>1000){
+            return 0;
+        }
+        try {
+            List<ObjectIdentifier> objectsToDelete = keys.stream()
+                    .map(key -> ObjectIdentifier.builder()
+                            .key(key)
+                            .build())
+                    .toList();
+
+            DeleteObjectsRequest deleteRequest = DeleteObjectsRequest.builder()
+                    .bucket(extractBucket(keys.get(0)).name())
+                    .delete(Delete.builder()
+                            .objects(objectsToDelete)
+                            .build())
+                    .build();
+
+            DeleteObjectsResponse response = s3Client.deleteObjects(deleteRequest);
+
+            return response.deleted().size();
 
 
+        } catch (S3Exception e) {
+            throw new RuntimeException("Ошибка S3 при удалении файлов: " + e.awsErrorDetails().errorMessage());
+        }
+    }
 
+    public List<String> uploadFiles(List<FileDataDTO> files, BucketEnum bucket) throws Exception {
+        List<String> newFileNames = new ArrayList<>();
+        for (FileDataDTO file : files) {
 
+            String newFileName = generateNewFileKey(bucket);
 
+            try {
+                s3Client.putObject(PutObjectRequest.builder()
+                        .bucket(bucket.name())
+                        .key(newFileName)
+                        .contentType(file.getContentType())
+                        .build(), RequestBody.fromBytes(file.getBytes()));
 
+                newFileNames.add(newFileName);
+
+            } catch (Exception e) {
+                // Лог ошибки и продолжить
+            }
+        } return newFileNames;
+    }
 
 
 }

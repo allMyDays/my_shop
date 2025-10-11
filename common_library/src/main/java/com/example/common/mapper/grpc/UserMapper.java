@@ -1,8 +1,11 @@
 package com.example.common.mapper.grpc;
-import com.example.common.dto.user.UserResponseDTO;
-import com.example.common.enumeration.grpc.UserExistenceStatus;
+import com.example.common.dto.user.rest.UserMinimalInfoDto;
+import com.example.common.dto.user.rest.UserResponseDTO;
+import com.example.common.enumeration.user_service.UserExistenceStatus;
 import com.example.common.grpc.user.User;
 import org.mapstruct.*;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
 public abstract class UserMapper {
@@ -17,6 +20,7 @@ public abstract class UserMapper {
 
    public abstract User.CheckUserResponse.ExistenceStatus toUserExistenceGrpcStatus (UserExistenceStatus userExistenceStatus);
 
+   public abstract List<UserMinimalInfoDto> toUserMinimalInfoDTOs(List<User.UserMinimalInfoInnerResponse> userInfoResponses);
 
 
 }

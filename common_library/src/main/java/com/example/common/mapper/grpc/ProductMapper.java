@@ -1,12 +1,11 @@
 package com.example.common.mapper.grpc;
 
-import com.example.common.dto.product.ProductResponseDTO;
+import com.example.common.dto.product.rest.ProductResponseDTO;
 import com.example.common.grpc.product.ProductResponse;
 import com.google.protobuf.Timestamp;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;

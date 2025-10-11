@@ -1,16 +1,15 @@
 package com.example.user_service.service;
 
-import com.example.common.dto.user.UpdateUserRequestDTO;
-import com.example.common.dto.user.UserResponseDTO;
-import com.example.common.enumeration.grpc.UserExistenceStatus;
+import com.example.common.dto.user.rest.UpdateUserRequestDTO;
+import com.example.common.dto.user.rest.UserResponseDTO;
+import com.example.common.enumeration.user_service.UserExistenceStatus;
+import com.example.user_service.dto.UserFullNameDto;
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.core.Response;
-import org.apache.kafka.common.quota.ClientQuotaAlteration;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.ObjectProvider;
@@ -20,11 +19,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static com.example.common.service.CommonUserService.MY_USER_ID_KEY_KEYCLOAK;
 import static org.keycloak.OAuth2Constants.CLIENT_CREDENTIALS;
@@ -73,8 +68,8 @@ public class UserKeycloakService {
       try {
           UserRepresentation userRep = new UserRepresentation();
           userRep.setUsername(nickName);
-          userRep.setFirstName(firstName);
-          userRep.setLastName(lastName);
+          userRep.setFirstName(upperCaseFirstLetter(firstName));
+          userRep.setLastName(upperCaseFirstLetter(lastName));
           userRep.setEmail(email);
           userRep.setEnabled(true);
           userRep.setEmailVerified(true);
@@ -131,11 +126,11 @@ public class UserKeycloakService {
             boolean updated = false;
 
             if(userDTO.getFirstName() != null){
-                userRep.setFirstName(userDTO.getFirstName());
+                userRep.setFirstName(upperCaseFirstLetter(userDTO.getFirstName()));
                 updated = true;
             }
             if(userDTO.getLastName() != null){
-                userRep.setLastName(userDTO.getLastName());
+                userRep.setLastName(upperCaseFirstLetter(userDTO.getLastName()));
                 updated = true;
             }
             if(userDTO.getEmail() != null){
@@ -224,9 +219,8 @@ public class UserKeycloakService {
 
     public Optional<UserResponseDTO> collectKeycloakUserInfo(String userKeycloakID){
 
+        try{
         UserResource userResource = keycloakClientInstance.realm(realm).users().get(userKeycloakID);
-
-
         UserRepresentation userRep = userResource.toRepresentation();
 
         UserResponseDTO userDTO = new UserResponseDTO();
@@ -234,8 +228,12 @@ public class UserKeycloakService {
         userDTO.setFirstName(userRep.getFirstName());
         userDTO.setLastName(userRep.getLastName());
         userDTO.setNickName(userRep.getUsername());
-
         return Optional.of(userDTO);
+
+         }
+        catch (Exception e) {
+            return Optional.empty();
+        }
 
 
     }
@@ -293,15 +291,30 @@ public class UserKeycloakService {
 
     }
 
+    public List<UserFullNameDto> getUserFullNames(List<String> userKeycloakIDs){
+
+        List<UserFullNameDto> userFullNameDTOs = new ArrayList<>();
 
 
+        for(String userKeycloakID: userKeycloakIDs){
+            try{
+                UserRepresentation userResource = keycloakClientInstance.realm(realm)
+                        .users()
+                        .get(userKeycloakID)
+                        .toRepresentation();
 
+                userFullNameDTOs.add(new UserFullNameDto(userKeycloakID,userResource.getFirstName(), userResource.getLastName()));
 
+         }catch (Exception e){
+             continue;
+          }
+        } return userFullNameDTOs;
+    }
 
+    private String upperCaseFirstLetter(String input){
+        if (input==null||input.isEmpty()) throw new IllegalArgumentException("Input is blank");
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
 
-
-
-
-
+    }
 
 }

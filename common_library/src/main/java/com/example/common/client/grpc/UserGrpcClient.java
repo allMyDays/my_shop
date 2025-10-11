@@ -1,22 +1,20 @@
 package com.example.common.client.grpc;
 
-import com.example.common.dto.user.UserResponseDTO;
-import com.example.common.enumeration.grpc.UserExistenceStatus;
-import com.example.common.grpc.product.ProductServiceGrpc;
+import com.example.common.dto.user.rest.UserMinimalInfoDto;
+import com.example.common.dto.user.rest.UserResponseDTO;
+import com.example.common.enumeration.user_service.UserExistenceStatus;
 import com.example.common.grpc.user.User;
 import com.example.common.grpc.user.UserServiceGrpc;
 import com.example.common.mapper.grpc.UserMapper;
 import com.netflix.appinfo.EurekaAccept;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -49,7 +47,7 @@ public class UserGrpcClient {
 
     }
 
-    public UserResponseDTO getUserInfo(String userKeycloakId){
+    public UserResponseDTO getUserInfoByKeycloakId(String userKeycloakId){
 
         User.UserKeycloakIdRequest oneUserRequest = User.UserKeycloakIdRequest
                 .newBuilder()
@@ -57,13 +55,13 @@ public class UserGrpcClient {
                 .build();
 
         User.UserInfoResponse userInfoResponse = userBlockingStubObjectProvider.getObject()
-                .getUserInfo(oneUserRequest);
+                .getUserInfoByUserKeycloakId(oneUserRequest);
 
        return userMapper.toUserResponseDTO(userInfoResponse);
 
     }
 
-    public UserResponseDTO getUserInfo2(Long userEntityId){
+    public UserResponseDTO getUserInfoByEntityId(Long userEntityId){
 
         User.UserEntityIdRequest oneUserRequest = User.UserEntityIdRequest
                 .newBuilder()
@@ -71,7 +69,7 @@ public class UserGrpcClient {
                 .build();
 
         User.UserInfoResponse userInfoResponse = userBlockingStubObjectProvider.getObject()
-                .getUserInfo2(oneUserRequest);
+                .getUserInfoByUserEntityId(oneUserRequest);
 
         return userMapper.toUserResponseDTO(userInfoResponse);
 
@@ -91,6 +89,20 @@ public class UserGrpcClient {
 
         return statusResponse.getSuccess();
     }
+
+    public List<UserMinimalInfoDto> getUserMinimalInfo(List<Long> userEntityIds){
+
+        User.UserEntityIdsRequest userEntityIdsRequest = User.UserEntityIdsRequest
+                .newBuilder()
+                .addAllUserEntityIds(userEntityIds)
+                .build();
+
+        User.UserMinimalInfoOuterResponse response = userBlockingStubObjectProvider.getObject()
+                .getUserMinimalInfo(userEntityIdsRequest);
+
+        return userMapper.toUserMinimalInfoDTOs(response.getUserMinimalInfoList());
+    }
+
 
 
 

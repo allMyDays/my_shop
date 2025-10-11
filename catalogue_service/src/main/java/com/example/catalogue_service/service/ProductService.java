@@ -7,11 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -58,6 +54,10 @@ public class ProductService {
 
     public Optional<Product> getProductByID(Long productID) {
         return productRepository.findById(productID);
+    }
+
+    public boolean productExists(Long productID) {
+        return productRepository.existsById(productID);
     }
 
     public void deleteProductImage(Long productID, String fileName, boolean previewImage) {

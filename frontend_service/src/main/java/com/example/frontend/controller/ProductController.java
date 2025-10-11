@@ -1,9 +1,12 @@
 package com.example.frontend.controller;
 
 import com.example.common.client.grpc.ProductGrpcClient;
-import com.example.common.dto.product.ProductResponseDTO;
+import com.example.common.dto.product.rest.ProductResponseDTO;
+import com.example.common.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +19,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.example.common.service.CommonUserService.getMyUserEntityId;
 
 @Controller
 @RequiredArgsConstructor
@@ -32,7 +37,7 @@ public class ProductController {
     }
 
     @GetMapping("/get/{id:\\d+}")
-    public String productPage(@PathVariable Long id, Model model){
+    public String productPage(@PathVariable Long id, Model model, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
         Optional<ProductResponseDTO> productOptional = productGrpcClient.getProductById(id);
         if(productOptional.isEmpty()) return "products";
 
@@ -44,6 +49,9 @@ public class ProductController {
         product.setImageFileNames(allProductImages);
 
         model.addAttribute("product",product);
+        if(jwt!=null){
+            model.addAttribute("currentUserId",getMyUserEntityId(jwt));
+        }
         return "product";
 
     }

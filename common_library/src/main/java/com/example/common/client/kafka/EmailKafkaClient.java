@@ -1,16 +1,14 @@
 package com.example.common.client.kafka;
 
-import com.example.common.kafka.dto.email.EmailSimpleMailDTO;
+import com.example.common.dto.email.kafka.EmailSimpleMailDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.mail.MailSendException;
 import org.springframework.stereotype.Service;
 
-import static com.example.common.kafka.constant.Topics.EMAIL_TOPIC;
+import static com.example.common.constant.kafka.Topics.EMAIL_REQUEST_TOPIC;
 
 
 @Service
@@ -29,7 +27,7 @@ public class EmailKafkaClient {
 
     public void sendSimpleMail(String to, String subject, String text) {
 
-        kafkaTemplate.send(EMAIL_TOPIC, new EmailSimpleMailDTO(to, subject, text));
+        kafkaTemplate.send(EMAIL_REQUEST_TOPIC, new EmailSimpleMailDTO(to, subject, text));
     }
 
 }

@@ -144,10 +144,12 @@
                                 </div>
                             </div>
 
+                            <!-- блок списка желаний -->
+
                             <div>
                                 <button class="btn position-relative me-4 px-1" type="button"
                                         data-bs-toggle="offcanvas" data-bs-target="#offcanvasWish"
-                                        aria-controls="offcanvasWish" onclick="loadWishList()">
+                                        aria-controls="offcanvasWish" onclick="loadWishList(true)">
 
         <span id="wish-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
             0
@@ -180,7 +182,7 @@
                             <div>
                                 <button class="btn position-relative me-4 px-1" type="button"
                                         data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart"
-                                        aria-controls="offcanvasCart" onclick="loadCart()">
+                                        aria-controls="offcanvasCart" onclick="loadCart(true)">
 
         <span id="cart-count-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
             0

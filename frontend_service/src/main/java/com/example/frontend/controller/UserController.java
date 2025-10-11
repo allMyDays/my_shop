@@ -2,8 +2,7 @@ package com.example.frontend.controller;
 
 
 import com.example.common.client.grpc.UserGrpcClient;
-import com.example.common.dto.user.UserResponseDTO;
-import com.example.common.exception.UserNotFoundException;
+import com.example.common.dto.user.rest.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,8 +10,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 import static com.example.common.service.CommonUserService.getUserKeycloakId;
 
@@ -38,7 +35,7 @@ public class UserController {
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public String profile(Model model, @AuthenticationPrincipal Jwt jwt){
-        UserResponseDTO userResponseDTO =  userGrpcClient.getUserInfo(getUserKeycloakId(jwt));
+        UserResponseDTO userResponseDTO =  userGrpcClient.getUserInfoByKeycloakId(getUserKeycloakId(jwt));
         model.addAttribute("user", userResponseDTO);
         return "profile";
     }

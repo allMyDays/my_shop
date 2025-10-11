@@ -20,6 +20,9 @@ public class CartItem {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
 
     @NotNull
     private Long productId;
@@ -27,9 +30,7 @@ public class CartItem {
     @NotNull
     private int quantity;
 
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    private Cart cart;
+
 
 
 

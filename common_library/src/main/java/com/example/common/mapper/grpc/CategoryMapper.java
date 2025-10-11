@@ -1,10 +1,9 @@
 package com.example.common.mapper.grpc;
 
-import com.example.common.dto.CategoryResponseDTO;
+import com.example.common.dto.category.rest.CategoryResponseDTO;
 import com.example.common.grpc.category.Category;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 

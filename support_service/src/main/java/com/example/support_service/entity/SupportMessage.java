@@ -39,22 +39,6 @@ public class SupportMessage {
     private SupportChat chat;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     @PrePersist
     private void init(){
         dateOfCreation = LocalDateTime.now();

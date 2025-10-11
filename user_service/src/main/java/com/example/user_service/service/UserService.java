@@ -2,24 +2,30 @@ package com.example.user_service.service;
 
 
 import com.example.common.client.kafka.EmailKafkaClient;
-import com.example.common.dto.user.CreateUserRequestDTO;
+import com.example.common.client.kafka.MediaKafkaClient;
+import com.example.common.dto.user.rest.CreateUserRequestDTO;
+import com.example.common.enumeration.media_service.BucketEnum;
 import com.example.common.exception.UserNotFoundException;
-import com.example.common.dto.user.UserResponseDTO;
+import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.user_service.entity.MyUser;
 import com.example.user_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.mail.MailSendException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
+import static com.example.common.service.CommonMediaService.validateImages;
 import static com.example.user_service.enumeration.RedisSubKeys.*;
 
 @Service
@@ -34,6 +40,8 @@ public class UserService {
 
     private final RedisService redisService;
 
+    private final MediaKafkaClient mediaKafkaClient;
+
     @Autowired
     @Lazy
     private UserService userService;
@@ -46,7 +54,7 @@ public class UserService {
            newKeycloakId = userKeycloakService.createUser(userDTO.getNickName(),userDTO.getFirstName(),userDTO.getLastName(),userDTO.getEmail(),newUserEntity.getId());
 
            userKeycloakService.setUserPassword(newKeycloakId, userDTO.getPassword());
-           newUserEntity.setKeycloakID(newKeycloakId);
+           newUserEntity.setKeycloakId(newKeycloakId);
            userService.saveUserEntity(newUserEntity);
            return true;
 
@@ -61,9 +69,9 @@ public class UserService {
 
     public UserResponseDTO collectCommonUserInfo(String userKeycloakId) throws UserNotFoundException {
 
-        UserNotFoundException exception = new UserNotFoundException();
+        UserNotFoundException notFoundException = new UserNotFoundException();
 
-        UserResponseDTO userResponseDTO = userKeycloakService.collectKeycloakUserInfo(userKeycloakId).orElseThrow(()->exception);
+        UserResponseDTO userResponseDTO = userKeycloakService.collectKeycloakUserInfo(userKeycloakId).orElseThrow(()->notFoundException);
 
         MyUser userEntity = getUserEntity(userKeycloakId);
 
@@ -76,24 +84,45 @@ public class UserService {
 
     public UserResponseDTO collectCommonUserInfo(Long userEntityId) throws UserNotFoundException {
         MyUser userEntity = getUserEntity(userEntityId);
-        return collectCommonUserInfo(userEntity.getKeycloakID());
+        return collectCommonUserInfo(userEntity.getKeycloakId());
     }
 
 
 
-    public void updateUserAvatar(Long userId, String fileName){
+    public void sendUploadUserAvatarRequest(MultipartFile image, Long userId) {
 
+        validateImages(List.of(image));
+
+        MyUser userEntity = getUserEntity(userId);
+
+        String requestKey = UUID.randomUUID().toString();
+
+        redisService.save(KAFKA_UPLOAD_AVATAR+":"+requestKey,userEntity.getId().toString());
+
+        mediaKafkaClient.sendSavingMediaRequest(List.of(image), BucketEnum.users, requestKey);
+    }
+
+    public void saveUserAvatar(String fileName, Long userId){
         MyUser userEntity = getUserEntity(userId);
         userEntity.setAvatarFileName(fileName);
         userRepository.save(userEntity);
 
     }
 
+
+
     public void deleteUserAvatar(Long userId){
 
         MyUser userEntity = getUserEntity(userId);
-        userEntity.setAvatarFileName(null);
-        userRepository.save(userEntity);
+        String avatarFileName = userEntity.getAvatarFileName();
+
+        if(avatarFileName != null){
+         userEntity.setAvatarFileName(null);
+         userRepository.save(userEntity);
+         mediaKafkaClient.deleteMedia(List.of(avatarFileName));
+        }
+
+
     }
 
 
@@ -116,13 +145,12 @@ public class UserService {
         return false;
     }
 
-    public MyUser getUserEntity(String keycloakID) {
+    public MyUser getUserEntity(@NonNull String keycloakID) {
 
         NotFoundException notFoundException = new NotFoundException("User not found");
 
-        if (keycloakID == null) throw notFoundException;
 
-        return userRepository.findByKeycloakID(keycloakID)
+        return userRepository.findByKeycloakId(keycloakID)
                 .orElseThrow(()->notFoundException);
 
     }
@@ -136,9 +164,6 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
-    public MyUser getUserEntityReference(Long userId){
-        return userRepository.getReferenceById(userId);
-    }
 
     @Transactional
     public MyUser saveUserEntity(MyUser user) throws Exception{
@@ -146,6 +171,15 @@ public class UserService {
         MyUser savedUser = userRepository.save(user);
         userRepository.flush();
         return savedUser;
+    }
+
+    public MyUser getOrCreateMyUser(@NonNull Long userId, @NonNull String userKeycloakId){
+
+        Optional<MyUser> userOptional = getUserOptionalEntity(userId);
+        if(userOptional.isEmpty()){
+            userRepository.insertUserNativeQuery(userId,userKeycloakId);
+        } return getUserEntity(userId);
+
     }
 
 

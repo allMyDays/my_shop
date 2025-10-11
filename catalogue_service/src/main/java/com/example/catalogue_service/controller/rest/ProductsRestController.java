@@ -3,7 +3,7 @@ package com.example.catalogue_service.controller.rest;
 import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.mapper.LocalProductMapper;
 import com.example.catalogue_service.service.ProductService;
-import com.example.common.dto.product.ProductResponseDTO;
+import com.example.common.dto.product.rest.ProductResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
