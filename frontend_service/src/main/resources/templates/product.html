@@ -354,7 +354,10 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow-lg">
             <div class="modal-header">
-                <h5 class="modal-title">Отправить отзыв</h5>
+                <div>
+                <h5 class="modal-title" id="reviewModalTitle">Создать новый отзыв</h5>
+                <h6 class="mt-2" style="display: none" id="reviewModalSubTitleEditing">..</h6>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -363,17 +366,17 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Достоинства</label>
-                        <textarea id="advantages" class="form-control" rows="2" minlength="5" maxlength="250"></textarea>
+                        <textarea id="advantagesInput" class="form-control" rows="2" minlength="5" maxlength="250"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Недостатки</label>
-                        <textarea id="disAdvantages" class="form-control" rows="2" minlength="5" maxlength="250"></textarea>
+                        <textarea id="disAdvantagesInput" class="form-control" rows="2" minlength="5" maxlength="250"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Комментарий</label>
-                        <textarea id="comment" class="form-control" rows="3" minlength="5" maxlength="500"></textarea>
+                        <textarea id="commentInput" class="form-control" rows="3" minlength="5" maxlength="500"></textarea>
                     </div>
 
                     <div class="mb-3">
@@ -413,7 +416,7 @@
                     </div>
 
                     <div class="text-end">
-                        <button type="submit" id="create-review-btn" class="btn btn-dark">Отправить отзыв</button>
+                        <button type="submit" id="create-review-btn" class="btn btn-dark">Отправить</button>
                     </div>
                 </form>
             </div>
@@ -494,7 +497,6 @@
     const anonymousAvatar = "/images/anonymous-avatar.jpg";
 
     const reviewModal = new bootstrap.Modal(document.getElementById('reviewModal'));
-    if (createReviewBtn) createReviewBtn.addEventListener('click', () => reviewModal.show())
 
     function reloadReviews(sortType="HIGH_RATING"){
         offset = 0;
@@ -523,7 +525,6 @@
                 }
             });
     }
-
 
     async function loadReviews(sortType="HIGH_RATING") {
         let noReviewsExist = document.getElementById("noReviewsExistLable");
@@ -558,7 +559,7 @@
             const clone = reviewTemplate.content.cloneNode(true);
             const avatar = clone.querySelector("img");
             avatar.src = (r.anonymousReview?anonymousAvatar:(r.userAvatarFileName ? `/api/media/get/${r.userAvatarFileName}`:defaultAvatar));
-            clone.querySelector(".username").textContent = r.userVisibleName;
+            clone.querySelector(".username").textContent = (r.anonymousReview?"анонимный пользователь":r.userVisibleName);
             clone.querySelector(".date").textContent = new Date(r.dateOfCreation).toLocaleDateString("ru-RU");
             clone.querySelector(".usage").innerHTML = `<h6>Срок использования ${r.usagePeriod}</h6>`;
 
@@ -607,13 +608,22 @@
             }
 
             if (currentUserId&&r.userId === currentUserId) {
-                const btnContainer = clone.querySelector('.delete-btn-container');
+                const deleteBtnContainer = clone.querySelector('.delete-btn-container');
+
+                deleteBtnContainer.style.display = 'flex';
+                deleteBtnContainer.style.gap = '5px'; // расстояние между кнопками
+                deleteBtnContainer.style.position = 'absolute';
+                deleteBtnContainer.style.right = '15px';
+                deleteBtnContainer.style.bottom = '15px';
+
+                const editBtn = document.createElement('button');
+                editBtn.className = 'btn btn-sm btn-outline-dark';
+                editBtn.innerHTML = 'Изменить';
 
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn btn-sm btn-outline-dark position-absolute';
-                deleteBtn.style.right = '15px';
-                deleteBtn.style.bottom = '15px';
+                deleteBtn.className = 'btn btn-sm btn-outline-dark';
                 deleteBtn.innerHTML = 'Удалить';
+
 
                 // Обработчик клика
                 deleteBtn.addEventListener('click', () => {
@@ -622,7 +632,13 @@
                     }
                 });
 
-                btnContainer.appendChild(deleteBtn);
+                editBtn.addEventListener('click', () => {
+                    openEditReviewModal(r.id);
+
+                });
+
+                deleteBtnContainer.appendChild(editBtn);
+                deleteBtnContainer.appendChild(deleteBtn);
             }
 
 
@@ -680,103 +696,148 @@
     });
 
     <!--скрипт для фото при создании отзыва-->
+    const MAX_FILES = 5;
+    let existingPhotos = []; // [{id: 10, url: "/uploads/rev/10.jpg"}]
+    let selectedFiles = [];  // новые файлы {id, file, url, key}
+    let deletedPhotoIds = []; // id старых фото, отмеченных на удаление
+    let nextFileId = 1;
+    const keys = new Set();
+
+    const photoInput = document.getElementById('photos');
+    const previewContainer = document.getElementById('photo-preview');
+
+    if (!photoInput || !previewContainer) {
+        console.warn('Не найден #photos или #photo-preview.');
+    }
+
+
+    // Генерация ключа файла
+    function fileKey(file) {
+        return `${file.name}_${file.size}_${file.lastModified}`;
+    }
+
+
+    // Удаляем новое фото
+    function removeNewFileById(id) {
+        const idx = selectedFiles.findIndex(x => x.id === id);
+        if (idx === -1) return;
+        try { URL.revokeObjectURL(selectedFiles[idx].url); } catch (e) {}
+        keys.delete(selectedFiles[idx].key);
+        selectedFiles.splice(idx, 1);
+        renderPreviews();
+    }
+
+    // Помечаем старое фото для удаления
+    function markOldPhotoForDelete(oldId) {
+        deletedPhotoIds.push(oldId);
+        existingPhotos = existingPhotos.filter(p => p.id !== oldId);
+        renderPreviews();
+    }
+
+
+    // Рендер превью (старые + новые)
+    function renderPreviews() {
+        previewContainer.innerHTML = '';
+
+        // Сначала существующие фото (если редактирование)
+        existingPhotos.forEach(obj => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'd-flex flex-column align-items-center';
+
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.dataset.oldPhotoId = obj.id;
+
+            const img = document.createElement('img');
+            img.src = obj.url;
+            img.alt = 'existing-photo';
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'preview-remove';
+            btn.title = 'Удалить фото';
+            btn.innerHTML = '&times;';
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                markOldPhotoForDelete(obj.id);
+            });
+
+            item.appendChild(img);
+            item.appendChild(btn);
+            wrapper.appendChild(item);
+
+            const name = document.createElement('div');
+            name.className = 'preview-name mt-1';
+            name.textContent = 'Старое фото';
+
+            wrapper.appendChild(name);
+            previewContainer.appendChild(wrapper);
+        });
+
+        // Новые фото
+        selectedFiles.forEach(obj => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'd-flex flex-column align-items-center';
+
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.dataset.fileId = obj.id;
+
+            const img = document.createElement('img');
+            img.src = obj.url;
+            img.alt = obj.file.name;
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'preview-remove';
+            btn.title = 'Удалить фото';
+            btn.innerHTML = '&times;';
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                removeNewFileById(obj.id);
+            });
+
+            item.appendChild(img);
+            item.appendChild(btn);
+            wrapper.appendChild(item);
+
+            const name = document.createElement('div');
+            name.className = 'preview-name mt-1';
+            name.textContent = obj.file.name;
+
+            wrapper.appendChild(name);
+            previewContainer.appendChild(wrapper);
+        });
+    }
+
+
 
     document.addEventListener('DOMContentLoaded', () => {
-        const photoInput = document.getElementById('photos');
-        const previewContainer = document.getElementById('photo-preview');
-        const MAX_FILES = 5;
 
-        if (!photoInput || !previewContainer) {
-            console.warn('Не найден #photos или #photo-preview.');
-            return;
-        }
 
-        let selectedFiles = []; // {id, file, url, key}
-        let nextFileId = 1;
-        const keys = new Set(); // для предотвращения дублей
-
-        function fileKey(file) {
-            return `${file.name}_${file.size}_${file.lastModified}`;
-        }
-
-        function renderPreviews() {
-            previewContainer.innerHTML = '';
-            selectedFiles.forEach(obj => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'd-flex flex-column align-items-center';
-
-                const item = document.createElement('div');
-                item.className = 'preview-item';
-                item.dataset.fileId = obj.id;
-
-                const img = document.createElement('img');
-                img.src = obj.url;
-                img.alt = obj.file.name;
-
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'preview-remove';
-                btn.title = 'Удалить фото';
-                btn.innerHTML = '&times;';
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    removeFileById(obj.id);
-                });
-
-                item.appendChild(img);
-                item.appendChild(btn);
-                wrapper.appendChild(item);
-
-                const name = document.createElement('div');
-                name.className = 'preview-name mt-1';
-                name.textContent = obj.file.name;
-                wrapper.appendChild(name);
-
-                previewContainer.appendChild(wrapper);
-            });
-        }
-
-        function removeFileById(id) {
-            const idx = selectedFiles.findIndex(x => x.id === id);
-            if (idx === -1) return;
-            try { URL.revokeObjectURL(selectedFiles[idx].url); } catch (e) {}
-            keys.delete(selectedFiles[idx].key);
-            selectedFiles.splice(idx, 1);
-            renderPreviews();
-        }
-
+// ---------- ОБРАБОТКА ДОБАВЛЕНИЯ НОВЫХ ФАЙЛОВ ----------
         photoInput.addEventListener('change', (e) => {
             const files = Array.from(e.target.files || []);
             if (files.length === 0) return;
 
-            // Считаю сколько реально новых (не дубли) добавится
             const newFiles = files.filter(f => !keys.has(fileKey(f)));
             if (newFiles.length === 0) {
-                photoInput.value = ''; // очищаю, чтобы можно было выбрать заново
+                photoInput.value = '';
                 return;
             }
 
-            const totalAfter = selectedFiles.length + newFiles.length;
+            const totalExisting = existingPhotos.length;
+            const totalAfter = totalExisting + selectedFiles.length + newFiles.length;
+
             if (totalAfter > MAX_FILES) {
                 const overflow = totalAfter - MAX_FILES;
-                const proceed = confirm(
-                    `К сожалению, вы не можете прикрепить к отзыву больше чем ${MAX_FILES} фото.` +
-                    ` Удалить первое фото, чтобы освободить место для нового?`
-                );
-                if (!proceed) {
-                    photoInput.value = '';
-                    return;
-                }
-                // удаляю старые (с начала — самые старые)
-                for (let i = 0; i < overflow; i++) {
-                    if (selectedFiles.length === 0) break;
-                    removeFileById(selectedFiles[0].id);
-                }
+                alert(`К сожалению, нельзя загрузить больше чем ${MAX_FILES} фото. Удалите хотя бы одно для загрузки нового.`);
+                photoInput.value = '';
+                return;
             }
 
-            // Добавляю новые (до лимита)
             for (const f of newFiles) {
-                if (selectedFiles.length >= MAX_FILES) break;
+                if (existingPhotos.length + selectedFiles.length >= MAX_FILES) break;
                 const key = fileKey(f);
                 const url = URL.createObjectURL(f);
                 selectedFiles.push({ id: nextFileId++, file: f, url, key });
@@ -784,8 +845,46 @@
             }
 
             renderPreviews();
-            photoInput.value = ''; // важно, чтобы можно было выбрать те же файлы позже
+            photoInput.value = '';
         });
+
+        function openCreateReviewModal() {
+            // Переключаею модалку в режим создания
+            document.getElementById("reviewModalTitle").textContent = "Создать новый отзыв";
+            document.getElementById("create-review-btn").dataset.mode = "create";
+
+            document.getElementById("reviewModalSubTitleEditing").style.display="none";
+
+            document.getElementById('photo-preview').innerHTML='';
+
+
+            document.getElementById("advantagesInput").value = "";
+            document.getElementById("disAdvantagesInput").value = "";
+            document.getElementById("commentInput").value = "";
+
+
+            document.getElementById("usagePeriod").selectedIndex=0;
+
+            // обновляю подсветку звезд
+            document.querySelectorAll('#star-rating i').forEach((s, i) => {
+                s.classList.toggle('bi-star', true);
+            });
+            document.getElementById('rating').value = 0;
+            // Анонимность
+            document.getElementById("anonymousReview").checked = false;
+
+            existingPhotos = [];
+            selectedFiles = [];
+            deletedPhotoIds = [];
+            nextFileId = 1;
+            keys.clear();
+
+            // Открываю модалку
+            const modal = new bootstrap.Modal(document.getElementById("reviewModal"));
+            modal.show();
+        }
+        if (createReviewBtn) createReviewBtn.addEventListener('click', () => openCreateReviewModal())
+
 
         // --- интеграция с отправкой формы ---
         const reviewForm = document.getElementById('review-form');
@@ -797,8 +896,8 @@
                 try{
                     inProcess=true;
                     document.getElementById("create-review-btn").textContent = "Отправка...";
-
-                ev.preventDefault();
+                    ev.preventDefault();
+                    const editMode = (document.getElementById("create-review-btn").dataset.mode === "edit");
 
                 // Валидации
                 const rating = parseInt(document.getElementById('rating').value || '0');
@@ -815,11 +914,12 @@
                 try {
 
                     const fd = new FormData();
-                    const adv = document.getElementById('advantages').value;
-                    const disAdv = document.getElementById('disAdvantages').value;
-                    const comm = document.getElementById('comment').value;
+                    const adv = document.getElementById('advantagesInput').value;
+                    const disAdv = document.getElementById('disAdvantagesInput').value;
+                    const comm = document.getElementById('commentInput').value;
 
-                    fd.append('productId', document.getElementById('productId').value);
+                    if(!editMode) fd.append('productId', document.getElementById('productId').value);
+                    if(editMode) fd.append('id',document.getElementById("create-review-btn").dataset.reviewId);
                     if (adv) fd.append('advantages', adv);
                     if (disAdv) fd.append('disAdvantages', disAdv);
                     if (comm) fd.append('comment', comm);
@@ -827,12 +927,16 @@
                     fd.append('usagePeriod', usagePer);
                     fd.append('anonymousReview', document.getElementById('anonymousReview').checked);
 
-                    // Добавляю изображения (ключ совпадает с @RequestPart в контроллере)
+                    if(editMode) deletedPhotoIds.forEach(p => fd.append("deletedPhotos", p));
+
+                    // Добавляю изображения
                     selectedFiles.forEach(obj => fd.append('images', obj.file));
 
+                    const url = editMode?'/api/review/edit':'/api/review/create';
 
-                    const resp = await fetch('/api/review/create', {
-                        method: 'POST',
+
+                    const resp = await fetch(url, {
+                        method: editMode?'PUT':'POST',
                         body: fd
                     });
                     if (resp.status === 413) {
@@ -842,9 +946,11 @@
                         return;
                     }
                     if (resp.status === 409) {
-                        const proceed = confirm(
-                            `Упс! Вы ранее уже оставляли отзыв к этому товару. Чтобы оставить новый, придется невозвратно удалить предыдущий. Удалить?`
-                        );
+                        if(editMode){
+                            alert(`Похоже, что вы не внесли никаких изменений в отзыв. Пожалуйста, помните что количество редактирований ограничено.`);
+                            return;
+                        }
+                        const proceed = confirm(`Упс! Вы ранее уже оставляли отзыв к этому товару — отзыв можно оставить только раз. Но вы можете отредактировать предыдущий отзыв или безвозвратно удалить его, чтобы заменить этим. Удалить?`);
 
 
                         if (!proceed) {
@@ -918,7 +1024,78 @@
             );
         }
     });
+
+    <!--функции для редактирования отзывов-->
+
+
+    function openEditReviewModal(reviewId) {
+        fetch(`/api/review/get_minimal_data/${reviewId}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Не удалось загрузить отзыв.");
+                return response.json();
+            })
+            .then(data => {
+                // Переключаею модалку в режим РЕДАКТИРОВАНИЯ
+                document.getElementById("reviewModalTitle").textContent = "Редактировать отзыв";
+                document.getElementById("create-review-btn").dataset.mode = "edit";
+                document.getElementById("create-review-btn").dataset.reviewId = data.id;
+                document.getElementById('photo-preview').innerHTML='';
+
+                const subTitle = document.getElementById("reviewModalSubTitleEditing");
+                subTitle.textContent='Вы можете отредактировать свой отзыв 4 раза в течение 3 лет с момента публикации.';
+                subTitle.style.display="";
+
+
+
+                existingPhotos = [];
+                selectedFiles = [];
+                deletedPhotoIds = [];
+                nextFileId = 1;
+                keys.clear();
+
+                document.getElementById("advantagesInput").value = data.advantages?data.advantages:"";
+                document.getElementById("disAdvantagesInput").value = data.disAdvantages?data.disAdvantages:"";
+                document.getElementById("commentInput").value = data.comment?data.comment:"";
+
+                const usageMap = {
+                    "менее недели": "LESS_THAN_WEEK",
+                    "менее месяца": "LESS_THAN_MONTH",
+                    "менее полугода": "LESS_THAN_HALF_YEAR",
+                    "менее года": "LESS_THAN_YEAR",
+                    "менее двух лет": "LESS_THAN_2_YEARS",
+                    "более двух лет": "MORE_THAN_2_YEARS"
+                };
+                document.getElementById("usagePeriod").value = usageMap[data.usagePeriod];
+
+                // обновляю подсветку звезд
+                document.querySelectorAll('#star-rating i').forEach((s, i) => {
+                    s.classList.toggle('bi-star-fill', i < data.rating);
+                    s.classList.toggle('bi-star', i >= data.rating);
+                });
+                document.getElementById('rating').value = data.rating;
+                // Анонимность
+                document.getElementById("anonymousReview").checked = data.anonymousReview;
+
+                existingPhotos = data.photoFileNames.map(name => ({
+                    id: name,
+                    url: `/api/media/get/${name}`
+                }));
+
+                console.log("EXISTING PHOTOS:", existingPhotos);
+                renderPreviews();
+
+                // Открываем модалку
+                const modal = new bootstrap.Modal(document.getElementById("reviewModal"));
+                modal.show();
+            })
+            .catch(error => console.error(error));
+    }
+
+
+
 </script>
+
+
 
 
 

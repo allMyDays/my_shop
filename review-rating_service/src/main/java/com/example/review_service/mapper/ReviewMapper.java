@@ -2,7 +2,8 @@ package com.example.review_service.mapper;
 
 import com.example.common.client.grpc.UserGrpcClient;
 import com.example.common.dto.user.rest.UserMinimalInfoDto;
-import com.example.review_service.dto.ReviewRequestDto;
+import com.example.review_service.dto.CreateReviewRequestDto;
+import com.example.review_service.dto.EditReviewRequestDto;
 import com.example.review_service.dto.ReviewResponseDto;
 import com.example.review_service.entity.Review;
 import com.example.review_service.enumeration.UsagePeriod;
@@ -23,15 +24,18 @@ public abstract class ReviewMapper {
     @Autowired
     protected UserGrpcClient userGrpcClient;
 
+    public abstract Review toReviewEntity(CreateReviewRequestDto reviewRequestDto);
 
-    public abstract Review toReviewEntity(ReviewRequestDto reviewRequestDto);
+
+    public abstract Review toReviewEntity(EditReviewRequestDto reviewRequestDto);
+
 
     @Mapping(target = "usagePeriod", expression = "java(mapUsagePeriod(review.getUsagePeriod()))")
-    protected abstract ReviewResponseDto toReviewResponseDto(Review review);
+    public abstract ReviewResponseDto toReviewResponseDtoWithNoUserNameAndAvatar(Review review);
 
 
 
-    public List<ReviewResponseDto> toReviewResponseDto(List<Review> reviews){
+    public List<ReviewResponseDto> toReviewResponseDtoList(List<Review> reviews){
 
         List<Long> userIds = reviews.stream()
                 .filter(a->!a.isAnonymousReview())
@@ -46,7 +50,7 @@ public abstract class ReviewMapper {
         List<ReviewResponseDto> reviewDtoList = new ArrayList<>();
 
         for(Review review: reviews){
-            ReviewResponseDto reviewDto = toReviewResponseDto(review);
+            ReviewResponseDto reviewDto = toReviewResponseDtoWithNoUserNameAndAvatar(review);
             UserMinimalInfoDto userMinimalInfoDto = userMinimalInfoMap.get(review.getUserId());
             if (userMinimalInfoDto!=null){
              reviewDto.setUserVisibleName(userMinimalInfoDto.getUserVisibleName());
@@ -61,9 +65,14 @@ public abstract class ReviewMapper {
             } reviewDtoList.add(reviewDto);
         }
         return reviewDtoList;
-
-
     }
+
+     public ReviewResponseDto toReviewResponseDto(Review review){
+        return toReviewResponseDtoList(List.of(review)).get(0);
+    }
+
+
+
 
     protected String mapUsagePeriod(UsagePeriod usagePeriod){
         return switch (usagePeriod){

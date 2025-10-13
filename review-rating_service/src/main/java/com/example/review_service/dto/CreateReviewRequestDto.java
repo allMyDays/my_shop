@@ -5,13 +5,10 @@ import com.example.review_service.enumeration.UsagePeriod;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class ReviewRequestDto {
+public class CreateReviewRequestDto {
 
     @NotNull
     @Positive(message = "productId must be positive")
@@ -44,21 +41,24 @@ public class ReviewRequestDto {
     public void setComment(String comment) {
         if (comment==null||comment.trim().isEmpty()){
             this.comment=null;
+            return;
         }
-        this.comment = XssSanitizer.sanitize(comment);
+        this.comment = XssSanitizer.sanitize(comment).trim();
     }
 
     public void setAdvantages(String advantages) {
         if (advantages==null||advantages.trim().isEmpty()){
             this.advantages=null;
+            return;
         }
-        this.advantages = XssSanitizer.sanitize(advantages);
+        this.advantages = XssSanitizer.sanitize(advantages).trim();
     }
 
     public void setDisAdvantages(String disAdvantages) {
         if (disAdvantages==null||disAdvantages.trim().isEmpty()){
             this.disAdvantages=null;
+            return;
         }
-        this.disAdvantages = XssSanitizer.sanitize(disAdvantages);
+        this.disAdvantages = XssSanitizer.sanitize(disAdvantages).trim();
     }
 }

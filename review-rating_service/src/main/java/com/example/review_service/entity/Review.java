@@ -59,12 +59,6 @@ public class Review {
     @NotNull
     private LocalDateTime dateOfCreation;
 
-    @PrePersist
-    private void init(){
-        dateOfCreation = LocalDateTime.now();
-
-    }
-
 
 
 

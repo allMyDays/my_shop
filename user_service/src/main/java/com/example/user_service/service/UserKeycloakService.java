@@ -64,7 +64,7 @@ public class UserKeycloakService {
 
     public String createUser(String nickName, String firstName, String lastName, String email, Long userEntityId) throws Exception {
         Response response = null;
-        Exception exception = new RuntimeException("Error creating user");
+        RuntimeException exception = new RuntimeException("Error creating user");
       try {
           UserRepresentation userRep = new UserRepresentation();
           userRep.setUsername(nickName);
@@ -84,9 +84,6 @@ public class UserKeycloakService {
               throw exception;
           }
           return CreatedResponseUtil.getCreatedId(response);
-
-      }catch(Exception e){
-          throw exception;
       } finally {
           if(response!=null) response.close();
       }

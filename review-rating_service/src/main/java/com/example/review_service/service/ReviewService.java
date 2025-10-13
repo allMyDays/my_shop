@@ -8,6 +8,7 @@ import com.example.review_service.dto.ProductReviewInfoDto;
 import com.example.review_service.dto.ProductReviewStats;
 import com.example.review_service.entity.Review;
 import com.example.review_service.enumeration.ReviewSortType;
+import com.example.review_service.exception.NoChangesInEditingReviewException;
 import com.example.review_service.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +43,7 @@ public class ReviewService {
           if (!productGrpcClient.productExists(productReview.getProductId())){
             throw new RuntimeException("Product does not exist");
           }
+          productReview.setDateOfCreation(LocalDateTime.now());
 
           Review review = reviewRepository.save(productReview);
 
@@ -54,16 +57,79 @@ public class ReviewService {
               mediaKafkaClient.sendSavingMediaRequest(images, BucketEnum.reviews,requestKey);
           }
     }
+    @Transactional
+    public void edit(@NonNull Review reviewToEdit,
+                     @NonNull Long userId,
+                     Optional<List<MultipartFile>> imageToSaveOptional,
+                     Optional<List<String>> imagesToDeleteOptional){
 
-    public void saveReviewImageFileNames(@NonNull List<String> imageFileNames, @NonNull Long reviewId){
+        Review oldReview = reviewRepository.findById(reviewToEdit.getId())
+                .orElseThrow(()->new RuntimeException("Review does not exist"));
 
-        if(imageFileNames.size()>5){
-            throw new RuntimeException("Too many images");
+        if(!oldReview.getUserId().equals(userId)){
+            throw new RuntimeException("Review does not belong to user");
+        }
+        reviewToEdit.setUserId(userId);
+        reviewToEdit.setProductId(oldReview.getProductId());
+        reviewToEdit.setDateOfCreation(oldReview.getDateOfCreation());
+
+        List<String> imagesToDelete = new ArrayList<>(oldReview.getPhotoFileNames());
+        imagesToDelete.retainAll(imagesToDeleteOptional.orElse(new ArrayList<>()));
+
+        List<MultipartFile> imagesToSave = imageToSaveOptional.orElse(new ArrayList<>());
+
+        if(!imagesToDelete.isEmpty()){
+            mediaKafkaClient.deleteMedia(imagesToDelete);
+            List<String> tempImgToSave = new ArrayList<>(oldReview.getPhotoFileNames());
+            tempImgToSave.removeAll(imagesToDelete);
+            reviewToEdit.setPhotoFileNames(tempImgToSave);
+
+        } else{
+            reviewToEdit.setPhotoFileNames(oldReview.getPhotoFileNames());
+            if(imageToSaveOptional.isEmpty()
+                    &&reviewToEdit.getUsagePeriod().equals(oldReview.getUsagePeriod())
+                     &&reviewToEdit.getRating().equals(oldReview.getRating())
+                      &&reviewToEdit.isAnonymousReview()==oldReview.isAnonymousReview()
+                       &&Objects.equals(reviewToEdit.getAdvantages(), oldReview.getAdvantages())
+                        &&Objects.equals(reviewToEdit.getDisAdvantages(), oldReview.getDisAdvantages())
+                         &&Objects.equals(reviewToEdit.getComment(), oldReview.getComment())){
+                            throw new NoChangesInEditingReviewException();
+            }
         }
 
-        Review review = reviewRepository.findById(reviewId).orElseThrow(()->new RuntimeException("Review does not exist"));
+        reviewRepository.save(reviewToEdit);
 
-        review.setPhotoFileNames(imageFileNames);
+        if(!imagesToSave.isEmpty()){
+            if((oldReview.getPhotoFileNames().size()-imagesToDelete.size()+imagesToSave.size())>5){
+                throw new RuntimeException("Too many images to save");
+            }
+            validateImages(imagesToSave);
+            String requestKey = UUID.randomUUID().toString();
+            redisService.save(KAFKA_UPLOAD_IMAGES+":"+requestKey,oldReview.getId().toString());
+            mediaKafkaClient.sendSavingMediaRequest(imagesToSave, BucketEnum.reviews,requestKey);
+        }
+    }
+    @Transactional
+    public void saveReviewImageFileNames(@NonNull List<String> newImageFileNames, @NonNull Long reviewId){
+
+        if(newImageFileNames.size()>5){
+            throw new RuntimeException("You can only save 5 images per one review");
+        }
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(()->new RuntimeException("Review does not exist"));
+
+        int currentPhotoQuantity = review.getPhotoFileNames().size();
+
+        if(currentPhotoQuantity>0){
+            if((currentPhotoQuantity+newImageFileNames.size())>5){
+                throw new RuntimeException("Review already has %d images, so you can't save %d new images"
+                        .formatted(currentPhotoQuantity,newImageFileNames.size()));
+            }
+            newImageFileNames.addAll(review.getPhotoFileNames());
+
+        }
+        review.setPhotoFileNames(newImageFileNames);
 
         reviewRepository.save(review);
     }
@@ -150,6 +216,10 @@ public class ReviewService {
 
     public Optional<Review> getUserReviewByProductId(Long userId, Long productId) {
         return reviewRepository.findOneByUserIdAndProductId(userId, productId);
+    }
+
+    public Optional<Review> getReviewByReviewId(Long reviewId) {
+        return reviewRepository.findById(reviewId);
     }
 
 

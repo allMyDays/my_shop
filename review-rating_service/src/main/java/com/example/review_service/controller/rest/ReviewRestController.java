@@ -1,11 +1,13 @@
 package com.example.review_service.controller.rest;
 
 import com.example.common.exception.UserNotFoundException;
+import com.example.review_service.dto.EditReviewRequestDto;
 import com.example.review_service.dto.ProductReviewInfoDto;
-import com.example.review_service.dto.ReviewRequestDto;
+import com.example.review_service.dto.CreateReviewRequestDto;
 import com.example.review_service.dto.ReviewResponseDto;
 import com.example.review_service.entity.Review;
 import com.example.review_service.enumeration.ReviewSortType;
+import com.example.review_service.exception.NoChangesInEditingReviewException;
 import com.example.review_service.mapper.ReviewMapper;
 import com.example.review_service.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +39,7 @@ public class ReviewRestController {
     @PostMapping(value = "/create", consumes = {"multipart/form-data"})
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> createReview(
-            @Validated @ModelAttribute ReviewRequestDto productReviewDto,
+            @Validated @ModelAttribute CreateReviewRequestDto productReviewDto,
             BindingResult bindingResult,
             @RequestPart(name = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
@@ -61,6 +63,34 @@ public class ReviewRestController {
         reviewService.create(review, images);
 
         return ResponseEntity.ok(productReviewDto);
+
+    }
+
+    @PutMapping(value = "/edit", consumes = {"multipart/form-data"})
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> editReview(
+            @Validated @ModelAttribute EditReviewRequestDto reviewDto,
+            BindingResult bindingResult,
+            @RequestPart(name = "images", required = false) List<MultipartFile> images,
+            @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList());
+        }
+        try{
+         reviewService.edit(
+                reviewMapper.toReviewEntity(reviewDto),
+                getMyUserEntityId(jwt),
+                Optional.ofNullable(images),
+                Optional.ofNullable(reviewDto.getDeletedPhotos()));
+        }catch (NoChangesInEditingReviewException e){
+            return ResponseEntity.status(409)
+                 .body("Отзыв с id %d уже имеет указанные параметры.".formatted(reviewDto.getId()));
+        }
+        return ResponseEntity.ok()
+                .build();
 
     }
 
@@ -99,7 +129,7 @@ public class ReviewRestController {
                                               @RequestParam int offset, // возвращает по 40 отзывов начиная с offset
                                               @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
 
-                 return reviewMapper.toReviewResponseDto(reviewService.findAll(
+                 return reviewMapper.toReviewResponseDtoList(reviewService.findAll(
                          productId,
                          offset,
                          sortType,
@@ -116,6 +146,21 @@ public class ReviewRestController {
     @GetMapping("/get_product_info")
     public ProductReviewInfoDto getProductInfo(@RequestParam Long productId)  {
         return reviewService.getProductInfo(productId);
+    }
+
+    @GetMapping("/get_minimal_data/{reviewId:\\d+}")
+
+    public ResponseEntity<?> getReview(@PathVariable Long reviewId) {
+
+        Optional<Review> reviewOptional = reviewService.getReviewByReviewId(reviewId);
+
+        if (reviewOptional.isEmpty())
+            return ResponseEntity.badRequest()
+                .body("Не удалось получить отзыв с id "+reviewId);
+
+        return ResponseEntity
+                .ok(reviewMapper.toReviewResponseDtoWithNoUserNameAndAvatar(reviewOptional.get()));
+
     }
 
 
