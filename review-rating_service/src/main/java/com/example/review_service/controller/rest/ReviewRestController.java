@@ -6,6 +6,7 @@ import com.example.review_service.dto.ProductReviewInfoDto;
 import com.example.review_service.dto.CreateReviewRequestDto;
 import com.example.review_service.dto.ReviewResponseDto;
 import com.example.review_service.entity.Review;
+import com.example.review_service.enumeration.EditReviewAbilityStatus;
 import com.example.review_service.enumeration.ReviewSortType;
 import com.example.review_service.exception.NoChangesInEditingReviewException;
 import com.example.review_service.mapper.ReviewMapper;
@@ -87,11 +88,18 @@ public class ReviewRestController {
                 Optional.ofNullable(reviewDto.getDeletedPhotos()));
         }catch (NoChangesInEditingReviewException e){
             return ResponseEntity.status(409)
-                 .body("Отзыв с id %d уже имеет указанные параметры.".formatted(reviewDto.getId()));
+                 .body(e.getMessage());
         }
+
         return ResponseEntity.ok()
                 .build();
 
+    }
+    @GetMapping("/edit-ability")
+    @PreAuthorize("isAuthenticated()")
+    public EditReviewAbilityStatus checkEditingReviewAbility(@RequestParam Long reviewId){
+
+        return reviewService.checkEditingReviewAbility(reviewId);
     }
 
     @DeleteMapping("/{reviewId:\\d+}")

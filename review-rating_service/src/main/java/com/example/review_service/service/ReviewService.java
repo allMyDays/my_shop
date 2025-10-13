@@ -7,6 +7,7 @@ import com.example.common.exception.UserNotFoundException;
 import com.example.review_service.dto.ProductReviewInfoDto;
 import com.example.review_service.dto.ProductReviewStats;
 import com.example.review_service.entity.Review;
+import com.example.review_service.enumeration.EditReviewAbilityStatus;
 import com.example.review_service.enumeration.ReviewSortType;
 import com.example.review_service.exception.NoChangesInEditingReviewException;
 import com.example.review_service.repository.ReviewRepository;
@@ -19,10 +20,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.common.service.CommonMediaService.validateImages;
+import static com.example.review_service.enumeration.EditReviewAbilityStatus.*;
 import static com.example.review_service.enumeration.RedisSubKeys.KAFKA_UPLOAD_IMAGES;
 
 @Service
@@ -69,6 +72,9 @@ public class ReviewService {
         if(!oldReview.getUserId().equals(userId)){
             throw new RuntimeException("Review does not belong to user");
         }
+        if(!checkEditingReviewAbility(oldReview.getId()).equals(CAN_EDIT))
+            throw new RuntimeException("Review cannot be edited anymore.");
+
         reviewToEdit.setUserId(userId);
         reviewToEdit.setProductId(oldReview.getProductId());
         reviewToEdit.setDateOfCreation(oldReview.getDateOfCreation());
@@ -93,9 +99,11 @@ public class ReviewService {
                        &&Objects.equals(reviewToEdit.getAdvantages(), oldReview.getAdvantages())
                         &&Objects.equals(reviewToEdit.getDisAdvantages(), oldReview.getDisAdvantages())
                          &&Objects.equals(reviewToEdit.getComment(), oldReview.getComment())){
-                            throw new NoChangesInEditingReviewException();
+                            throw new NoChangesInEditingReviewException(oldReview.getId());
             }
         }
+        reviewToEdit.setDateOfLastEditing(LocalDateTime.now());
+        reviewToEdit.setEditingQuantity(oldReview.getEditingQuantity()+1);
 
         reviewRepository.save(reviewToEdit);
 
@@ -109,6 +117,17 @@ public class ReviewService {
             mediaKafkaClient.sendSavingMediaRequest(imagesToSave, BucketEnum.reviews,requestKey);
         }
     }
+
+    public EditReviewAbilityStatus checkEditingReviewAbility(Long reviewId){
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(()->new RuntimeException("Review does not exist"));
+
+        if(review.getEditingQuantity()>=4) return ATTEMPTS_EXHAUSTED;
+        if(ChronoUnit.YEARS.between(review.getDateOfCreation(),LocalDateTime.now())>=3)
+            return TOO_OLD_REVIEW;
+        return CAN_EDIT;
+    }
+
     @Transactional
     public void saveReviewImageFileNames(@NonNull List<String> newImageFileNames, @NonNull Long reviewId){
 

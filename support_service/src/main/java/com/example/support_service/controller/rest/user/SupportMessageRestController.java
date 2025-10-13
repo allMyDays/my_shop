@@ -28,7 +28,7 @@ public class SupportMessageRestController {
 
     private final SupportMessageMapper supportMessageMapper;
 
-    @GetMapping("/sending_check_limit")
+    @GetMapping("/send-ability")
     public ResponseEntity<?> supportMessageCheckSendingLimit(@RequestParam Long chatId){
         if(supportUserService.supportMessageCreationIsLimited(chatId)){
             return ResponseEntity

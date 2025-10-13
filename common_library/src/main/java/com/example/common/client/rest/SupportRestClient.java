@@ -5,6 +5,7 @@ import com.example.common.dto.support.SupportMessageResponseDTO;
 import com.example.common.exception.BadRequestException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
+import lombok.NonNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,7 +43,7 @@ public class SupportRestClient {
     }
 
 
-    public ResponseEntity<?> createSupportChat(String topic){
+    public ResponseEntity<?> createSupportChat(@NonNull String topic){
 
         try {
             return withAuthRestClient
@@ -69,7 +70,7 @@ public class SupportRestClient {
                         .body(ResponseEntity.class);
 
     }
-    public ResponseEntity<?> supportMessageSendingIsLimited(Long chatId){
+    public ResponseEntity<?> supportMessageSendingIsLimited(@NonNull Long chatId){
           return withAuthRestClient
                    .get()
                    .uri("/api/support/message/sending_check_limit?chatId={chatId}",chatId)
@@ -97,7 +98,7 @@ public class SupportRestClient {
 
 
 
-    public List<SupportMessageResponseDTO> getAllSupportChatMessages(Long chatId){
+    public List<SupportMessageResponseDTO> getAllSupportChatMessages(@NonNull Long chatId){
         return withAuthRestClient
                 .get()
                 .uri("/api/support/messages/get_all?chatId={chatId}",chatId)
@@ -105,7 +106,7 @@ public class SupportRestClient {
                 .body(MESSAGE_TYPE_REFERENCE);
     }
 
-    public ResponseEntity<?> deleteSupportChat(Long chatId){
+    public ResponseEntity<?> deleteSupportChat(@NonNull Long chatId){
 
         try {
             return withAuthRestClient

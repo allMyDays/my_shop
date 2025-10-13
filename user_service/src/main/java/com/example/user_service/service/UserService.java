@@ -157,7 +157,7 @@ public class UserService {
 
     public MyUser getUserEntity(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(()->new NotFoundException("User not found"));
+                .orElseThrow(UserNotFoundException::new);
     }
 
     public Optional<MyUser> getUserOptionalEntity(Long userId) {

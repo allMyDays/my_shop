@@ -1,9 +1,9 @@
 package com.example.common.exception;
 
-public class UserNotFoundException extends Exception {
+public class UserNotFoundException extends RuntimeException {
 
     public UserNotFoundException() {
-        super("User not found");
+        super("We could not find correct user to complete the process");
     }
 
 }

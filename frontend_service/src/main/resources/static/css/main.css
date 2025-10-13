@@ -180,17 +180,6 @@ a:hover{
     cursor: pointer;
 }
 
-#nav-menu {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000; /* Чтобы меню было поверх остального */
-    background-color: #b9babf;
-}
-body {
-    padding-top: 70px; /* Отодвинуть содержимое, чтобы оно не залезало под меню */
-}
 
 
 

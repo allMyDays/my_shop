@@ -55,7 +55,7 @@ public class SupportChatRestController {
                 .body(result);
 
     }
-    @GetMapping("/creation_check_limit")
+    @GetMapping("/create-ability")
     public ResponseEntity<?> supportChatCheckCreationLimit(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
         if(supportUserService.supportChatCreationIsLimited(getMyUserEntityId(jwt))){
             return ResponseEntity

@@ -4,6 +4,7 @@ import com.example.common.dto.media.kafka.FileDataDTO;
 import com.example.common.enumeration.media_service.BucketEnum;
 import com.example.common.dto.media.kafka.DeleteMediaFilesRequestDTO;
 import com.example.common.dto.media.kafka.SaveMediaFilesRequestDTO;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -34,7 +35,9 @@ public class MediaKafkaClient {
     }
 
 
-    public void sendSavingMediaRequest(List<MultipartFile> multipartFileList, BucketEnum bucket, String requestKey) {
+    public void sendSavingMediaRequest(@NonNull List<MultipartFile> multipartFileList,
+                                       @NonNull BucketEnum bucket,
+                                       @NonNull String requestKey) {
 
         List<FileDataDTO> fileDataDTOList = multipartFileList.stream()
                 .map(f->{
@@ -51,7 +54,7 @@ public class MediaKafkaClient {
         kafkaTemplate.send(MEDIA_REQUEST_TOPIC, SAVE_MEDIA_FILES, new SaveMediaFilesRequestDTO(fileDataDTOList, bucket, requestKey));
     }
 
-    public void deleteMedia(List<String> fileNames) {
+    public void deleteMedia(@NonNull List<String> fileNames) {
 
         kafkaTemplate.send(MEDIA_REQUEST_TOPIC, DELETE_MEDIA_FILES, new DeleteMediaFilesRequestDTO(fileNames));
     }

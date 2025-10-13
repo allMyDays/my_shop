@@ -59,7 +59,7 @@ function loadCart(initial = false) {
         <th scope="row">${cartOffset + index + 1}</th>
         <td>
         <a href="/products/get/${item.productId}" target="_blank"> 
-        <img src="/api/media/images/product/get/${item.previewImageFileName}" width="60">
+        <img src="/api/media/get/${item.previewImageFileName}" height="60">
         </a>
         </td>
         <td class="fw-bold">${item.title}</td>
@@ -209,7 +209,7 @@ function loadWishList(initial = false) {
                         <th scope="row">${wishListOffset + index + 1}</th>
                         <td>
                         <a href="/products/get/${item.productId}" target="_blank"> 
-                        <img src="/api/media/images/product/get/${item.previewImageFileName}" width="60" class="rounded">
+                        <img src="/api/media/get/${item.previewImageFileName}" height="60" class="rounded">
                         </a>
                         </td>
                         <td class="fw-bold">${item.title}</td>

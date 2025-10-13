@@ -1,6 +1,7 @@
 package com.example.common.client.kafka;
 
 import com.example.common.dto.email.kafka.EmailSimpleMailDTO;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,7 +26,7 @@ public class EmailKafkaClient {
     }
 
 
-    public void sendSimpleMail(String to, String subject, String text) {
+    public void sendSimpleMail(@NonNull String to, @NonNull String subject,@NonNull String text) {
 
         kafkaTemplate.send(EMAIL_REQUEST_TOPIC, new EmailSimpleMailDTO(to, subject, text));
     }

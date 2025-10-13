@@ -9,12 +9,14 @@ import com.example.common.mapper.grpc.UserMapper;
 import com.netflix.appinfo.EurekaAccept;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -32,22 +34,22 @@ public class UserGrpcClient {
     private final ObjectProvider<UserServiceGrpc.UserServiceBlockingStub> userBlockingStubObjectProvider;
 
 
-    public UserExistenceStatus userExists(String email, String username, String excludedUser){
+    public UserExistenceStatus userExists(Optional<String> email, Optional<String> username, Optional<String> excludedUser){
 
-        User.CheckUserRequest userRequest = User.CheckUserRequest
-                .newBuilder()
-                .setEmail(email)
-                .setUsername(username)
-                .setExcludedUser(excludedUser)
-                .build();
+
+        User.CheckUserRequest.Builder userRequestBuilder = User.CheckUserRequest.newBuilder();
+
+        email.ifPresent(userRequestBuilder::setEmail);
+        username.ifPresent(userRequestBuilder::setUsername);
+        excludedUser.ifPresent(userRequestBuilder::setExcludedUser);
 
        User.CheckUserResponse checkUserResponse =  userBlockingStubObjectProvider.getObject()
-               .checkUserExists(userRequest);
+               .checkUserExists(userRequestBuilder.build());
        return userMapper.toUserExistenceStatus(checkUserResponse.getExistenceStatus());
 
     }
 
-    public UserResponseDTO getUserInfoByKeycloakId(String userKeycloakId){
+    public UserResponseDTO getUserInfoByKeycloakId(@NonNull String userKeycloakId){
 
         User.UserKeycloakIdRequest oneUserRequest = User.UserKeycloakIdRequest
                 .newBuilder()
@@ -61,7 +63,7 @@ public class UserGrpcClient {
 
     }
 
-    public UserResponseDTO getUserInfoByEntityId(Long userEntityId){
+    public UserResponseDTO getUserInfoByEntityId(@NonNull Long userEntityId){
 
         User.UserEntityIdRequest oneUserRequest = User.UserEntityIdRequest
                 .newBuilder()
@@ -76,7 +78,7 @@ public class UserGrpcClient {
     }
 
 
-    public boolean userEmailIsChanged(String email, String userKeycloakId){
+    public boolean userEmailIsChanged(@NonNull String email,@NonNull String userKeycloakId){
 
         User.EmailCheckRequest emailCheckRequest = User.EmailCheckRequest
                 .newBuilder()
@@ -90,7 +92,7 @@ public class UserGrpcClient {
         return statusResponse.getSuccess();
     }
 
-    public List<UserMinimalInfoDto> getUserMinimalInfo(List<Long> userEntityIds){
+    public List<UserMinimalInfoDto> getUserMinimalInfo(@NonNull List<Long> userEntityIds){
 
         User.UserEntityIdsRequest userEntityIdsRequest = User.UserEntityIdsRequest
                 .newBuilder()

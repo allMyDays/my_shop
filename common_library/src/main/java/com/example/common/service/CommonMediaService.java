@@ -1,5 +1,6 @@
 package com.example.common.service;
 
+import com.example.common.exception.FileIsNotImageException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,7 @@ public class CommonMediaService {
             String contentType = image.getContentType();
 
             if (contentType == null || !contentType.startsWith("image/")) {
-                throw new IllegalArgumentException("Можно загружать только изображения (jpg, png, webp и т.д.)");
+                throw new FileIsNotImageException(contentType);
             }
         }
     }

@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class TooManyRequestsException extends Exception {
+public class TooManyRequestsException extends RuntimeException{
 
     @Getter
     @Setter

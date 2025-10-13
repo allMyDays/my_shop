@@ -340,7 +340,7 @@ function closeSupportChat(disconnect) {
 
 
 async function tryCreateNewSupportChat() {
-    const response = await fetch(`/api/support/chat/creation_check_limit`);
+    const response = await fetch(`/api/support/chat/create-ability`);
     if (response.status === 429) {
         alert("К сожалению, чаты нельзя создавать так часто. Пожалуйста, попробуйте позже.");
         return;
@@ -534,7 +534,7 @@ async function sendSupportMessage() {
 
     if(userIsStaff()===false) {
         try {
-            const response = await fetch(`/api/support/message/sending_check_limit?chatId=${supportChatId}`, {
+            const response = await fetch(`/api/support/message/send-ability?chatId=${supportChatId}`, {
                 method: "GET"
             });
 

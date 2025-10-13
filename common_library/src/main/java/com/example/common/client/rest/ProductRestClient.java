@@ -3,6 +3,7 @@ package com.example.common.client.rest;
 import com.example.common.dto.product.rest.NewProductRequestDTO;
 import com.example.common.dto.product.rest.ProductResponseDTO;
 import com.example.common.exception.BadRequestException;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -41,7 +42,7 @@ public class ProductRestClient {
         this.withAuthRestClient = withAuthRestClient;
     }
 
-    public List<ProductResponseDTO> getAllProducts(Long categoryId, String filter) {
+    public List<ProductResponseDTO> getAllProducts(@NonNull Long categoryId,@NonNull String filter) {
         return noAuthRestClient
                 .get()
                 .uri("/api/products?categoryId={categoryId}&filter={filter}", categoryId,filter)
@@ -49,7 +50,7 @@ public class ProductRestClient {
                 .body(PRODUCT_TYPE_REFERENCE);
     }
 
-    public Optional<ProductResponseDTO> getProductByID(Long productID) {
+    public Optional<ProductResponseDTO> getProductByID(@NonNull Long productID) {
         try {
             return Optional.ofNullable(
                     noAuthRestClient.get()
@@ -62,7 +63,7 @@ public class ProductRestClient {
 
         }
     }
-    public List<ProductResponseDTO> getProductsByIDs(List<Long> productIDs) {
+    public List<ProductResponseDTO> getProductsByIDs(@NonNull List<Long> productIDs) {
         try {
             return noAuthRestClient.post()
                     .uri("/api/products/get-by-ids")
@@ -77,7 +78,10 @@ public class ProductRestClient {
         }
     }
 
-    public ProductResponseDTO createProduct(NewProductRequestDTO product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
+    public ProductResponseDTO createProduct(@NonNull NewProductRequestDTO product,
+                                            Optional<MultipartFile> file1,
+                                            Optional<MultipartFile> file2,
+                                            Optional<MultipartFile> file3) {
         try {
             return withAuthRestClient
                     .post()
@@ -96,7 +100,11 @@ public class ProductRestClient {
 
     }
 
-    public void updateProduct(Long productID, ProductResponseDTO product, MultipartFile file1, MultipartFile file2, MultipartFile file3) {
+    public void updateProduct(@NonNull Long productID,
+                              @NonNull ProductResponseDTO product,
+                              @NonNull MultipartFile file1,
+                              @NonNull MultipartFile file2,
+                              @NonNull MultipartFile file3) {
         try {
             withAuthRestClient
                     .patch()

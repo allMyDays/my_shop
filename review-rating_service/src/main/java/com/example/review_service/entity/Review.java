@@ -59,6 +59,12 @@ public class Review {
     @NotNull
     private LocalDateTime dateOfCreation;
 
+    private LocalDateTime dateOfLastEditing;
+
+    private int editingQuantity=0;
+
+
+
 
 
 

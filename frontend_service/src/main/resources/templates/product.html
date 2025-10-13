@@ -356,7 +356,7 @@
             <div class="modal-header">
                 <div>
                 <h5 class="modal-title" id="reviewModalTitle">Создать новый отзыв</h5>
-                <h6 class="mt-2" style="display: none" id="reviewModalSubTitleEditing">..</h6>
+                <div class="mt-2" style="display: none" id="reviewModalSubTitleEditing">..</div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -560,7 +560,7 @@
             const avatar = clone.querySelector("img");
             avatar.src = (r.anonymousReview?anonymousAvatar:(r.userAvatarFileName ? `/api/media/get/${r.userAvatarFileName}`:defaultAvatar));
             clone.querySelector(".username").textContent = (r.anonymousReview?"анонимный пользователь":r.userVisibleName);
-            clone.querySelector(".date").textContent = new Date(r.dateOfCreation).toLocaleDateString("ru-RU");
+            clone.querySelector(".date").textContent = ((new Date(r.dateOfCreation).toLocaleDateString("ru-RU"))+(r.dateOfLastEditing?`  (изменено ${new Date(r.dateOfLastEditing).toLocaleDateString("ru-RU")})`:""));
             clone.querySelector(".usage").innerHTML = `<h6>Срок использования ${r.usagePeriod}</h6>`;
 
             const adv = clone.querySelector(".advantages");
@@ -1028,7 +1028,20 @@
     <!--функции для редактирования отзывов-->
 
 
-    function openEditReviewModal(reviewId) {
+    async function openEditReviewModal(reviewId) {
+
+        const response = await fetch(`/api/review/edit-ability?reviewId=${reviewId}`);
+        if (!response.ok) throw new Error("Ошибка загрузки данных.");
+        const status = await response.json();
+
+        if(status==="ATTEMPTS_EXHAUSTED"){
+            alert("Вы исчерпали лимит редактирования для данного отзыва, изменить его больше не получится.");
+            return;
+        } if(status==="TOO_OLD_REVIEW"){
+            alert("Этот отзыв слишком старый (более 3 лет), изменить его больше не получится.");
+            return;
+        }
+
         fetch(`/api/review/get_minimal_data/${reviewId}`)
             .then(response => {
                 if (!response.ok) throw new Error("Не удалось загрузить отзыв.");
@@ -1039,12 +1052,14 @@
                 document.getElementById("reviewModalTitle").textContent = "Редактировать отзыв";
                 document.getElementById("create-review-btn").dataset.mode = "edit";
                 document.getElementById("create-review-btn").dataset.reviewId = data.id;
-                document.getElementById('photo-preview').innerHTML='';
+                document.getElementById('photo-preview').innerHTML = '';
 
                 const subTitle = document.getElementById("reviewModalSubTitleEditing");
-                subTitle.textContent='Вы можете отредактировать свой отзыв 4 раза в течение 3 лет с момента публикации.';
-                subTitle.style.display="";
+                subTitle.innerHTML=`<h7>Вы можете изменить свой отзыв <strong>4<strong> раза в течение 3 лет с момента публикации. Осталось правок: <strong>${4-data.editingQuantity}</strong></h7>`;
 
+
+                subTitle.textContent = `Вы можете изменить свой отзыв 4 раза в течение 3 лет с момента публикации. Осталось правок: ${4-data.editingQuantity}`;
+                subTitle.style.display = "";
 
 
                 existingPhotos = [];
@@ -1053,9 +1068,9 @@
                 nextFileId = 1;
                 keys.clear();
 
-                document.getElementById("advantagesInput").value = data.advantages?data.advantages:"";
-                document.getElementById("disAdvantagesInput").value = data.disAdvantages?data.disAdvantages:"";
-                document.getElementById("commentInput").value = data.comment?data.comment:"";
+                document.getElementById("advantagesInput").value = data.advantages ? data.advantages : "";
+                document.getElementById("disAdvantagesInput").value = data.disAdvantages ? data.disAdvantages : "";
+                document.getElementById("commentInput").value = data.comment ? data.comment : "";
 
                 const usageMap = {
                     "менее недели": "LESS_THAN_WEEK",

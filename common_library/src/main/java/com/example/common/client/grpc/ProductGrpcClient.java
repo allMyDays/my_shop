@@ -9,6 +9,8 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import jakarta.validation.constraints.Positive;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -37,9 +39,7 @@ public class ProductGrpcClient {
 
 
 
-    public Optional<ProductResponseDTO> getProductById(Long id){
-
-        if(id == null) return Optional.empty();
+    public Optional<ProductResponseDTO> getProductById(@NonNull @Positive Long id){
 
         ProductRequestById productRequest = ProductRequestById
                 .newBuilder()
@@ -61,16 +61,18 @@ public class ProductGrpcClient {
         }
 
     }
-    public void lazyLoadProductBatchStream(Long categoryId, String filter, int offset, Consumer<ProductResponseDTO> consumer, Runnable onComplete){
+    public void lazyLoadProductBatchStream(Optional<Long> categoryId,
+                                           @NonNull String filter,
+                                           @NonNull int offset,
+                                           @NonNull Consumer<ProductResponseDTO> consumer,
+                                           @NonNull Runnable onComplete){
 
         ProductRequestByFilterAndCategory.Builder productRequestBuilder = ProductRequestByFilterAndCategory
                 .newBuilder()
                 .setOffset(offset)
                 .setFilter(filter);
 
-        if(categoryId != null){
-            productRequestBuilder.setCategoryId(categoryId);
-        }
+        categoryId.ifPresent(productRequestBuilder::setCategoryId);
 
 
         productAsyncStubObjectProvider.getObject()
@@ -98,7 +100,7 @@ public class ProductGrpcClient {
 
     }
 
-    public List<ProductResponseDTO> getProductsByIdsFullList(List<Long> ids){
+    public List<ProductResponseDTO> getProductsByIdsFullList(@NonNull List<Long> ids){
 
         ProductRequestByIds productRequest = ProductRequestByIds
                 .newBuilder()
@@ -121,7 +123,11 @@ public class ProductGrpcClient {
 
     }
 
-    public void getProductsByIdsStream(List<Long> ids, int limit, int offset, Consumer<ProductResponseDTO> consumer, Runnable onComplete){
+    public void getProductsByIdsStream(@NonNull List<Long> ids,
+                                       @NonNull int limit,
+                                       @NonNull int offset,
+                                       @NonNull Consumer<ProductResponseDTO> consumer,
+                                       @NonNull Runnable onComplete){
 
         ProductRequestByIds productRequest = ProductRequestByIds
                 .newBuilder()
@@ -155,8 +161,7 @@ public class ProductGrpcClient {
 
     }
 
-    public boolean productExists(Long id){
-        if (id==null) return false;
+    public boolean productExists(@NonNull Long id){
 
         ProductRequestById productRequest = ProductRequestById
                 .newBuilder()

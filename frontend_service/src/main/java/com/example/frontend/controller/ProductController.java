@@ -63,7 +63,7 @@ public class ProductController {
 
         SseEmitter emitter = new SseEmitter();
 
-        productGrpcClient.lazyLoadProductBatchStream(categoryId, filter, offset, productResponseDTO -> {
+        productGrpcClient.lazyLoadProductBatchStream(Optional.ofNullable(categoryId), filter, offset, productResponseDTO -> {
             try {
                 emitter.send(productResponseDTO);
 

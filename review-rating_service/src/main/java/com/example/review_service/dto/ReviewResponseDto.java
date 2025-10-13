@@ -36,6 +36,10 @@ public class ReviewResponseDto {
 
     private String userAvatarFileName;
 
+    private LocalDateTime dateOfLastEditing;
+
+    private int editingQuantity=0;
+
 
 
 
