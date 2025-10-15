@@ -2,10 +2,22 @@ let cartProductIds = new Set();
 let wishProductIds = new Set();
 
  document.addEventListener('DOMContentLoaded', () => {
-         Promise.all([
-             fetch('/api/cart/get_product_ids').then(res => res.json()),
-             fetch('/api/wish-list/get_product_ids').then(res => res.json())
+     const productPage = document.getElementById("reviewsContainer");
+     let productId;
+     if(productPage){
+         productId = document.getElementById("cart-button").getAttribute('data-product-id');
+     }
+     Promise.all([
+             fetch(productPage?`/api/cart/product-exists?productId=${productId}`:'/api/cart/get_product_ids').then(res => res.json()),
+             fetch(productPage?`/api/wish-list/product-exists?productId=${productId}`:'/api/wish-list/get_product_ids').then(res => res.json())
          ]).then(([cartItems, wishItems]) => {
+             if(productPage){
+                 if(cartItems===true){
+                     cartProductIds.add(String(productId));
+                 }if(wishItems===true){
+                     wishProductIds.add(String(productId))
+                 } return;
+             }
              cartItems.forEach(item => cartProductIds.add(String(item)));
              wishItems.forEach(item => wishProductIds.add(String(item)));
          });

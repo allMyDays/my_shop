@@ -87,6 +87,12 @@ public class WishListService {
         return itemRepository.findProductIdsByUserId(userId);
     }
 
+    public boolean productExists(Long productId, Long userId){
+        return itemRepository.existsByWishListUserIdAndProductId(userId,productId);
+
+
+    }
+
 
 
 

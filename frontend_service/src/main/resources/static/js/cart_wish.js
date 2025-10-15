@@ -66,9 +66,9 @@ function loadCart(initial = false) {
          <td id="price-${item.productId}" class="fw-bold">${item.price * item.quantity}₽</td>
                 <td class="text-end">
             <div class="d-flex align-items-center">
-                <button class="btn btn-sm btn-outline-secondary" onclick="updateQuantityByOne(${item.productId},false,${item.price} )">-</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="updateCartQuantityByOne(${item.productId},false,${item.price} )">-</button>
                 <span id="quantity-${item.productId}" class="mx-2 fw-bold">${item.quantity}</span>
-                <button class="btn btn-sm btn-outline-secondary" onclick="updateQuantityByOne(${item.productId}, true, ${item.price})">+</button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="updateCartQuantityByOne(${item.productId}, true, ${item.price})">+</button>
             </div>
         </td>
         <td>
@@ -120,7 +120,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function updateQuantityByOne(productId, increase, price) {
+function updateCartQuantityByOne(productId, increase, price) {
+    if(!increase&&parseInt(document.getElementById(`quantity-${productId}`).textContent)===1) {
+        const c = confirm('Вы уверены, что хотите удалить этот товар из корзины? Отменить действие будет невозможно.');
+        if(!c) return;
+        fetch(`/api/cart/${productId}`, {
+            method: "DELETE",
+            credentials: "include"
+        }).then(res => {
+            if (res.ok) {
+                removeFromCart(productId);
+            } else {
+                alert("Ошибка при удалении товара.");
+            }
+        });
+        return;
+    }
     fetch(`/api/cart/${productId}?increase=${increase}`, {
         method: "PUT",
         credentials: "include"

@@ -113,6 +113,12 @@ public class CartService {
         return cartItemRepository.findProductIdsByUserId(userId);
     }
 
+    public boolean productExists(Long productId, Long userId){
+        return cartItemRepository.existsByCartUserIdAndProductId(userId,productId);
+
+
+    }
+
 
 
 

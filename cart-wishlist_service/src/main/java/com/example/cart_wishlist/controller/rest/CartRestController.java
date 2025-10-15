@@ -76,6 +76,11 @@ public class CartRestController {
         return cartService.getProductIdsByUserId(getMyUserEntityId(jwt));
     }
 
+    @GetMapping("/product-exists")
+    public boolean isProductInCart(@RequestParam Long productId, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+        return cartService.productExists(productId,getMyUserEntityId(jwt));
+    }
+
 
 
 

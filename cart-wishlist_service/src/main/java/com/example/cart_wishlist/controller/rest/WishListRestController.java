@@ -75,6 +75,11 @@ public class WishListRestController {
         return wishService.getProductIdsByUserId(getMyUserEntityId(jwt));
     }
 
+    @GetMapping("/product-exists")
+    public boolean isProductInWishList(@RequestParam Long productId, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+        return wishService.productExists(productId,getMyUserEntityId(jwt));
+    }
+
 
 
 
