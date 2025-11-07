@@ -29,11 +29,11 @@ public class SupportMessageRestController {
     private final SupportMessageMapper supportMessageMapper;
 
     @GetMapping("/send-ability")
-    public ResponseEntity<?> supportMessageCheckSendingLimit(@RequestParam Long chatId){
-        if(supportUserService.supportMessageCreationIsLimited(chatId)){
+    public ResponseEntity<?> checkMessageSendingAbility(@RequestParam Long chatId){
+        if(supportUserService.messageSendingIsLimited(chatId)){
             return ResponseEntity
                     .status(429)
-                    .build();
+                    .body("You temporarily exhausted the limit of sending support messages");
         }
 
         return ResponseEntity
@@ -43,7 +43,7 @@ public class SupportMessageRestController {
     }
 
     @GetMapping("/get_all")
-    public List<SupportMessageResponseDTO> getAllSupportChatMessages(@AuthenticationPrincipal Jwt jwt, @RequestParam Long chatId) throws UserNotFoundException {
+    public List<SupportMessageResponseDTO> getAllChatMessages(@AuthenticationPrincipal Jwt jwt, @RequestParam Long chatId) throws UserNotFoundException {
 
         return supportMessageMapper.toSupportMessageDTOList(supportUserService.getAllSupportChatMessages(getMyUserEntityId(jwt),chatId));
 

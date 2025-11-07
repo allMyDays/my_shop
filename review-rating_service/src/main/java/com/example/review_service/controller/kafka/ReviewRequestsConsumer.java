@@ -9,6 +9,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static com.example.common.constant.kafka.Topics.MEDIA_RESPONSE_TOPIC;
 import static com.example.common.constant.kafka.Topics.USER_REQUEST_TOPIC;
 import static com.example.common.constant.kafka.keys.MediaKeys.SAVED_MEDIA_FILES;
@@ -38,11 +40,8 @@ public class ReviewRequestsConsumer {
              case SAVED_MEDIA_FILES:
                  var savedFileDto = objectMapper.readValue(rawJsonString, SavedMediaFilesResponseDTO.class);
                   if(savedFileDto.getBucket().equals(reviews)){
-                      String reviewId = redisService.get(KAFKA_UPLOAD_IMAGES+":"+savedFileDto.getRequestKey());
-                      if(reviewId != null){
-                          reviewService.saveReviewImageFileNames(savedFileDto.getGeneratedFileKeys(),Long.parseLong(reviewId));
-
-                       }
+                      Optional<String> reviewId = redisService.get(KAFKA_UPLOAD_IMAGES+":"+savedFileDto.getRequestKey(),true);
+                      reviewId.ifPresent(s -> reviewService.saveReviewImageFileNames(savedFileDto.getGeneratedFileKeys(), Long.parseLong(s)));
                  }
                  break;
 

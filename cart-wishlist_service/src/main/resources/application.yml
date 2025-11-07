@@ -6,6 +6,14 @@ server:
 spring:
   application:
     name: cart-wishlist-service
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
+    consumer:
+      group-id: cart-wishlist-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  #десериализация любых объектов
 
   security:
     oauth2:

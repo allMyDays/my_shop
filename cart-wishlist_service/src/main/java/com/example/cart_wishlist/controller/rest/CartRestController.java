@@ -1,21 +1,27 @@
 package com.example.cart_wishlist.controller.rest;
 
+import com.example.cart_wishlist.exception.TooManyItemsException;
 import com.example.cart_wishlist.mapper.CartItemMapper;
 import com.example.cart_wishlist.mapper.CartMapper;
 import com.example.cart_wishlist.service.CartService;
 import com.example.common.dto.cart.rest.CartResponseDTO;
+import com.example.common.dto.product.ProductIdAndQuantityDto;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.dto.cart.rest.CartItemResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static com.example.common.service.CommonProductService.formatPrice;
 import static com.example.common.service.CommonUserService.getMyUserEntityId;
 
 @RestController
@@ -34,8 +40,24 @@ public class CartRestController {
     }
 
     @PutMapping("/{productId:\\d+}")
-    public Integer updateItemQuantityByOne(@PathVariable Long productId, @RequestParam boolean increase, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException { // если возвращает ноль - товар удален
-        return cartService.updateProductQuantity(getMyUserEntityId(jwt),productId,increase);
+    public ResponseEntity<?> updateItemQuantityByOne(     // если возвращает ноль - товар удален
+                                                    @PathVariable Long productId,
+                                                    @RequestParam boolean increase,
+                                                    @RequestParam(required = false) Integer pricePerProduct,
+                                                    @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+         int newQuantity = cartService.updateProductQuantity(getMyUserEntityId(jwt),productId,increase);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("newQuantity", newQuantity);
+        if(pricePerProduct != null) {
+         result.put("totalPriceView", formatPrice(pricePerProduct*newQuantity));
+        }
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(result);
+
     }
 
     @GetMapping("/items")
@@ -44,7 +66,7 @@ public class CartRestController {
     }
 
     @GetMapping("/size")
-    public Long getCartSize(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+    public Integer getCartSize(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
         return cartService.getCartSize(getMyUserEntityId(jwt));
     }
 
@@ -53,12 +75,12 @@ public class CartRestController {
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@RequestParam Long productId, @RequestParam int quantity, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
 
-        if(getCartSize(jwt)>=4000){
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body("Вы превысили лимит на добавление товаров в корзину. Совершите заказ товаров или удалите их, чтобы освободить место.");
-        }
-
+        try{
         cartService.addItemToCart(getMyUserEntityId(jwt),productId,quantity);
+        }catch (TooManyItemsException e){
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(e.getMessage());
+        }
 
         return ResponseEntity.ok().build();
 
@@ -79,6 +101,13 @@ public class CartRestController {
     @GetMapping("/product-exists")
     public boolean isProductInCart(@RequestParam Long productId, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
         return cartService.productExists(productId,getMyUserEntityId(jwt));
+    }
+
+
+    @GetMapping("/brief-items")
+    public List<ProductIdAndQuantityDto> getBriefItems(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+        return cartService.getBriefItems(getMyUserEntityId(jwt));
+
     }
 
 

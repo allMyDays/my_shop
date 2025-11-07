@@ -8,6 +8,8 @@ public class Topics {
 
      public static final String PRODUCT_REQUEST_TOPIC = "product_requests";
 
+     public static final String CART_REQUEST_TOPIC = "cart_requests";
+
      public static final String MEDIA_REQUEST_TOPIC = "media_requests";
 
      public static final String MEDIA_RESPONSE_TOPIC = "media_responses";

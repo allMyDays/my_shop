@@ -15,7 +15,7 @@ public class WishItemResponseDTO {
 
     String title;
 
-    int price;
+    String priceView;
 
     String previewImageFileName;
 

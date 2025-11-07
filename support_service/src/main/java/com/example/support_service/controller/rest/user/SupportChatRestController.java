@@ -7,7 +7,6 @@ import com.example.support_service.mapper.SupportChatMapper;
 import com.example.support_service.service.SupportUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +15,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,11 +43,15 @@ public class SupportChatRestController {
                             .toList());
         }
 
-        ResponseEntity<?> limitResponse = supportChatCheckCreationLimit(jwt);
+        Long userId = getMyUserEntityId(jwt);
 
-        if(limitResponse.getStatusCode().value()==429) return limitResponse;
+        Long newChatId = supportUserService.createSupportChat(userId, createChatDto.getTopic());
 
-        Map<String, Long> result = supportUserService.createSupportChat(getMyUserEntityId(jwt), createChatDto.getTopic());
+        System.out.println("!!!!!!!!!!chat was created with id: " + newChatId);
+
+        Map<String, Long> result = new HashMap<>();
+        result.put("chatId", newChatId);
+        result.put("userId", userId);
 
         return ResponseEntity
                 .ok()
@@ -56,11 +60,11 @@ public class SupportChatRestController {
 
     }
     @GetMapping("/create-ability")
-    public ResponseEntity<?> supportChatCheckCreationLimit(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
-        if(supportUserService.supportChatCreationIsLimited(getMyUserEntityId(jwt))){
+    public ResponseEntity<?> checkChatCreationAbility(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+        if(supportUserService.chatCreationIsLimited(getMyUserEntityId(jwt))){
             return ResponseEntity
                     .status(429)
-                    .build();
+                    .body("You temporarily exhausted the limit of creation support chats");
         }
 
         return ResponseEntity
@@ -71,15 +75,12 @@ public class SupportChatRestController {
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteSupportChat(@AuthenticationPrincipal Jwt jwt, @RequestParam Long chatId) throws UserNotFoundException {
 
-        if(supportUserService.deleteSupportChat(getMyUserEntityId(jwt),chatId)){
+        supportUserService.deleteSupportChat(getMyUserEntityId(jwt),chatId);
+
             return ResponseEntity
                     .ok()
                     .build();
-        }
 
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .build();
 
     }
 

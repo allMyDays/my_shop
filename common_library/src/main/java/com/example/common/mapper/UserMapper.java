@@ -1,4 +1,4 @@
-package com.example.common.mapper.grpc;
+package com.example.common.mapper;
 import com.example.common.dto.user.rest.UserMinimalInfoDto;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.common.enumeration.user_service.UserExistenceStatus;

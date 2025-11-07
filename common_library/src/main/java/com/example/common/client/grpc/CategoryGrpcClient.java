@@ -3,7 +3,7 @@ package com.example.common.client.grpc;
 import com.example.common.dto.category.rest.CategoryResponseDTO;
 import com.example.common.grpc.category.Category;
 import com.example.common.grpc.category.CategoryServiceGrpc;
-import com.example.common.mapper.grpc.CategoryMapper;
+import com.example.common.mapper.CategoryMapper;
 import com.google.protobuf.Empty;
 import com.netflix.discovery.EurekaClient;
 import io.grpc.ManagedChannel;

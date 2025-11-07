@@ -1,7 +1,9 @@
 package com.example.frontend.controller;
 
 
+import com.example.common.client.grpc.OrderGrpcClient;
 import com.example.common.client.grpc.UserGrpcClient;
+import com.example.common.dto.user.rest.UserAddressDto;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,6 +13,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
+import static com.example.common.service.CommonUserService.getMyUserEntityId;
 import static com.example.common.service.CommonUserService.getUserKeycloakId;
 
 @Controller
@@ -19,6 +24,8 @@ import static com.example.common.service.CommonUserService.getUserKeycloakId;
 public class UserController {
 
     private final UserGrpcClient userGrpcClient;
+
+    private final OrderGrpcClient orderGrpcClient;
 
     @GetMapping("/registration")
     @PreAuthorize("!isAuthenticated()")
@@ -35,7 +42,11 @@ public class UserController {
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public String profile(Model model, @AuthenticationPrincipal Jwt jwt){
-        UserResponseDTO userResponseDTO =  userGrpcClient.getUserInfoByKeycloakId(getUserKeycloakId(jwt));
+        long userId = getMyUserEntityId(jwt);
+        UserResponseDTO userResponseDTO =  userGrpcClient.getUserInfoByEntityId(userId);
+        Optional<UserAddressDto> addressDto = orderGrpcClient.getUserAddress(userId);
+        addressDto.ifPresent(userAddressDto -> userResponseDTO.setFullAddress(userAddressDto.getFullAddress()));
+
         model.addAttribute("user", userResponseDTO);
         return "profile";
     }

@@ -30,6 +30,9 @@ public class SupportChatResponseDTO {
     private Long userId;
 
     @Setter
+    boolean containsMessages;
+
+    @Setter
     List<SupportMessageResponseDTO> messages = new ArrayList<>();
 
 

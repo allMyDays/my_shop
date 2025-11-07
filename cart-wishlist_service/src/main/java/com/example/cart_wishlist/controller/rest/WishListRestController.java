@@ -1,5 +1,6 @@
 package com.example.cart_wishlist.controller.rest;
 
+import com.example.cart_wishlist.exception.TooManyItemsException;
 import com.example.cart_wishlist.mapper.WishItemMapper;
 import com.example.cart_wishlist.mapper.WishListMapper;
 import com.example.cart_wishlist.service.WishListService;
@@ -53,12 +54,12 @@ public class WishListRestController {
     @PostMapping("/add")
     public ResponseEntity<?> addToWishList(@RequestParam Long productId, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
 
-        if (getListSize(jwt)>=8000){
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .body("Вы превысили лимит на добавление товаров в список желаний. Удалите часть товаров, чтобы освободить место.");
-        }
-
+        try{
         wishService.addItem(getMyUserEntityId(jwt), productId);
+        }catch (TooManyItemsException e){
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(e.getMessage());
+        }
 
         return ResponseEntity.ok().build();
     }

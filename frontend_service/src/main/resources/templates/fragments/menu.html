@@ -15,7 +15,9 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-6 col-sm-4">
+                    <div>
                     <a href="/"><img src="/images/logo.png" alt="logo" width="188"></a>
+                    </div>
                 </div>
                 <div class="col-sm-4 d-none d-sm-block">
                     <div class="input-group mb-3 my-3">
@@ -51,6 +53,8 @@
 
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="/users/profile">Мой аккаунт</a></li>
+
+                                    <li><a class="dropdown-item" href="/orders/all">Мои заказы</a></li>
 
                                     <li><a class="dropdown-item" onClick="logout()">Выйти</a></li>
 
@@ -195,7 +199,7 @@
                                 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
                                     <div class="offcanvas-header">
                                         <h3 class="offcanvas-title" id="offcanvasCartLabel">Корзина товаров</h3>
-                                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Закрыть" id="closingCart"></button>
                                     </div>
                                     <div class="offcanvas-body">
                                         <table class="table mt-4">
@@ -204,8 +208,121 @@
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    <!-- Фиксированная кнопка внизу -->
+                                    <div class="p-3 border-top position-absolute bottom-0 start-0 w-100 bg-white" id="buy-all-items-btn" style="display: none">
+                                        <button class="btn btn-dark w-100" onclick="tryCreateNewOrder(true, -1)">Купить все товары</button>
+                                    </div>
                                 </div>
                             </div>
+
+
+
+                            <!-- блок заказов -->
+
+                            <!-- Ошибка при попытке создать заказ -->
+                            <div class="modal fade" id="orderErrorModal" tabindex="-1" aria-labelledby="orderErrorModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="orderErrorModalLabel">Упс!</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Чтобы оформить заказ, необходимо заполнить данные о вашем адресе в личном кабинете.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="/users/profile"><button type="button" class="btn btn-dark" data-bs-dismiss="modal">Перейти в личный кабинет</button></a>
+                                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Закрыть</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Подтверждение заказов всех товаров -->
+                            <div class="modal fade" id="orderConfirmModal" tabindex="-1" aria-labelledby="orderConfirmModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="orderConfirmModalLabel">Точно хотите заказать все товары из корзины?</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Вместо этого можно нажать на «Купить» напротив конкретного товара.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button onclick="openOrderModal(true, -1)" type="button" class="btn btn-dark">Хочу</button>
+                                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Нет</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ОКНО ЗАКАЗА ТОВАРОВ -->
+                            <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content rounded-4 shadow">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="orderModalLabel">Оформление заказа</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Наш склад находится по адресу: <strong id="orderStorageAddress"></strong></p>
+                                            <p>Ваш адрес доставки: <strong id="orderUserAddress"></strong></p>
+                                            <p>Расстояние до Вас по автомобильной дороге: <strong id="orderDeliveryDistanceView"></strong></p>
+                                            <p>Примерное время доставки на машине: <strong id="orderDeliveryTimeView"></strong></p>
+                                            <p>Общее количество товаров: <strong id="orderItemQuantity"></strong></p>
+                                            <p>Стоимость всех товаров: <strong id="orderItemPrice"></strong></p>
+                                            <p>Стоимость доставки: <strong id="orderDeliveryPrice"></strong></p>
+
+                                            <!--карусель из товаров-->
+                                            <div id="orderProductsCarousel" class="carousel slide my-3" data-bs-ride="carousel"
+                                                 data-bs-interval="3500">
+                                                <div class="carousel-inner" id="orderProductsContainer"></div>
+                                                <div id="order-carousel-buttons">
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#orderProductsCarousel" data-bs-slide="prev"
+                                                        id="carousel-order-prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Предыдущий</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#orderProductsCarousel" data-bs-slide="next"
+                                                        id="carousel-order-next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Следующий</span>
+                                                </button>
+                                                </div>
+                                            </div>
+
+
+
+
+                                            <p>Оплата производится курьеру на месте, наличными или картой</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button onclick="сreateNewOrder()" type="button" class="btn btn-dark" id="confirmOrderBtn">Оформить заказ</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Окно успешного создания заказа -->
+                            <div class="modal fade" id="orderSuccessModal" tabindex="-1" aria-labelledby="orderSuccessModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" >Спасибо за заказ! Он был успешно создан.</h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Вы можете отслеживать статус своих заказов в соответствующем разделе заказов.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="/orders/all"><button type="button" class="btn btn-dark" data-bs-dismiss="modal">Перейти в раздел заказов</button></a>
+                                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Закрыть</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
 
                       </div>
 

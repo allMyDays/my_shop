@@ -6,6 +6,7 @@ import com.example.common.enumeration.user_service.UserExistenceStatus;
 import com.example.user_service.dto.UserFullNameDto;
 import jakarta.annotation.PostConstruct;
 import jakarta.ws.rs.core.Response;
+import lombok.NonNull;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -62,7 +63,12 @@ public class UserKeycloakService {
     }
 
 
-    public String createUser(String nickName, String firstName, String lastName, String email, Long userEntityId) throws Exception {
+    public String createUser(
+            @NonNull String nickName,
+            @NonNull String firstName,
+            @NonNull String lastName,
+            @NonNull String email,
+            long userEntityId) throws Exception {
         Response response = null;
         RuntimeException exception = new RuntimeException("Error creating user");
       try {
@@ -76,7 +82,7 @@ public class UserKeycloakService {
 
 
           Map<String, List<String>> attributes = new HashMap<>();
-          attributes.put(MY_USER_ID_KEY_KEYCLOAK, List.of(userEntityId.toString()));
+          attributes.put(MY_USER_ID_KEY_KEYCLOAK, List.of(String.valueOf(userEntityId)));
           userRep.setAttributes(attributes);
           response = keycloakClientInstance.realm(realm).users().create(userRep);
 
@@ -89,7 +95,7 @@ public class UserKeycloakService {
       }
     }
 
-    public boolean setUserPassword(String userId, String newPassword) {
+    public boolean setUserPassword(@NonNull String userId, @NonNull String newPassword) {
         try{
             CredentialRepresentation credential = new CredentialRepresentation();
             credential.setType(CredentialRepresentation.PASSWORD);
@@ -106,14 +112,14 @@ public class UserKeycloakService {
         }
     }
 
-    public boolean deleteUser(String userId) {
+    public boolean deleteUser(@NonNull String userId) {
         try(Response response = keycloakClientInstance.realm(realm).users().delete(userId)) {
             return true;
         } catch (Exception e) {
             return false;
         }
     }
-    public boolean updateUserData(String userKeycloakId, UpdateUserRequestDTO userDTO){
+    public boolean updateUserData(@NonNull String userKeycloakId, @NonNull UpdateUserRequestDTO userDTO){
         try{
 
             UserResource userResource = keycloakClientInstance.realm(realm).users().get(userKeycloakId);
@@ -147,9 +153,9 @@ public class UserKeycloakService {
         }
     }
 
-    public Optional<UserRepresentation > getUser(String username){
+    public Optional<UserRepresentation> getUser(@NonNull String username){
 
-        if(username==null||username.isEmpty()) return Optional.empty();
+        if(username.isEmpty()) return Optional.empty();
 
         int first = 0;
         int maxResults = 100;
@@ -201,12 +207,12 @@ public class UserKeycloakService {
         return UserExistenceStatus.NOT_EXISTS;
 
     }
-    public String getUserRealm(Jwt jwt){
+    public String getUserRealm(@NonNull Jwt jwt){
         String issuer = jwt.getClaimAsString("iss");
         return issuer.substring(issuer.lastIndexOf("/")+1);
     }
 
-    public boolean userEmailIsChanged(String userKeycloakID, String newEmail){
+    public boolean userEmailIsChanged(@NonNull String userKeycloakID, @NonNull String newEmail){
 
         UserRepresentation userRep = keycloakClientInstance.realm(realm).users().get(userKeycloakID).toRepresentation();
 
@@ -214,7 +220,7 @@ public class UserKeycloakService {
 
     }
 
-    public Optional<UserResponseDTO> collectKeycloakUserInfo(String userKeycloakID){
+    public Optional<UserResponseDTO> collectKeycloakUserInfo(@NonNull String userKeycloakID){
 
         try{
         UserResource userResource = keycloakClientInstance.realm(realm).users().get(userKeycloakID);
@@ -235,9 +241,8 @@ public class UserKeycloakService {
 
     }
 
-    public static String extractRealm(String issuerUri){
+    public static String extractRealm(@NonNull String issuerUri){
 
-        if(issuerUri==null) throw new IllegalArgumentException("Issuer URI is null");
         if(issuerUri.endsWith("/")) issuerUri = issuerUri.substring(0, issuerUri.length()-1);
 
         String[] splitIssuerUri  = issuerUri.split("/");
@@ -247,8 +252,7 @@ public class UserKeycloakService {
 
     }
 
-    public static String extractServerUri(String issuerUri){
-        if(issuerUri==null) throw new IllegalArgumentException("Issuer URI is null");
+    public static String extractServerUri(@NonNull String issuerUri){
         String[] splitIssuerUri  = issuerUri.split("/");
         if(splitIssuerUri.length<3||!splitIssuerUri[0].matches("http(s)?:")) throw new IllegalArgumentException("Issuer URI is incorrect");
 
@@ -256,7 +260,7 @@ public class UserKeycloakService {
 
     }
 
-    public Optional<Jwt> generateJwtToken(String nickName, String password){
+    public Optional<Jwt> generateJwtToken(@NonNull String nickName,@NonNull String password){
         try(Keycloak keycloak = keycloakBuilderProvider
                     .getObject()
                     .grantType(PASSWORD)
@@ -273,7 +277,7 @@ public class UserKeycloakService {
     }
 
 
-    public boolean logout(String userKeycloakID){
+    public boolean logout(@NonNull String userKeycloakID){
 
        try {
            keycloakClientInstance
@@ -288,7 +292,7 @@ public class UserKeycloakService {
 
     }
 
-    public List<UserFullNameDto> getUserFullNames(List<String> userKeycloakIDs){
+    public List<UserFullNameDto> getUserFullNames(@NonNull List<String> userKeycloakIDs){
 
         List<UserFullNameDto> userFullNameDTOs = new ArrayList<>();
 

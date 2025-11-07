@@ -22,6 +22,7 @@ public class UserResponseDTO {
 
     private String avatarFileName;
 
+    private String fullAddress;
 
 }
 

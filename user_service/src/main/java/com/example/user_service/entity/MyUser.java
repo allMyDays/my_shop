@@ -31,13 +31,4 @@ public class MyUser {
     private String avatarFileName;
 
 
-
-
-
-
-
-
-
-
-
 }

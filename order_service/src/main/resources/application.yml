@@ -1,0 +1,64 @@
+server:
+  port: 8090
+  grpc:
+    port: 90
+
+spring:
+  application:
+    name: order-service
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
+    consumer:
+      group-id: order-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  #десериализация любых объектов
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8084}/realms/${KEYCLOAK_REALM:my_realm}
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/${POSTGRES_DB_NAME:postgres}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:igor333333}
+    driver-class-name: org.postgresql.Driver
+
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone:
+        http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/
+
+  instance:
+    metadata-map:
+      grpc-port: ${server.grpc.port}
+
+geoapify:
+  api:
+   key: 056fd8f9e17a4e98b2f9b1411191559e
+  routing:
+   url: https://api.geoapify.com/v1/routing
+
+dadata:
+  token: ${DADATA_TOKEN:d35f75a8ab5f256d7ea544af2e66be15faa31e67}
+  secret-key: ${DADATA_SECRET_KEY:9bb442ff3d4254495b8fe5a80ce17a4e4dc58193}
+  url: https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address

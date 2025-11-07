@@ -1,6 +1,5 @@
-
-let userRoles=null;
-let authenticated=false;
+let userRoles = null;
+let authenticated = false;
 
 document.addEventListener("DOMContentLoaded", async function () {
 
@@ -51,8 +50,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 
-
-function mainSearchFind(){
+function mainSearchFind() {
 
     const input = document.getElementById("main-search-input");
 
@@ -60,9 +58,10 @@ function mainSearchFind(){
 
     const inputValue = input.value.trim();
 
-    if(!inputValue||inputValue.length<2){
+    if (!inputValue || inputValue.length < 2) {
         alert("Необходимо ввести запрос в строку поиска.");
-        return;}
+        return;
+    }
 
     const params = new URLSearchParams();
 
@@ -72,7 +71,7 @@ function mainSearchFind(){
     window.location.href = "/products/get/all?" + params.toString();
 }
 
-async function logout(){
+async function logout() {
 
     try {
         const response = await fetch("/api/users/logout", {
@@ -87,10 +86,11 @@ async function logout(){
     }
 }
 
-function userIsStaff(){
-    if(!userRoles) return false;
+function userIsStaff() {
+    if (!userRoles) return false;
     return (userRoles.includes("ROLE_AGENT") || userRoles.includes("ROLE_ADMIN"));
 }
+
 function userIsAuthenticated() {
     return authenticated;
 }
@@ -102,7 +102,7 @@ function loadCartSize() {
     fetch(`/api/cart/size`, {
         method: "GET"
     }).then(res => {
-        if(!res.ok){
+        if (!res.ok) {
             return;
         }
         return res.json();
@@ -120,7 +120,7 @@ function loadWishListSize() {
     fetch(`/api/wish-list/size`, {
         method: "GET"
     }).then(res => {
-        if(!res.ok){
+        if (!res.ok) {
             return;
         }
         return res.json()
@@ -197,7 +197,7 @@ const typingIndicator = document.getElementById("typing-indicator");
 messageInput.addEventListener("input", () => {
     if (!supportStompClient || !supportStompClient.connected) return;
 
-    if (typingSentRecently===false) {
+    if (typingSentRecently === false) {
         sendTypingStatus(true);
         typingSentRecently = true;
 
@@ -223,7 +223,7 @@ function sendTypingStatus(isTyping) {
 // 👁️ Показ и анимация
 function showTypingIndicator(isTyping, agent) {
 
-    if((userIsStaff()&&agent)||(!userIsStaff()&&!agent)) return;
+    if ((userIsStaff() && agent) || (!userIsStaff() && !agent)) return;
 
 
     if (isTyping) {
@@ -234,7 +234,7 @@ function showTypingIndicator(isTyping, agent) {
 
         typingAnimInterval = setInterval(() => {
             typingDots = (typingDots + 1) % 4;
-            typingIndicator.textContent = (agent?"Агент поддержки":"Пользователь")+" печатает" + ".".repeat(typingDots);
+            typingIndicator.textContent = (agent ? "Агент поддержки" : "Пользователь") + " печатает" + ".".repeat(typingDots);
         }, 400);
     } else {
         clearInterval(typingAnimInterval);
@@ -243,42 +243,39 @@ function showTypingIndicator(isTyping, agent) {
 }
 
 
-
-
-
 function connectToSupportWebSocket() {
     return new Promise((resolve, reject) => {
 
-    if(!supportChatId){
-        return reject("ChatId is null");
-    }
+        if (!supportChatId) {
+            return reject("ChatId is null");
+        }
 
-    if(!supportStompClient){
-        supportStompClient = Stomp.over(new SockJS('/ws-support'));
-    }
+        if (!supportStompClient) {
+            supportStompClient = Stomp.over(new SockJS('/ws-support'));
+        }
 
-    if(supportStompClient.connected){
-        // уже подключен - просто переключаем подписку
-        if(supportChatStompSubscription) supportChatStompSubscription.unsubscribe();
-        if(supportTypingStompSubscription) supportTypingStompSubscription.unsubscribe();
-        subscribeSupportChannels();
-        return;
-    }
+        if (supportStompClient.connected) {
+            // уже подключен - просто переключаем подписку
+            if (supportChatStompSubscription) supportChatStompSubscription.unsubscribe();
+            if (supportTypingStompSubscription) supportTypingStompSubscription.unsubscribe();
+            subscribeSupportChannels();
+            return;
+        }
 
 
-    supportStompClient.connect({}, function () {
-        subscribeSupportChannels();
+        supportStompClient.connect({}, function () {
+            subscribeSupportChannels();
 
-        resolve(); // соединение установлено!
-    }, reject); // если ошибка соединения
+            resolve(); // соединение установлено!
+        }, reject); // если ошибка соединения
 
     });
 }
 
-function subscribeSupportChannels(){
+function subscribeSupportChannels() {
 
-    if(supportChatStompSubscription) supportChatStompSubscription.unsubscribe();
-    if(supportTypingStompSubscription) supportTypingStompSubscription.unsubscribe();
+    if (supportChatStompSubscription) supportChatStompSubscription.unsubscribe();
+    if (supportTypingStompSubscription) supportTypingStompSubscription.unsubscribe();
 
     supportChatStompSubscription = supportStompClient.subscribe(`/support-chat-output-topic/${supportChatId}`, function (response) {
         const data = JSON.parse(response.body);
@@ -293,9 +290,6 @@ function subscribeSupportChannels(){
 }
 
 
-
-
-
 function disconnectWebSocket() {
     if (supportStompClient !== null) {
         supportStompClient.disconnect(() => {
@@ -305,11 +299,12 @@ function disconnectWebSocket() {
     }
     unsubscribeSupportChannels();
 }
+
 function unsubscribeSupportChannels() {
-    if(supportChatStompSubscription) supportChatStompSubscription.unsubscribe();
-    if(supportTypingStompSubscription) supportTypingStompSubscription.unsubscribe();
-    supportChatStompSubscription=null;
-    supportTypingStompSubscription=null;
+    if (supportChatStompSubscription) supportChatStompSubscription.unsubscribe();
+    if (supportTypingStompSubscription) supportTypingStompSubscription.unsubscribe();
+    supportChatStompSubscription = null;
+    supportTypingStompSubscription = null;
 }
 
 
@@ -317,7 +312,7 @@ function openSupportChat(topic) {
 
     document.getElementById("support-chat-topic-display").textContent = topic;
     document.getElementById("support-chat").style.display = "flex";
-    if(userIsStaff()===true){
+    if (userIsStaff() === true) {
         document.getElementById("support-chat-agent-buttons").style.display = "block";
 
     }
@@ -332,14 +327,14 @@ function closeSupportChat(disconnect) {
     document.getElementById("support-chat-closed-msg").style.display = "none";
 
     supportChatId = null;
-    supportChatCreatorId=null;
-    if(disconnect){
+    supportChatCreatorId = null;
+    if (disconnect) {
         disconnectWebSocket();
     }
 }
 
 
-async function tryCreateNewSupportChat() {
+async function tryCreateNewSupportChat(isOrderSupport=false) {
     const response = await fetch(`/api/support/chat/create-ability`);
     if (response.status === 429) {
         alert("К сожалению, чаты нельзя создавать так часто. Пожалуйста, попробуйте позже.");
@@ -350,17 +345,24 @@ async function tryCreateNewSupportChat() {
         return;
     }
 
-    new bootstrap.Modal(document.getElementById('topicModal')).show();
+    if(isOrderSupport===false){
+        new bootstrap.Modal(document.getElementById('topicModal')).show();
+    }
+    else await createNewSupportChat(true);
+
+
+
 }
 
-async function createNewSupportChat() {
+async function createNewSupportChat(isOrderSupport=false) {
 
     const topicInput = document.getElementById("support-topic-input");
     const errorDiv = document.getElementById("topic-error");
 
-    const topic = topicInput.value.trim();
+    const topic = isOrderSupport===false?topicInput.value.trim()
+        :("Помощь по заказу #"+document.getElementById("orderIdField").value);
 
-    if (!topic||topic.length<3||topic.length>30) {
+    if (!topic || topic.length < 3 || topic.length > 30) {
         errorDiv.style.display = "block";
         return;
     }
@@ -368,7 +370,7 @@ async function createNewSupportChat() {
     errorDiv.style.display = "none";
 
     // Закрыть модальное окно
-    bootstrap.Modal.getInstance(document.getElementById("topicModal")).hide();
+    if(isOrderSupport===false) bootstrap.Modal.getInstance(document.getElementById("topicModal")).hide();
 
     // очистить визуально прошлый чат если он есть
     closeSupportChat(false);
@@ -381,9 +383,9 @@ async function createNewSupportChat() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ topic: topic })
+            body: JSON.stringify({topic: topic})
         });
-        if(!response.ok){
+        if (!response.ok) {
             alert("Произошла ошибка при создани чата. Пожалуйста, попробуйте еще раз.")
             return;
         }
@@ -392,6 +394,8 @@ async function createNewSupportChat() {
         const data = await response.json();
         supportChatId = data.chatId;
         supportChatCreatorId = data.userId;
+
+        await connectToSupportWebSocket();
 
         openSupportChat(topic);
         appendMessage("Напишите здесь ваш вопрос и мы рассмотрим его в ближайшее время.", false);
@@ -416,7 +420,7 @@ function deleteSupportChat() {
                 fetch("/api/support/chat/get_all")
                     .then(res => res.json())
                     .then(data => {
-                        renderSupportChatList(data,false);
+                        renderSupportChatList(data, false);
                     });
 
             } else {
@@ -427,7 +431,7 @@ function deleteSupportChat() {
             console.error("Ошибка при удалении чата", err);
             alert("Произошла ошибка при удалении чата. Пожалуйста, попробуйте еще раз.")
         });
-    if(supportChatId&&supportChatId===pendingDeleteChatId){
+    if (supportChatId && supportChatId === pendingDeleteChatId) {
         closeSupportChat(true);
     }
 
@@ -435,14 +439,11 @@ function deleteSupportChat() {
 }
 
 
-
-
-
 function appendMessage(message, isUser, timestampStr) {
     const msgContainer = document.getElementById("support-chat-body");
 
     const div = document.createElement("div");
-    if(userIsStaff()===true) isUser=!isUser;
+    if (userIsStaff() === true) isUser = !isUser;
     div.className = (isUser ? "chat-message user" : "chat-message agent");
 
     const msgText = document.createElement("div");
@@ -459,13 +460,13 @@ function appendMessage(message, isUser, timestampStr) {
     msgContainer.scrollTop = msgContainer.scrollHeight;
 }
 
-async function collectExistingChat(chatId, topic, closed, needsAnswer, userId) {
+async function collectExistingChat(chatId, topic, closed, needsAnswer, userId, containsMessages) {
     closeSupportChat(false); // очистить визуально прошлый чат если он есть
     unsubscribeSupportChannels();
 
     let request = `/api/support/message/get_all?chatId=${chatId}`;
 
-    if(userIsStaff()===true){
+    if (userIsStaff() === true) {
         request = `/api/support/admin/get_chat_messages?chatId=${chatId}`;
     }
 
@@ -474,9 +475,9 @@ async function collectExistingChat(chatId, topic, closed, needsAnswer, userId) {
             method: "GET"
         });
 
-        if (!response.ok){
-           alert("Произошла ошибка при запросе списка чатов.");
-           return;
+        if (!response.ok) {
+            alert("Произошла ошибка при запросе списка чатов.");
+            return;
         }
 
 
@@ -484,28 +485,29 @@ async function collectExistingChat(chatId, topic, closed, needsAnswer, userId) {
 
         messages.forEach(message => {
 
-            appendMessage(message.message,message.userMessage, message.dateOfCreation);
+            appendMessage(message.message, message.userMessage, message.dateOfCreation);
 
         });
 
-        supportChatId=chatId;
-        supportChatCreatorId=userId;
+        supportChatId = chatId;
+        supportChatCreatorId = userId;
 
         // Закрыть модальное окно
         bootstrap.Modal.getInstance(document.getElementById("chatListModal")).hide();
 
-        openSupportChat(topic);
-
-        if(closed){
+        if (closed) {
             document.getElementById("support-chat-footer").style.display = "none";
             document.getElementById("support-chat-closed-msg").style.display = "block";
 
-        }
-        else if(needsAnswer){
+        } else {
 
             await connectToSupportWebSocket();
         }
+        openSupportChat(topic);
+        if(containsMessages===false){
+            appendMessage("Напишите здесь ваш вопрос и мы рассмотрим его в ближайшее время.", false);
 
+        }
 
 
     } catch (error) {
@@ -516,13 +518,12 @@ async function collectExistingChat(chatId, topic, closed, needsAnswer, userId) {
 }
 
 function openUserPageStaffMethod() {
-    if(!supportChatCreatorId){
+    if (!supportChatCreatorId) {
         alert("Произошла ошибка: userId is null");
         return;
     }
-    window.location.href = "/admin/profile?userId="+supportChatCreatorId;
+    window.location.href = "/admin/profile?userId=" + supportChatCreatorId;
 }
-
 
 
 async function sendSupportMessage() {
@@ -530,16 +531,18 @@ async function sendSupportMessage() {
 
     const message = messageInput.value.trim();
 
+    if(!supportChatId) alert("Ошибка: supportChatId is null");
+
     if (!message || !supportChatId) return;
 
-    if(userIsStaff()===false) {
+    if (userIsStaff() === false) {
         try {
             const response = await fetch(`/api/support/message/send-ability?chatId=${supportChatId}`, {
                 method: "GET"
             });
 
             if (response.status === 429) {
-                alert("Вы можете отправлять сообщения в чат поддержки не чаще одного раза в 2 минуты.");
+                alert("К сожалению, сообщения в чат нельзя отправлять так часто.");
                 return;
             }
         } catch (error) {
@@ -547,14 +550,13 @@ async function sendSupportMessage() {
         }
     }
 
-        if (!supportStompClient || !supportChatStompSubscription || !supportStompClient.connected) {
-            await connectToSupportWebSocket();
-        }
-
+    if (!supportStompClient || !supportChatStompSubscription || !supportStompClient.connected) {
+        await connectToSupportWebSocket();
+    }
 
 
     messageInput.value = "";
-    messageInput.style.height="auto";
+    messageInput.style.height = "auto";
 
 
     const payload = {
@@ -563,8 +565,8 @@ async function sendSupportMessage() {
     };
 
     try {
-        supportStompClient.send("/support-chat-input-controller/"+(userIsStaff()?"handle_agent_message":"handle_user_message"), {}, JSON.stringify(payload));
-    } catch (error){
+        supportStompClient.send("/support-chat-input-controller/" + (userIsStaff() ? "handle_agent_message" : "handle_user_message"), {}, JSON.stringify(payload));
+    } catch (error) {
         alert("При отправке сообщения произошла ошибка. Пожалуйста, попробуйте еще раз.");
     }
 
@@ -573,27 +575,27 @@ async function sendSupportMessage() {
 
 <!-- блок списка чатов поддержки -->
 
-function openSupportChatList(getAllActiveChats){
+function openSupportChatList(getAllActiveChats) {
     // Закрыть модальное окно
     bootstrap.Modal.getInstance(document.getElementById("supportModal")).hide();
 
 
     let request = null;
 
-    if(userIsStaff()===true){
-        if(getAllActiveChats===true){
+    if (userIsStaff() === true) {
+        if (getAllActiveChats === true) {
             request = `/api/support/admin/get_active_chats`
-        }else{
+        } else {
             request = `/api/support/admin/get_user_chats/${supportChatCreatorId}`
         }
-    }else{
+    } else {
         request = `/api/support/chat/get_all`
     }
     fetch(request)
 
 
         .then(res => {
-            if(!res.ok){
+            if (!res.ok) {
                 alert("Произошла ошибка при запросе списка чатов.")
             }
 
@@ -601,27 +603,26 @@ function openSupportChatList(getAllActiveChats){
 
         })
         .then(data => {
-            renderSupportChatList(data,getAllActiveChats);
-             new bootstrap.Modal(document.getElementById("chatListModal")).show();
+            renderSupportChatList(data, getAllActiveChats);
+            new bootstrap.Modal(document.getElementById("chatListModal")).show();
         });
 
 }
 
 
-
-function renderSupportChatList(chatList,getAllActiveChats) {
+function renderSupportChatList(chatList, getAllActiveChats) {
     const container = document.getElementById("chat-list-container");
 
     const listName = document.getElementById("chatListModalLabel");
-    if(userIsStaff()===true){
-        if(getAllActiveChats===true) listName.textContent="Эти чаты ждут ваш ответ!";
-        else listName.textContent="Чаты пользователя";
+    if (userIsStaff() === true) {
+        if (getAllActiveChats === true) listName.textContent = "Эти чаты ждут ваш ответ!";
+        else listName.textContent = "Чаты пользователя";
     }
 
     container.innerHTML = ""; // Очистить список
 
-    if(chatList.length===0){
-        container.innerHTML= `
+    if (chatList.length === 0) {
+        container.innerHTML = `
                         <td colspan="5" class="text-center text-muted">Список чатов пуст</td>
                     `;
         return;
@@ -634,7 +635,7 @@ function renderSupportChatList(chatList,getAllActiveChats) {
         const left = document.createElement("div");
         left.className = "chat-topic";
         left.style.cursor = "pointer";
-        left.onclick = () => collectExistingChat(chat.id, chat.topic, chat.closed, chat.needsAnswer,chat.userId);
+        left.onclick = () => collectExistingChat(chat.id, chat.topic, chat.closed, chat.needsAnswer, chat.userId, chat.containsMessages);
 
         const topicSpan = document.createElement("span");
         topicSpan.textContent = chat.topic;
@@ -646,7 +647,7 @@ function renderSupportChatList(chatList,getAllActiveChats) {
             : (chat.needsAnswer ? "text-warning" : "text-success"));
         statusSpan.textContent = chat.closed
             ? "Закрыт"
-            : (chat.needsAnswer ? (userIsStaff()===true?"Ждёт ваш ответ":"На рассмотрении") : "Есть ответ");
+            : (chat.needsAnswer ? (userIsStaff() === true ? "Ждёт ваш ответ" : "На рассмотрении") : (chat.containsMessages===true?"Есть ответ":"Нет сообщений"));
         left.appendChild(statusSpan);
 
         // Правая часть: дата + крестик
@@ -659,16 +660,16 @@ function renderSupportChatList(chatList,getAllActiveChats) {
 
         right.appendChild(dateDiv);
 
-        if(userIsStaff()===false){
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "btn btn-link p-0 m-0 text-dark";
-        deleteBtn.style.textDecoration = "none"; // убираем подчёркивание
-        deleteBtn.innerHTML = '<i class="bi bi-x fs-5"></i>';
-        deleteBtn.onclick = (e) => {
-            e.stopPropagation(); // чтобы не открывался чат
-            pendingDeleteChatId = chat.id;
-            new bootstrap.Modal(document.getElementById('deleteSupportChatModal')).show();
-        };
+        if (userIsStaff() === false) {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "btn btn-link p-0 m-0 text-dark";
+            deleteBtn.style.textDecoration = "none"; // убираем подчёркивание
+            deleteBtn.innerHTML = '<i class="bi bi-x fs-5"></i>';
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation(); // чтобы не открывался чат
+                pendingDeleteChatId = chat.id;
+                new bootstrap.Modal(document.getElementById('deleteSupportChatModal')).show();
+            };
             right.appendChild(deleteBtn);
         }
 
@@ -677,6 +678,238 @@ function renderSupportChatList(chatList,getAllActiveChats) {
         container.appendChild(li);
     });
 }
+
+<!-- блок заказов -->
+
+async function tryCreateNewOrder(orderAll, productId) {
+    const response = await fetch(`/api/order/create-ability`);
+    if (response.status === 409) {
+        new bootstrap.Modal(document.getElementById('orderErrorModal')).show();
+        return;
+    }
+    if (!response.ok) {
+        alert("Произошла ошибка. Пожалуйста, попробуйте позже.");
+        return;
+    }
+
+    if (orderAll === true) {
+        new bootstrap.Modal(document.getElementById('orderConfirmModal')).show();
+        return;
+    } openOrderModal(false, productId);
+
+}
+
+let orderRequestItems;
+let orderProductOffset = 0;
+const OrderProductLimit = 40;
+let OrderLoading = false;
+let allOrderLoaded = false;
+
+const carousel = document.getElementById("orderProductsCarousel");
+
+carousel.addEventListener("slid.bs.carousel", () => {
+    const items = document.querySelectorAll("#orderProductsContainer .carousel-item");
+    const activeIndex = Array.from(items).findIndex(item => item.classList.contains("active"));
+
+    // если активный элемент — последний
+    if (activeIndex === items.length - 1) {
+        // подгружаю следующую партию
+        loadOrderProducts();
+    }
+});
+
+
+    async function openOrderModal(orderAll, productId) {
+        orderRequestItems=null;
+        orderProductOffset = 0;
+        OrderLoading = false;
+        allOrderLoaded = false;
+
+        document.getElementById("order-carousel-buttons").style.display="";
+        const itemQuantity = document.getElementById('orderItemQuantity');
+
+        let items;
+
+        if (orderAll === true) {
+            bootstrap.Modal.getInstance(document.getElementById("orderConfirmModal")).hide();
+
+            const response = await fetch('/api/cart/brief-items');
+            if (!response.ok){
+                alert('Ошибка при получении данных.');
+                return;
+            }
+
+            items = await response.json();
+
+            let counter = 0;
+
+            items.forEach((item) => {
+                counter+=item.productQuantity;
+            });
+            itemQuantity.textContent = counter;
+
+        } else{
+            itemQuantity.textContent = document.getElementById(`quantity-${productId}`).textContent;
+        }
+
+        document.getElementById("orderProductsContainer").innerHTML="";
+
+         orderRequestItems = (orderAll===true? items:[
+            {
+                productId: productId,
+                productQuantity: parseInt(itemQuantity.textContent)
+            } ]);
+
+
+         if(orderRequestItems.length===1){
+             document.getElementById("order-carousel-buttons").style.display="none";
+         }
+
+        await loadOrderProducts();
+
+        const priceResponse = await fetch('/api/catalogue/products/total-price',{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }, body: JSON.stringify(orderRequestItems)
+        });
+
+        if (!priceResponse.ok){
+            alert('Ошибка при получении данных.');
+            return;
+        }
+        const priceJson = await priceResponse.json();
+        document.getElementById('orderItemPrice').textContent = priceJson.priceView;
+
+
+    try {
+    const response = await fetch('/api/order/delivery/info');
+    if (!response.ok) throw new Error('Ошибка при получении данных');
+
+    const data = await response.json();
+
+    document.getElementById('orderStorageAddress').textContent = data.storageAddress;
+    document.getElementById('orderUserAddress').textContent = data.userAddress;
+    document.getElementById('orderDeliveryDistanceView').textContent = data.deliveryDistanceView;
+    document.getElementById('orderDeliveryTimeView').textContent = data.deliveryTimeView;
+    document.getElementById("orderDeliveryPrice").textContent = data.deliveryPriceView;
+
+
+    const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+    modal.show();
+
+} catch (error) {
+    console.error(error);
+    alert('Не удалось загрузить данные о доставке.');
+ }
+}
+let creatingOrder=false;
+async function сreateNewOrder() {
+    if(creatingOrder===true) return;
+    try{
+        creatingOrder=true;
+        document.getElementById("confirmOrderBtn").textContent="Оформляем.."
+
+
+   if(!orderRequestItems){
+       alert("Произошла ошибка: не найдены товары для совершения заказа.");
+       return;
+   }
+
+    const response = await fetch('/api/order/create',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }, body: JSON.stringify(orderRequestItems)
+    });
+
+    if (!response.ok){
+        alert('Произошла ошибка при создании заказа. Пожалуйста, попробуйте позже.');
+        return;
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById("orderModal")).hide();
+
+    const modal = new bootstrap.Modal(document.getElementById('orderSuccessModal'));
+    modal.show();
+    document.getElementById("closingCart").click();
+
+    setInterval(() => { loadCartSize();}, 700);
+
+    }finally {
+        creatingOrder=false;
+        document.getElementById("confirmOrderBtn").textContent="Оформить заказ"
+
+    }
+
+
+}
+
+async function loadOrderProducts() {
+    if (OrderLoading || allOrderLoaded) return;
+    try {
+        OrderLoading = true;
+    // беру следующую партию из локального массива
+    const batch = orderRequestItems.slice(orderProductOffset, orderProductOffset + OrderProductLimit);
+    if (batch.length === 0) {
+        allOrderLoaded = true;
+        return;
+    }
+        // достаю id товаров для запроса на бэкенд
+        const productIds = batch.map(item => item.productId);
+
+        // запрашиваем детали товаров (название, цену, фото и т.д.)
+        const response = await fetch("/api/catalogue/products/get-by-ids", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(productIds)
+        });
+
+        if(!response.ok){
+            alert("Ошибка при подгрузке товаров.");
+            return;
+        }
+
+        const products = await response.json();
+
+        // объединяю данные с количеством из orderRequestItems
+        const itemsToRender = batch.map(item => {
+            const product = products.find(p => p.id === item.productId);
+            return {
+                ...product,
+                quantity: item.productQuantity
+            };
+        });
+
+        // добавляею карточки в карусель
+        const container = document.getElementById("orderProductsContainer");
+        itemsToRender.forEach((product, index) => {
+            const activeClass = (orderProductOffset === 0 && index === 0) ? "active" : "";
+            const itemHTML = `
+        <div class="carousel-item ${activeClass}">
+          <div class="d-flex flex-column align-items-center">
+          <a href="/products/get/${product.id}" target="_blank"> 
+            <img src="/api/media/get/${product.previewImageFileName}" class="d-block" style="max-height:200px; object-fit:contain;" alt="${product.title}">
+          </a>  
+            <div class="mt-2 text-center">
+              <h6>${product.title}</h6>
+              <p class="text-secondary">Количество: ${product.quantity}</p>
+              <p class="text-secondary">${product.priceInt+ '₽ за единицу'}</p>
+              <p class="text-secondary">${(product.priceInt*product.quantity) + '₽ общая стоимость'}</p>
+            </div>
+          </div>
+        </div>`;
+            container.insertAdjacentHTML("beforeend", itemHTML);
+        });
+
+        orderProductOffset += batch.length;
+    } catch (error) {
+        console.error("Ошибка при подгрузке товаров:", error);
+    } finally {
+        OrderLoading = false;
+    }
+}
+
 
 
 

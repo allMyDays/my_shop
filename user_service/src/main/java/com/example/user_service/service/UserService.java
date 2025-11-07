@@ -44,18 +44,18 @@ public class UserService {
 
     @Autowired
     @Lazy
-    private UserService userService;
+    private UserService selfLink;
 
-    public boolean createCommonUser(CreateUserRequestDTO userDTO) {
+    public boolean createCommonUser(@NonNull CreateUserRequestDTO userDTO) {
         MyUser newUserEntity = null;
        String newKeycloakId = null;
        try{
-           newUserEntity = userService.saveUserEntity(new MyUser());
+           newUserEntity = selfLink.saveUserEntity(new MyUser());
            newKeycloakId = userKeycloakService.createUser(userDTO.getNickName(),userDTO.getFirstName(),userDTO.getLastName(),userDTO.getEmail(),newUserEntity.getId());
 
            userKeycloakService.setUserPassword(newKeycloakId, userDTO.getPassword());
            newUserEntity.setKeycloakId(newKeycloakId);
-           userService.saveUserEntity(newUserEntity);
+           selfLink.saveUserEntity(newUserEntity);
            return true;
 
        }catch (Exception e){
@@ -66,8 +66,8 @@ public class UserService {
            } return false;
        }
     }
-
-    public UserResponseDTO collectCommonUserInfo(String userKeycloakId) throws UserNotFoundException {
+    @Transactional
+    public UserResponseDTO collectCommonUserInfo(@NonNull String userKeycloakId) throws UserNotFoundException {
 
         UserNotFoundException notFoundException = new UserNotFoundException();
 
@@ -82,14 +82,14 @@ public class UserService {
         return userResponseDTO;
     }
 
-    public UserResponseDTO collectCommonUserInfo(Long userEntityId) throws UserNotFoundException {
+    public UserResponseDTO collectCommonUserInfo(long userEntityId) throws UserNotFoundException {
         MyUser userEntity = getUserEntity(userEntityId);
-        return collectCommonUserInfo(userEntity.getKeycloakId());
+        return selfLink.collectCommonUserInfo(userEntity.getKeycloakId());
     }
 
 
 
-    public void sendUploadUserAvatarRequest(MultipartFile image, Long userId) {
+    public void sendUploadUserAvatarRequest(@NonNull MultipartFile image, long userId) {
 
         validateImages(List.of(image));
 
@@ -102,16 +102,14 @@ public class UserService {
         mediaKafkaClient.sendSavingMediaRequest(List.of(image), BucketEnum.users, requestKey);
     }
 
-    public void saveUserAvatar(String fileName, Long userId){
+    public void saveUserAvatar(@NonNull String fileName, long userId){
         MyUser userEntity = getUserEntity(userId);
         userEntity.setAvatarFileName(fileName);
         userRepository.save(userEntity);
 
     }
 
-
-
-    public void deleteUserAvatar(Long userId){
+    public void deleteUserAvatar(long userId){
 
         MyUser userEntity = getUserEntity(userId);
         String avatarFileName = userEntity.getAvatarFileName();
@@ -126,12 +124,11 @@ public class UserService {
     }
 
 
-    public boolean userEmailIsVerifiedOrSendCodeOtherwise(String userEmail) throws MailSendException {
+    public boolean userEmailIsVerifiedOrSendCodeOtherwise(@NonNull String userEmail) throws MailSendException {
 
-        if(redisService.get(CONFIRMED_EMAIL +":"+ userEmail)!=null){
+        if(redisService.get(CONFIRMED_EMAIL +":"+ userEmail,true).isPresent()){
             redisService.delete(List.of(
-                     CONFIRMED_EMAIL +":"+ userEmail
-                    ,CONFIRMING_EMAIL+":"+userEmail
+                    CONFIRMING_EMAIL+":"+userEmail
                     ,CONFIRMING_EMAIL_ATTEMPT_NUMBER+":"+userEmail));
             return true;
         }
@@ -147,33 +144,30 @@ public class UserService {
 
     public MyUser getUserEntity(@NonNull String keycloakID) {
 
-        NotFoundException notFoundException = new NotFoundException("User not found");
-
-
         return userRepository.findByKeycloakId(keycloakID)
-                .orElseThrow(()->notFoundException);
+                .orElseThrow(()->new NotFoundException("User not found"));
 
     }
 
-    public MyUser getUserEntity(Long userId) {
+    public MyUser getUserEntity(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
     }
 
-    public Optional<MyUser> getUserOptionalEntity(Long userId) {
+    public Optional<MyUser> getUserOptionalEntity(long userId) {
         return userRepository.findById(userId);
     }
 
 
     @Transactional
-    public MyUser saveUserEntity(MyUser user) throws Exception{
+    public MyUser saveUserEntity(MyUser user) {
 
         MyUser savedUser = userRepository.save(user);
         userRepository.flush();
         return savedUser;
     }
 
-    public MyUser getOrCreateMyUser(@NonNull Long userId, @NonNull String userKeycloakId){
+    public MyUser getOrCreateMyUser(long userId, @NonNull String userKeycloakId){
 
         Optional<MyUser> userOptional = getUserOptionalEntity(userId);
         if(userOptional.isEmpty()){
@@ -181,14 +175,6 @@ public class UserService {
         } return getUserEntity(userId);
 
     }
-
-
-
-
-
-
-
-
 
 
 

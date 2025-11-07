@@ -3,6 +3,11 @@ package com.example.catalogue_service.service;
 
 import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.repository.ProductRepository;
+import com.example.common.dto.product.ProductIdAndPriceDto;
+import com.example.common.dto.product.ProductIdAndQuantityDto;
+import com.example.common.exception.ProductNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -18,18 +23,12 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
+    public Stream<Product> getAll(Long categoryId, @NonNull String title, int offset) {
 
-
-    public Stream<Product> getAll(Long categoryId, String title, int offset) {
-
-        System.out.println("categoryId: " + categoryId);
-        System.out.println("title: " + title);
-        System.out.println("offset: " + offset);
-
-        if(categoryId==0){
+        if(categoryId==null||categoryId==0){
             categoryId=null;
         }
-        if(title==null||title.length()<2){
+        if(title.length()<2){
             return Stream.empty();
         }
 
@@ -41,29 +40,38 @@ public class ProductService {
         return productRepository.findByTitleAndOptionalCategory(title, categoryId, PageRequest.of(page, limit));
     }
 
-    public Stream<Product> getProductsByIDs(List<Long> ids, int limit, int offset) {
+    @Transactional()
+    public Stream<Product> getProductsByIDs(@NonNull List<Long> ids) {
 
-        int page = offset/limit;
 
-        return productRepository.findAllByIdIn(ids, PageRequest.of(page, limit));
+        return productRepository.findAllByIdIn(ids);
     }
 
-
-
-
-
-    public Optional<Product> getProductByID(Long productID) {
+    public Optional<Product> getProductByID(long productID) {
         return productRepository.findById(productID);
     }
 
-    public boolean productExists(Long productID) {
+
+    public boolean productExists(long productID) {
         return productRepository.existsById(productID);
     }
 
-    public void deleteProductImage(Long productID, String fileName, boolean previewImage) {
-        if(fileName==null){
-            throw new NullPointerException("fileName is null");
-        }
+
+    public List<Long> productsExist(@NonNull List<Long> productIDs) {
+     try {
+         return productRepository.findProductIdsByIdIn(
+                 productIDs.stream()
+                         .filter(a -> a > 0)
+                         .toList()
+         );
+
+     }catch (Exception e){
+         e.printStackTrace();
+         throw e;
+     }
+    }
+
+    public void deleteProductImage(long productID, @NonNull String fileName, boolean previewImage) {
 
         Optional<Product> product = productRepository.findById(productID);
         if(product.isPresent()){
@@ -75,13 +83,10 @@ public class ProductService {
                 product1.getImageFileNames().removeIf(f->f.equalsIgnoreCase(fileName));
             }
             productRepository.save(product1);
-        }
+        }else throw new ProductNotFoundException(List.of(productID));
     }
 
-    public void setProductImage(Long productID, String fileName, boolean previewImage) {
-        if(fileName==null){
-            throw new NullPointerException("fileName is null");
-        }
+    public void setProductImage(long productID, @NonNull String fileName, boolean previewImage) {
         Optional<Product> product = productRepository.findById(productID);
         if(product.isPresent()){
             Product product1 = product.get();
@@ -91,7 +96,36 @@ public class ProductService {
                 product1.getImageFileNames().add(fileName);
             }
             productRepository.save(product1);
-        }
+        }else throw new ProductNotFoundException(List.of(productID));
+    }
+
+    public int getTotalPrice(@NonNull List<ProductIdAndQuantityDto> productIdAndQuantityDtos) {
+
+        List<Long> ids = productIdAndQuantityDtos.stream()
+                .map(ProductIdAndQuantityDto::getProductId)
+                .toList();
+
+        List<Product> products = productRepository.findAllById(ids);
+
+        return productIdAndQuantityDtos.stream()
+                .mapToInt(dto-> {
+                    Product product = products.stream()
+                            .filter(p->
+                            p.getId().equals(dto.getProductId()))
+                            .findFirst()
+                            .orElse(null);
+                    return product==null?0:product.getPrice()*
+                            dto.getProductQuantity();
+                }).sum();
+
+
+
+    }
+
+    public List<ProductIdAndPriceDto> getProductsPrice(@NonNull List<Long> ids) {
+
+        return productRepository.findIdAndPriceByIds(ids);
+
     }
 
 

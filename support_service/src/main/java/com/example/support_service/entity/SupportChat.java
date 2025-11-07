@@ -22,22 +22,25 @@ public class SupportChat {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotNull
+    @Column(nullable = false)
     private LocalDateTime dateOfCreation;
 
-    @NotNull
+    @Column(nullable = false)
     private String topic;
 
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<SupportMessage> messages = new ArrayList<>();
 
-    @NotNull
+    @Column(nullable = false)
     private Long userId;
 
-    @NotNull
+    @Column(nullable = false)
     @Setter
     boolean needsAnswer;
+
+    @Column(nullable = false)
+    boolean containsMessages;
 
 
     @PrePersist

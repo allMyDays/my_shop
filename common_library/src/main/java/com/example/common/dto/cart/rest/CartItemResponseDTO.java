@@ -17,7 +17,9 @@ public class CartItemResponseDTO {
 
     String title;
 
-    int price;
+    String totalPriceView;
+
+    int pricePerProductInt;
 
     String previewImageFileName;
 }

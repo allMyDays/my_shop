@@ -3,12 +3,16 @@ package com.example.catalogue_service.controller.rest;
 import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.mapper.LocalProductMapper;
 import com.example.catalogue_service.service.ProductService;
+import com.example.common.dto.product.PriceDto;
+import com.example.common.dto.product.ProductIdAndQuantityDto;
 import com.example.common.dto.product.rest.ProductResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Stream;
+
+import static com.example.common.service.CommonProductService.formatPrice;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,14 +32,21 @@ public class ProductsRestController {
     }
 
     @PostMapping("/get-by-ids")
-    public List<ProductResponseDTO> getProductByIDs(@RequestBody List<Long> IDs, @RequestParam int offset, @RequestParam int limit) {
+    public List<ProductResponseDTO> getProductByIDs(@RequestBody List<Long> IDs) {
 
-       try(Stream<Product> productStream = productService.getProductsByIDs(IDs,limit,offset)){
-           return productMapper.toResponseProductDTOList(productStream.toList());
-       }
+            try (Stream<Product> productStream = productService.getProductsByIDs(IDs)) {
+                List<Product> products = productStream.toList();
+                return productMapper.toResponseProductDTOList(products);
+            }
 
 
 
+    }
+
+    @PostMapping("/total-price")
+    public PriceDto getTotalPrice(@RequestBody List<ProductIdAndQuantityDto> productIdAndQuantityDto) {
+        int totalPrice = productService.getTotalPrice(productIdAndQuantityDto);
+        return new PriceDto(totalPrice,formatPrice(totalPrice));
     }
 
    /* @PostMapping

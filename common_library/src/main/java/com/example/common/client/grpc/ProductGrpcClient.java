@@ -1,8 +1,10 @@
 package com.example.common.client.grpc;
 
+import com.example.common.dto.product.ProductIdAndPriceDto;
+import com.example.common.dto.product.ProductIdAndQuantityDto;
 import com.example.common.dto.product.rest.ProductResponseDTO;
 import com.example.common.grpc.product.*;
-import com.example.common.mapper.grpc.ProductMapper;
+import com.example.common.mapper.ProductMapper;
 import com.netflix.discovery.EurekaClient;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -39,7 +41,7 @@ public class ProductGrpcClient {
 
 
 
-    public Optional<ProductResponseDTO> getProductById(@NonNull @Positive Long id){
+    public Optional<ProductResponseDTO> getProductById(@Positive long id){
 
         ProductRequestById productRequest = ProductRequestById
                 .newBuilder()
@@ -63,7 +65,7 @@ public class ProductGrpcClient {
     }
     public void lazyLoadProductBatchStream(Optional<Long> categoryId,
                                            @NonNull String filter,
-                                           @NonNull int offset,
+                                           int offset,
                                            @NonNull Consumer<ProductResponseDTO> consumer,
                                            @NonNull Runnable onComplete){
 
@@ -105,8 +107,6 @@ public class ProductGrpcClient {
         ProductRequestByIds productRequest = ProductRequestByIds
                 .newBuilder()
                 .addAllIds(ids)
-                .setLimit(100_000)
-                .setOffset(0)
                 .build();
 
 
@@ -124,16 +124,12 @@ public class ProductGrpcClient {
     }
 
     public void getProductsByIdsStream(@NonNull List<Long> ids,
-                                       @NonNull int limit,
-                                       @NonNull int offset,
                                        @NonNull Consumer<ProductResponseDTO> consumer,
                                        @NonNull Runnable onComplete){
 
         ProductRequestByIds productRequest = ProductRequestByIds
                 .newBuilder()
                 .addAllIds(ids)
-                .setLimit(limit)
-                .setOffset(offset)
                 .build();
 
         productAsyncStubObjectProvider.getObject()
@@ -161,7 +157,7 @@ public class ProductGrpcClient {
 
     }
 
-    public boolean productExists(@NonNull Long id){
+    public boolean productExists(long id){
 
         ProductRequestById productRequest = ProductRequestById
                 .newBuilder()
@@ -177,6 +173,71 @@ public class ProductGrpcClient {
                 return false;
             }
         }
+
+    public List<Long> productsExist(@NonNull List<Long> productIds){
+
+       try{ ProductRequestBySingleIds productRequest = ProductRequestBySingleIds
+                .newBuilder()
+                .addAllIds(productIds)
+                .build();
+
+            ProductResponseBySingleIds productResponse = productBlockingStubObjectProvider.getObject()
+                    .productsExist(productRequest);
+            return productResponse.getIdsList();
+
+       }catch (StatusRuntimeException e){
+           e.printStackTrace();
+           throw e;
+       }
+
+    }
+
+    public int getTotalPrice(@NonNull List<ProductIdAndQuantityDto> productIdAndQuantityDTOs){
+        if(productIdAndQuantityDTOs.isEmpty()){
+            return 0;
+        }
+        try{
+
+            ProductIdAndQuantityDtoOuterResp productOuterResp = ProductIdAndQuantityDtoOuterResp
+                    .newBuilder()
+                    .addAllProductInnerResp(
+                            productIdAndQuantityDTOs.stream()
+                                    .map(a->
+                                            ProductIdAndQuantityDtoInnerResp.newBuilder()
+                                                    .setProductId(a.getProductId())
+                                                    .setProductQuantity(a.getProductQuantity())
+                                                    .build()
+                                    ).toList()
+
+
+                    ).build();
+
+            TotalPriceResponse priceResponse = productBlockingStubObjectProvider.getObject()
+                    .getTotalPrice(productOuterResp);
+
+            return priceResponse.getPrice();
+
+        }catch (StatusRuntimeException e){
+            e.printStackTrace();
+            throw e;
+        }
+
+    }
+
+    public List<ProductIdAndPriceDto> getProductsPrice(@NonNull List<Long> productIds){
+
+        ProductRequestBySingleIds productRequest = ProductRequestBySingleIds
+                .newBuilder()
+                .addAllIds(productIds)
+                .build();
+
+        ProductIdAndPriceOuterResp response =  productBlockingStubObjectProvider.getObject().getProductsPrice(productRequest);
+
+        return response.getProductInnerRespList().stream()
+                .map(a->new ProductIdAndPriceDto(a.getProductId(), a.getProductPrice()))
+                .toList();
+
+    }
 
 
 }

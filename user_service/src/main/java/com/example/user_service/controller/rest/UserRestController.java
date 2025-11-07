@@ -19,7 +19,6 @@ import com.example.user_service.service.UserService;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -29,7 +28,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -55,14 +53,6 @@ public class UserRestController {
     private final UserKeycloakService userKeycloakService;
 
     private final RedisService redisService;
-
-
-
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {  // для того чтобы все пустые поля приходили как null
-        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
-    }
 
     @GetMapping("/get_roles")
     @PreAuthorize("isAuthenticated()")
@@ -139,7 +129,8 @@ public class UserRestController {
             return Map.of(UserUpdateStatus.ERRORS, res.getAllErrors().stream()
                     .map(DefaultMessageSourceResolvable::getDefaultMessage).toList());
         }
-        if(userDTO.getEmail()!=null){
+
+       if(userDTO.getEmail()!=null){
             if(userKeycloakService.userEmailIsChanged(getUserKeycloakId(jwt), userDTO.getEmail())){
                 if(userKeycloakService.userExists(userDTO.getEmail(), null, getUserKeycloakId(jwt)).equals(EMAIL_EXISTS)){
                     return Map.of(UserUpdateStatus.ERRORS, List.of("Пользователь с таким email уже существует."));
@@ -160,14 +151,13 @@ public class UserRestController {
     @PostMapping("verify_email")
     public EmailConfirmationStatus verifyUserEmail(@RequestBody VerifyEmailRequestDTO emailDto){
 
-        String expectedCode = redisService.get(CONFIRMING_EMAIL+":"+emailDto.getEmail());
+        Optional<String> expectedCode = redisService.get(CONFIRMING_EMAIL+":"+emailDto.getEmail(),false);
 
-
-        if (expectedCode == null) {
+        if (expectedCode.isEmpty()) {
             return EXPIRED;
-        } else if (!expectedCode.trim().equals(emailDto.getUserCode().trim())) {
-            String attemptNumber= redisService.get(CONFIRMING_EMAIL_ATTEMPT_NUMBER+":"+emailDto.getEmail());
-            int attemptNumberInt = attemptNumber==null?0:Integer.parseInt(attemptNumber);
+        } else if (!expectedCode.get().equals(emailDto.getUserCode())) {
+            Optional<String> attemptNumber= redisService.get(CONFIRMING_EMAIL_ATTEMPT_NUMBER+":"+emailDto.getEmail(),false);
+            int attemptNumberInt = attemptNumber.map(Integer::parseInt).orElse(0);
             if(attemptNumberInt>=4){
                 return TOO_MANY_ATTEMPTS;
             }

@@ -14,6 +14,8 @@ function loadCart(initial = false) {
 
     cartLoading = true;
     const tableBody = document.getElementById("cart-items-table");
+    const buyAllItemsBtn = document.getElementById("buy-all-items-btn");
+    buyAllItemsBtn.style.display="none";
 
     if (initial) {
         resetCart();
@@ -47,7 +49,10 @@ function loadCart(initial = false) {
                     `;
                 tableBody.appendChild(row);
                 cartHasMore = false;
+                document.getElementById("buy-all-items-btn").style.display="none";
                 return;
+            }if(items.length>=2){
+              buyAllItemsBtn.style.display="";
             }
 
             items.forEach((item, index) => {
@@ -63,7 +68,12 @@ function loadCart(initial = false) {
         </a>
         </td>
         <td class="fw-bold">${item.title}</td>
-         <td id="price-${item.productId}" class="fw-bold">${item.price * item.quantity}₽</td>
+         <td>
+         
+         <div id="totalPrice-${item.productId}" class="fw-bold">${item.totalPriceView}</div>
+         <div style="display: none" data-value="${item.pricePerProductInt}" id="pricePerProduct-${item.productId}">${item.pricePerProductInt+'₽ за ед.'}</div>
+         
+        </td>
                 <td class="text-end">
             <div class="d-flex align-items-center">
                 <button class="btn btn-sm btn-outline-secondary" onclick="updateCartQuantityByOne(${item.productId},false,${item.price} )">-</button>
@@ -72,11 +82,14 @@ function loadCart(initial = false) {
             </div>
         </td>
         <td>
-        <button class="btn btn-pink fw-bold">Купить</button>
+        <button class="btn btn-dark fw-bold" onclick="tryCreateNewOrder(false, ${item.productId})" >Купить</button>
        </td>
        
     `;
                 tableBody.appendChild(row);
+                if(item.quantity>1){
+                    document.getElementById( `pricePerProduct-${item.productId}`).style.display="";
+                }
             });
 
             // если бек вернул меньше 40, значит больше нет
@@ -108,7 +121,9 @@ function removeFromCart(productId) {
                         <td colspan="5" class="text-center text-muted">Корзина пуста</td>
                     `;
                 tableBody.appendChild(row);
-            }
+            } if(tableBody.children.length===1){
+               document.getElementById("buy-all-items-btn").style.display="none";
+             }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -136,7 +151,10 @@ function updateCartQuantityByOne(productId, increase, price) {
         });
         return;
     }
-    fetch(`/api/cart/${productId}?increase=${increase}`, {
+
+    const pricePerProductEl =  document.getElementById( `pricePerProduct-${productId}`);
+
+    fetch(`/api/cart/${productId}?increase=${increase}&pricePerProduct=${parseInt(pricePerProductEl.dataset.value)}`, {
         method: "PUT",
         credentials: "include"
     }).then(res => {
@@ -144,19 +162,25 @@ function updateCartQuantityByOne(productId, increase, price) {
             alert("Ошибка при изменении количества товара.");
             return;
         } return res.json();
-    }).then(newSize=>{
+    }).then(data=>{
         const badge = document.getElementById("cart-count-badge");
         let count = parseInt(badge.textContent);
         if (!increase&&count > 0) badge.textContent = (count - 1).toString();
         if(increase) badge.textContent = (count + 1).toString();
 
-        if(newSize===0){
+        if(parseInt(data.newQuantity)===0){
             removeFromCart(productId);
             return;
         }
-        document.getElementById(`quantity-${productId}`).textContent = newSize;
 
-        document.getElementById(`price-${productId}`).textContent = (newSize*price) + "₽";
+        if(parseInt(data.newQuantity)===1){
+            pricePerProductEl.style.display="none";
+        } else pricePerProductEl.style.display="";
+
+
+        document.getElementById(`quantity-${productId}`).textContent = data.newQuantity;
+
+        document.getElementById(`totalPrice-${productId}`).textContent = data.totalPriceView;
 
 
     });
@@ -228,7 +252,7 @@ function loadWishList(initial = false) {
                         </a>
                         </td>
                         <td class="fw-bold">${item.title}</td>
-                        <td class="fw-bold">${item.price}₽</td>
+                        <td class="fw-bold">${item.priceView}</td>
                         <td><i class="fa-solid fa-trash text-danger" style="cursor:pointer"
                                onclick="removeFromWishList(${item.productId})"></i></td>
                     `;

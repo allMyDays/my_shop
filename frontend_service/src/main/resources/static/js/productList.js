@@ -76,7 +76,7 @@ function appendProductCard(product) {
                  height="370">
         </a>
         <div class="card-body d-flex flex-column">
-            <h5 class="card-title">${product.price}₽</h5>
+            <h5 class="card-title">${product.priceView}</h5>
             <p class="card-text flex-grow-1">${product.title}</p> 
             
             <!-- Блок рейтинга и отзывов (изначально скрыт) -->

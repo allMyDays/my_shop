@@ -42,7 +42,7 @@ public class ProductRestClient {
         this.withAuthRestClient = withAuthRestClient;
     }
 
-    public List<ProductResponseDTO> getAllProducts(@NonNull Long categoryId,@NonNull String filter) {
+    public List<ProductResponseDTO> getAllProducts(long categoryId, @NonNull String filter) {
         return noAuthRestClient
                 .get()
                 .uri("/api/products?categoryId={categoryId}&filter={filter}", categoryId,filter)
@@ -50,7 +50,7 @@ public class ProductRestClient {
                 .body(PRODUCT_TYPE_REFERENCE);
     }
 
-    public Optional<ProductResponseDTO> getProductByID(@NonNull Long productID) {
+    public Optional<ProductResponseDTO> getProductByID(long productID) {
         try {
             return Optional.ofNullable(
                     noAuthRestClient.get()

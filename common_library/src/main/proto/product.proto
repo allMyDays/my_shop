@@ -15,16 +15,52 @@ service ProductService{
 
   rpc ProductExists (ProductRequestById) returns (ProductBooleanResponse);
 
+  rpc ProductsExist (ProductRequestBySingleIds) returns (ProductResponseBySingleIds);
+
   rpc GetAllProducts (ProductRequestByFilterAndCategory) returns (stream ProductResponse);
 
   rpc GetProductsByIds (ProductRequestByIds) returns (stream ProductResponse);
 
+  rpc getTotalPrice (ProductIdAndQuantityDtoOuterResp)  returns(TotalPriceResponse);
+
+  rpc getProductsPrice (ProductRequestBySingleIds)  returns (ProductIdAndPriceOuterResp);
+
 
 }
+
+
+
+message ProductIdAndQuantityDtoOuterResp{
+  repeated ProductIdAndQuantityDtoInnerResp productInnerResp  = 1;
+}
+
+message ProductIdAndQuantityDtoInnerResp{
+
+  int64 productId=1;
+
+  int32 productQuantity=2;
+
+}
+
 
 message ProductRequestById{
   int64 id = 1;
 }
+
+message TotalPriceResponse{
+  int32 price = 1;
+}
+
+message ProductRequestBySingleIds{
+  repeated int64 ids = 1;
+}
+
+message ProductResponseBySingleIds{
+  repeated int64 ids = 1;
+}
+
+
+
 
 message ProductRequestByIds{
 
@@ -74,6 +110,18 @@ message ProductBooleanResponse{
 message ProductResponseList{
 
   repeated ProductResponse products = 1;
+
+}
+
+message ProductIdAndPriceOuterResp{
+  repeated ProductIdAndPriceInnerResp productInnerResp = 1;
+}
+
+message ProductIdAndPriceInnerResp {
+
+  int64 productId = 1;
+
+  int32 productPrice = 2;
 
 }
 

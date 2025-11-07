@@ -13,6 +13,8 @@ body{
 #offcanvasHeart, #offcanvasCart, #offcanvasWish{
     width: 800px;
 }
+
+
 .offcanvas-body img{
     max-width: 100px;
 }
@@ -178,6 +180,11 @@ a:hover{
 .chat-item:hover {
     background-color: #f8f9fa;
     cursor: pointer;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: black;
 }
 
 

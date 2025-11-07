@@ -17,9 +17,9 @@ public class ProductResponseDTO {
 
     private String description;
 
-    private int price;
+    private String priceView;
 
-    private LocalDateTime dateOfCreation;
+    private int priceInt;
 
     private String previewImageFileName;
 

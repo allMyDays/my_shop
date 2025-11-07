@@ -1,6 +1,7 @@
 package com.example.email.service;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,15 +13,15 @@ public class RedisService {
 
     private StringRedisTemplate stringRedisTemplate;
 
-    public void save(String key, String value) {
+    public void save(@NonNull String key, @NonNull String value) {
         stringRedisTemplate.opsForValue().set(key, value);
     }
 
-    public void saveTemp(String key, String value, long seconds) {
+    public void saveTemp(@NonNull String key, @NonNull String value, long seconds) {
         stringRedisTemplate.opsForValue().set(key, value, Duration.ofSeconds(seconds));
     }
 
-    public String get(String key) {
+    public String get(@NonNull String key) {
         return stringRedisTemplate.opsForValue().get(key);
     }
 

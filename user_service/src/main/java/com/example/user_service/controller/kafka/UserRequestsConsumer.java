@@ -10,6 +10,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import static com.example.common.enumeration.media_service.BucketEnum.users;
 import static com.example.common.constant.kafka.Topics.MEDIA_RESPONSE_TOPIC;
 import static com.example.common.constant.kafka.Topics.USER_REQUEST_TOPIC;
@@ -38,11 +40,8 @@ public class UserRequestsConsumer {
              case SAVED_MEDIA_FILES:
                  var savedFileDto = objectMapper.readValue(rawJsonString, SavedMediaFilesResponseDTO.class);
                   if(savedFileDto.getBucket().equals(users)){
-                      String userId = redisService.get(KAFKA_UPLOAD_AVATAR+":"+savedFileDto.getRequestKey());
-                      if(userId != null){
-                          userService.saveUserAvatar(savedFileDto.getGeneratedFileKeys().get(0),Long.parseLong(userId));
-
-                       }
+                      Optional<String> userId = redisService.get(KAFKA_UPLOAD_AVATAR+":"+savedFileDto.getRequestKey(),true);
+                      userId.ifPresent(s -> userService.saveUserAvatar(savedFileDto.getGeneratedFileKeys().get(0), Long.parseLong(s)));
                  }
                  break;
 

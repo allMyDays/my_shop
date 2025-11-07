@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_package="com.example.common.grpc.delivery";
+
+
+service DeliveryService {
+  rpc GetUserAddress(IdRequest) returns (AddressResponse){}
+}
+
+message AddressResponse {
+  string fullAddress = 1;
+  double latitude = 2;
+  double longitude = 3;
+
+}
+
+message IdRequest {
+  int64 user_entity_id=1;
+}

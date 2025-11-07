@@ -21,6 +21,7 @@
         <module>gateway-api</module>
         <module>eureka_server</module>
         <module>review-rating_service</module>
+        <module>order_service</module>
     </modules>
 
     <properties>

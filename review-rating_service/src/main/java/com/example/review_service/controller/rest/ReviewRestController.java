@@ -9,6 +9,7 @@ import com.example.review_service.entity.Review;
 import com.example.review_service.enumeration.EditReviewAbilityStatus;
 import com.example.review_service.enumeration.ReviewSortType;
 import com.example.review_service.exception.NoChangesInEditingReviewException;
+import com.example.review_service.exception.ReviewAlreadyExistsException;
 import com.example.review_service.mapper.ReviewMapper;
 import com.example.review_service.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -50,20 +51,20 @@ public class ReviewRestController {
                     .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .toList());
         }
-        Long userId = getMyUserEntityId(jwt);
-
-        if(reviewService.getUserReviewByProductId(userId, productReviewDto.getProductId()).isPresent()) {
-            return ResponseEntity.status(409)
-                    .body("Отзыв пользоваля с id %d уже существует у продукта с id %d".formatted(userId, productReviewDto.getProductId()));
-        }
 
         Review review = reviewMapper.toReviewEntity(productReviewDto);
 
-        review.setUserId(userId);
+        review.setUserId(getMyUserEntityId(jwt));
 
-        reviewService.create(review, images);
+        try{
+            reviewService.create(review, images);
 
-        return ResponseEntity.ok(productReviewDto);
+        }catch (ReviewAlreadyExistsException e){
+            return ResponseEntity.status(409)
+                    .body(e.getMessage());
+        }
+
+        return ResponseEntity.ok().build();
 
     }
 
@@ -97,21 +98,20 @@ public class ReviewRestController {
     }
     @GetMapping("/edit-ability")
     @PreAuthorize("isAuthenticated()")
-    public EditReviewAbilityStatus checkEditingReviewAbility(@RequestParam Long reviewId){
+    public EditReviewAbilityStatus checkEditingReviewAbility(@RequestParam Long reviewId, @AuthenticationPrincipal Jwt jwt){
 
-        return reviewService.checkEditingReviewAbility(reviewId);
+        return reviewService.checkEditingReviewAbility(getMyUserEntityId(jwt), reviewId);
     }
 
     @DeleteMapping("/{reviewId:\\d+}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> removeReviewByReviewId(@PathVariable Long reviewId, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
 
-        if(reviewService.deleteByReviewId(getMyUserEntityId(jwt),reviewId)){
-            return ResponseEntity.ok()
+        reviewService.deleteByReviewId(getMyUserEntityId(jwt),reviewId);
+
+        return ResponseEntity.ok()
                     .build();
-        }
-        return ResponseEntity.badRequest()
-                .body("Не удалось удалить отзыв. Убедитесь, что этот отзыв принадлежит вам.");
+
 
     }
 
@@ -119,12 +119,11 @@ public class ReviewRestController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> removeReviewByProductId(@PathVariable Long productId, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
 
-        if(reviewService.deleteByProductId(getMyUserEntityId(jwt),productId)){
-            return ResponseEntity.ok()
+        reviewService.deleteByProductId(getMyUserEntityId(jwt),productId);
+
+        return ResponseEntity.ok()
                     .build();
-        }
-        return ResponseEntity.badRequest()
-                .body("Не удалось удалить отзыв. Убедитесь, что вы оставляли отзыв к данному продукту.");
+
 
     }
 

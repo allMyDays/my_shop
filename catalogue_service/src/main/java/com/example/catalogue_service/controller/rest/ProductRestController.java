@@ -4,11 +4,13 @@ import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.mapper.LocalProductMapper;
 import com.example.catalogue_service.service.ProductService;
 import com.example.common.dto.product.rest.ProductResponseDTO;
+import com.example.common.exception.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -23,7 +25,7 @@ public class ProductRestController {
     @ModelAttribute("product")
     public Product getProduct(@PathVariable("productId") Long productId) {
         return this.productService.getProductByID(productId)
-                .orElseThrow(()-> new NoSuchElementException("no product found with id: " + productId));
+                .orElseThrow(()-> new ProductNotFoundException(List.of(productId)));
     }
 
     @GetMapping
@@ -53,13 +55,11 @@ public class ProductRestController {
     public ResponseEntity<Void> deleteProduct(@PathVariable("productId") long productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.noContent().build();
-
-
-
-
-
-
     }
+
+
+
+
 
 
 

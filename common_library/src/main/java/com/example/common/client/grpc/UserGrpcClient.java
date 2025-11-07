@@ -1,14 +1,20 @@
 package com.example.common.client.grpc;
 
+import com.example.common.dto.user.rest.UserAddressDto;
 import com.example.common.dto.user.rest.UserMinimalInfoDto;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.common.enumeration.user_service.UserExistenceStatus;
+import com.example.common.grpc.delivery.Delivery;
 import com.example.common.grpc.user.User;
 import com.example.common.grpc.user.UserServiceGrpc;
-import com.example.common.mapper.grpc.UserMapper;
+import com.example.common.mapper.AddressMapper;
+import com.example.common.mapper.UserMapper;
 import com.netflix.appinfo.EurekaAccept;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import jakarta.validation.constraints.Positive;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -31,10 +37,12 @@ public class UserGrpcClient {
 
     private final UserMapper userMapper;
 
+    private final AddressMapper addressMapper;
+
     private final ObjectProvider<UserServiceGrpc.UserServiceBlockingStub> userBlockingStubObjectProvider;
 
 
-    public UserExistenceStatus userExists(Optional<String> email, Optional<String> username, Optional<String> excludedUser){
+    public UserExistenceStatus userExists(Optional<String> email, Optional<String> username, Optional<String> excludedUser) {
 
 
         User.CheckUserRequest.Builder userRequestBuilder = User.CheckUserRequest.newBuilder();
@@ -43,13 +51,13 @@ public class UserGrpcClient {
         username.ifPresent(userRequestBuilder::setUsername);
         excludedUser.ifPresent(userRequestBuilder::setExcludedUser);
 
-       User.CheckUserResponse checkUserResponse =  userBlockingStubObjectProvider.getObject()
-               .checkUserExists(userRequestBuilder.build());
-       return userMapper.toUserExistenceStatus(checkUserResponse.getExistenceStatus());
+        User.CheckUserResponse checkUserResponse = userBlockingStubObjectProvider.getObject()
+                .checkUserExists(userRequestBuilder.build());
+        return userMapper.toUserExistenceStatus(checkUserResponse.getExistenceStatus());
 
     }
 
-    public UserResponseDTO getUserInfoByKeycloakId(@NonNull String userKeycloakId){
+    public UserResponseDTO getUserInfoByKeycloakId(@NonNull String userKeycloakId) {
 
         User.UserKeycloakIdRequest oneUserRequest = User.UserKeycloakIdRequest
                 .newBuilder()
@@ -59,11 +67,11 @@ public class UserGrpcClient {
         User.UserInfoResponse userInfoResponse = userBlockingStubObjectProvider.getObject()
                 .getUserInfoByUserKeycloakId(oneUserRequest);
 
-       return userMapper.toUserResponseDTO(userInfoResponse);
+        return userMapper.toUserResponseDTO(userInfoResponse);
 
     }
 
-    public UserResponseDTO getUserInfoByEntityId(@NonNull Long userEntityId){
+    public UserResponseDTO getUserInfoByEntityId(long userEntityId) {
 
         User.UserEntityIdRequest oneUserRequest = User.UserEntityIdRequest
                 .newBuilder()
@@ -78,7 +86,7 @@ public class UserGrpcClient {
     }
 
 
-    public boolean userEmailIsChanged(@NonNull String email,@NonNull String userKeycloakId){
+    public boolean userEmailIsChanged(@NonNull String email, @NonNull String userKeycloakId) {
 
         User.EmailCheckRequest emailCheckRequest = User.EmailCheckRequest
                 .newBuilder()
@@ -92,7 +100,7 @@ public class UserGrpcClient {
         return statusResponse.getSuccess();
     }
 
-    public List<UserMinimalInfoDto> getUserMinimalInfo(@NonNull List<Long> userEntityIds){
+    public List<UserMinimalInfoDto> getUserMinimalInfo(@NonNull List<Long> userEntityIds) {
 
         User.UserEntityIdsRequest userEntityIdsRequest = User.UserEntityIdsRequest
                 .newBuilder()
@@ -104,32 +112,27 @@ public class UserGrpcClient {
 
         return userMapper.toUserMinimalInfoDTOs(response.getUserMinimalInfoList());
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

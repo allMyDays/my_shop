@@ -3,6 +3,7 @@ import com.example.catalogue_service.entity.Product;
 import com.example.common.grpc.product.ProductResponse;
 import com.example.common.dto.product.rest.ProductResponseDTO;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import java.time.Instant;
@@ -14,6 +15,8 @@ import com.google.protobuf.Timestamp;
 @Mapper(componentModel = "spring")
 public abstract class LocalProductMapper {
 
+    @Mapping(target = "priceView", expression = "java(com.example.common.service.CommonProductService.formatPrice(product.getPrice()))")
+    @Mapping(target = "priceInt", source = "price")
      public abstract ProductResponseDTO toResponseProductDTO(Product product);
 
      //public abstract Product toProduct(ProductRequestDTO sendProductDTO);

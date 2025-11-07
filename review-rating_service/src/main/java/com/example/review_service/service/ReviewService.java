@@ -3,13 +3,14 @@ package com.example.review_service.service;
 import com.example.common.client.grpc.ProductGrpcClient;
 import com.example.common.client.kafka.MediaKafkaClient;
 import com.example.common.enumeration.media_service.BucketEnum;
-import com.example.common.exception.UserNotFoundException;
+import com.example.common.exception.*;
 import com.example.review_service.dto.ProductReviewInfoDto;
 import com.example.review_service.dto.ProductReviewStats;
 import com.example.review_service.entity.Review;
 import com.example.review_service.enumeration.EditReviewAbilityStatus;
 import com.example.review_service.enumeration.ReviewSortType;
 import com.example.review_service.exception.NoChangesInEditingReviewException;
+import com.example.review_service.exception.ReviewAlreadyExistsException;
 import com.example.review_service.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
@@ -43,16 +44,20 @@ public class ReviewService {
 
     public void create(@NonNull Review productReview, List<MultipartFile> images){
 
+         if(getUserReviewByProductId(productReview.getUserId(), productReview.getProductId()).isPresent()) {
+            throw new ReviewAlreadyExistsException(productReview.getUserId(), productReview.getProductId());
+        }
           if (!productGrpcClient.productExists(productReview.getProductId())){
-            throw new RuntimeException("Product does not exist");
+            throw new ProductNotFoundException(List.of(productReview.getProductId()));
           }
+
           productReview.setDateOfCreation(LocalDateTime.now());
 
           Review review = reviewRepository.save(productReview);
 
           if(images!=null && !images.isEmpty()){
               if(images.size()>5){
-                  throw new RuntimeException("Too many images");
+                  throw new TooManyImagesToUploadException(5);
               }
               validateImages(images);
               String requestKey = UUID.randomUUID().toString();
@@ -62,17 +67,13 @@ public class ReviewService {
     }
     @Transactional
     public void edit(@NonNull Review reviewToEdit,
-                     @NonNull Long userId,
+                     long userId,
                      Optional<List<MultipartFile>> imageToSaveOptional,
                      Optional<List<String>> imagesToDeleteOptional){
 
-        Review oldReview = reviewRepository.findById(reviewToEdit.getId())
-                .orElseThrow(()->new RuntimeException("Review does not exist"));
+        Review oldReview = validateEntityAndOwnership(userId,reviewToEdit.getId());
 
-        if(!oldReview.getUserId().equals(userId)){
-            throw new RuntimeException("Review does not belong to user");
-        }
-        if(!checkEditingReviewAbility(oldReview.getId()).equals(CAN_EDIT))
+        if(!checkEditingReviewAbility(userId, oldReview.getId()).equals(CAN_EDIT))
             throw new RuntimeException("Review cannot be edited anymore.");
 
         reviewToEdit.setUserId(userId);
@@ -109,7 +110,7 @@ public class ReviewService {
 
         if(!imagesToSave.isEmpty()){
             if((oldReview.getPhotoFileNames().size()-imagesToDelete.size()+imagesToSave.size())>5){
-                throw new RuntimeException("Too many images to save");
+                throw new TooManyImagesToUploadException(5);
             }
             validateImages(imagesToSave);
             String requestKey = UUID.randomUUID().toString();
@@ -118,9 +119,8 @@ public class ReviewService {
         }
     }
 
-    public EditReviewAbilityStatus checkEditingReviewAbility(Long reviewId){
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(()->new RuntimeException("Review does not exist"));
+    public EditReviewAbilityStatus checkEditingReviewAbility(long userId, long reviewId){
+        Review review = validateEntityAndOwnership(userId,reviewId);
 
         if(review.getEditingQuantity()>=4) return ATTEMPTS_EXHAUSTED;
         if(ChronoUnit.YEARS.between(review.getDateOfCreation(),LocalDateTime.now())>=3)
@@ -129,14 +129,14 @@ public class ReviewService {
     }
 
     @Transactional
-    public void saveReviewImageFileNames(@NonNull List<String> newImageFileNames, @NonNull Long reviewId){
+    public void saveReviewImageFileNames(@NonNull List<String> newImageFileNames, long reviewId){
 
         if(newImageFileNames.size()>5){
-            throw new RuntimeException("You can only save 5 images per one review");
+            throw new TooManyImagesToUploadException(5);
         }
 
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(()->new RuntimeException("Review does not exist"));
+                .orElseThrow(()->new EntityNotFoundException(Review.class, reviewId));
 
         int currentPhotoQuantity = review.getPhotoFileNames().size();
 
@@ -153,36 +153,30 @@ public class ReviewService {
         reviewRepository.save(review);
     }
     @Transactional
-    public boolean deleteByReviewId(Long userId, Long reviewId){
+    public void deleteByReviewId(long userId, long reviewId){
 
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(()->new RuntimeException("Review does not exist"));
+        Review review = validateEntityAndOwnership(userId,reviewId);
 
-        if(!review.getUserId().equals(userId)){
-            return false;
-        }
         reviewRepository.deleteById(review.getId());
         mediaKafkaClient.deleteMedia(review.getPhotoFileNames());
-        return true;
     }
 
     @Transactional
-    public boolean deleteByProductId(Long userId, Long productId){
+    public void deleteByProductId(long userId, long productId){
 
         Review review = reviewRepository.findByUserIdAndProductId(userId, productId)
-                .orElseThrow(()->new RuntimeException("Review does not exist"));
+                .orElseThrow(()->new EntityNotFoundException(Review.class, productId));
 
         reviewRepository.deleteById(review.getId());
         mediaKafkaClient.deleteMedia(review.getPhotoFileNames());
-        return true;
     }
 
 
 
 
-    public List<Review> findAll(Long productId, int offset, ReviewSortType sortType, Optional<Long> userId) throws UserNotFoundException {
+    public List<Review> findAll(long productId, int offset, @NonNull ReviewSortType sortType, Optional<Long> userId) throws UserNotFoundException {
 
-        if(offset<0) throw new IllegalArgumentException("offset must be greater than 0");
+        if(offset<0) throw new IllegalArgumentException("offset must be greater or equal to 0");
 
         int limit = 40;
 
@@ -199,11 +193,10 @@ public class ReviewService {
                         .map(List::of)
                         .orElse(List.of());
             }
-            default -> throw new RuntimeException("Sort type is not recognized");
         };
     }
 
-    public List<ProductReviewInfoDto> getProductsInfo(List<Long> productIds) {
+    public List<ProductReviewInfoDto> getProductsInfo(@NonNull List<Long> productIds) {
 
         List<ProductReviewStats> existingStats = reviewRepository.findReviewStatsByProductIds(productIds);
 
@@ -221,7 +214,7 @@ public class ReviewService {
         return new ArrayList<>(resultMap.values());
     }
 
-    public ProductReviewInfoDto getProductInfo(Long productId) {
+    public ProductReviewInfoDto getProductInfo(long productId) {
 
         List<ProductReviewStats> existingStats = reviewRepository.findReviewStatsByProductIds(List.of(productId));
 
@@ -233,12 +226,26 @@ public class ReviewService {
         return new ProductReviewInfoDto(stat.getProductId(),stat.getReviewCount(), stat.getAverageRating());
     }
 
-    public Optional<Review> getUserReviewByProductId(Long userId, Long productId) {
+    public Optional<Review> getUserReviewByProductId(long userId, long productId) {
         return reviewRepository.findOneByUserIdAndProductId(userId, productId);
     }
 
-    public Optional<Review> getReviewByReviewId(Long reviewId) {
+    public Optional<Review> getReviewByReviewId(long reviewId) {
         return reviewRepository.findById(reviewId);
+    }
+
+
+    private Review validateEntityAndOwnership(long userId, long reviewId) {
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(()->new EntityNotFoundException(Review.class, reviewId));
+
+        if(!review.getUserId().equals(userId)){
+            throw new UserNotOwnerException(userId,reviewId, Review.class);
+        }
+        return review;
+
+
     }
 
 

@@ -76,6 +76,13 @@ spring:
           filters:
             - name: JwtCookieAuthFilter
 
+        - id: order
+          uri: lb://order-service
+          predicates:
+            - Path=/api/order, /api/order/**
+          filters:
+            - name: JwtCookieAuthFilter
+
 
         - id: frontend-static
           uri: lb://frontend-service

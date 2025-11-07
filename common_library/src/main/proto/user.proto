@@ -47,6 +47,8 @@ message UserInfoResponse {
   string lastName = 5;
 
   optional string avatarFileName = 6;
+
+  optional string fullAddress = 7;
 }
 
 message UserMinimalInfoOuterResponse{
@@ -63,7 +65,6 @@ message UserMinimalInfoInnerResponse{
 
 
 }
-
 
 
 message EmailCheckRequest {

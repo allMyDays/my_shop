@@ -43,7 +43,7 @@ public class WishItemMapper {
             ProductResponseDTO productDto = productMap.get(dto.getProductId());
             if(productDto != null){
                 dto.setTitle(productDto.getTitle());
-                dto.setPrice(productDto.getPrice());
+                dto.setPriceView(productDto.getPriceView());
                 dto.setPreviewImageFileName(productDto.getPreviewImageFileName());
 
             }

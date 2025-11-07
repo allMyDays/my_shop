@@ -1,4 +1,4 @@
-package com.example.common.mapper.grpc;
+package com.example.common.mapper;
 
 import com.example.common.dto.category.rest.CategoryResponseDTO;
 import com.example.common.grpc.category.Category;

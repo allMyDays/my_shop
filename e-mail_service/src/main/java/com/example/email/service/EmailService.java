@@ -1,5 +1,6 @@
 package com.example.email.service;
 
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailSendException;
@@ -28,7 +29,7 @@ public class EmailService {
     }
 
 
-    public void sendSimpleMail(String to, String subject, String text, int attemptNum) throws MailSendException {
+    public void sendSimpleMail(@NonNull String to, @NonNull String subject, @NonNull String text, int attemptNum) throws MailSendException {
 
         SimpleMailMessage message = new SimpleMailMessage();
 

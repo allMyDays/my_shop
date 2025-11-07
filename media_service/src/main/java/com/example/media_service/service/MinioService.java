@@ -41,7 +41,7 @@ public class MinioService {
 
 
     }
-    public BucketEnum extractBucket(String fileName) throws RuntimeException{
+    public BucketEnum extractBucket(@NonNull String fileName) throws RuntimeException{
         try {
             return BucketEnum.valueOf(fileName.split(fileNameSeparator)[0]);
         }catch (Exception e){
@@ -50,7 +50,7 @@ public class MinioService {
 
     }
 
-    String generateNewFileKey(BucketEnum bucket){
+    String generateNewFileKey(@NonNull BucketEnum bucket){
         return bucket.name()+fileNameSeparator+redisAtomicLong.incrementAndGet();
     }
 
@@ -69,7 +69,7 @@ public class MinioService {
     }
 
 
-    public Map.Entry<byte[], MediaType> getFile(String fileName) {
+    public Map.Entry<byte[], MediaType> getFile(@NonNull String fileName) {
 
         BucketEnum bucket=extractBucket(fileName);
 
@@ -85,7 +85,7 @@ public class MinioService {
         return Map.entry(imageBytes,guessContentType(imageBytes));
     }
 
-    public boolean deleteFile(String fileName){
+    public boolean deleteFile(@NonNull String fileName){
         BucketEnum bucket=extractBucket(fileName);
 
         try{ s3Client.deleteObject(DeleteObjectRequest
@@ -128,7 +128,7 @@ public class MinioService {
         }
     }
 
-    public List<String> uploadFiles(List<FileDataDTO> files, BucketEnum bucket) throws Exception {
+    public List<String> uploadFiles(@NonNull List<FileDataDTO> files, @NonNull BucketEnum bucket) throws Exception {
         List<String> newFileNames = new ArrayList<>();
         for (FileDataDTO file : files) {
 

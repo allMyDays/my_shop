@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.example.common.service.CommonProductService.formatPrice;
+
 @Service
 @RequiredArgsConstructor
 public class CartItemMapper {
@@ -45,7 +47,8 @@ public class CartItemMapper {
             ProductResponseDTO productDto = productMap.get(dto.getProductId());
             if(productDto != null){
                 dto.setTitle(productDto.getTitle());
-                dto.setPrice(productDto.getPrice());
+                dto.setPricePerProductInt(productDto.getPriceInt());
+                dto.setTotalPriceView(formatPrice(productDto.getPriceInt()*dto.getQuantity()));
                 dto.setPreviewImageFileName(productDto.getPreviewImageFileName());
 
             }

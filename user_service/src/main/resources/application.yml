@@ -85,4 +85,3 @@ eureka:
   instance:
     metadata-map:
       grpc-port: ${server.grpc.port}
-
