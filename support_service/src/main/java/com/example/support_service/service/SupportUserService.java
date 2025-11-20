@@ -51,7 +51,9 @@ public class SupportUserService {
          supportChat.setNeedsAnswer(false);
          supportChat = supportChatRepository.save(supportChat);
 
-         redisService.saveTemp(SUPPORT_CHAT_CREATION_LIMITED+":"+userId,"",7200);
+        Optional<String> keyOpt = redisService.get(SUPPORT_CHAT_CREATION_LIMITED+":"+userId);
+
+         redisService.saveTemp(SUPPORT_CHAT_CREATION_LIMITED+":"+userId, keyOpt.map(s -> String.valueOf(Integer.parseInt(s) + 1)).orElse("1"),7200);
 
          return supportChat.getId();
 
@@ -59,13 +61,21 @@ public class SupportUserService {
 
     public boolean chatCreationIsLimited(long userId) {
 
-        return redisService.get(SUPPORT_CHAT_CREATION_LIMITED+":"+userId).isPresent();
+        Optional<String> keyOpt = redisService.get(SUPPORT_CHAT_CREATION_LIMITED+":"+userId);
+        if(keyOpt.isEmpty()) return false;
 
+        int key = Integer.parseInt(keyOpt.get());
 
+        return key >= 5;
     }
     public boolean messageSendingIsLimited(long chatId){
 
-        return redisService.get(SUPPORT_MESSAGE_SENDING_LIMITED+":"+chatId).isPresent();
+        Optional<String> keyOpt = redisService.get(SUPPORT_MESSAGE_SENDING_LIMITED+":"+chatId);
+        if(keyOpt.isEmpty()) return false;
+
+        int key = Integer.parseInt(keyOpt.get());
+
+        return key >= 4;
 
     }
 
@@ -73,7 +83,10 @@ public class SupportUserService {
 
             SupportChat supportChat = validateEntityAndOwnership(userId, chatId);
 
-            redisService.saveTemp(SUPPORT_MESSAGE_SENDING_LIMITED+":"+chatId,"",120);
+            Optional<String> keyOpt = redisService.get(SUPPORT_MESSAGE_SENDING_LIMITED+":"+chatId);
+
+            redisService.saveTemp(SUPPORT_MESSAGE_SENDING_LIMITED+":"+chatId,
+                    keyOpt.map(s -> String.valueOf(Integer.parseInt(s) + 1)).orElse("1"), 120);
             supportChat.setNeedsAnswer(true);
             supportChat.setContainsMessages(true);
             emailKafkaClient.sendSimpleMail(
@@ -120,7 +133,7 @@ public class SupportUserService {
 
     }
 
-    private SupportChat validateEntityAndOwnership(long userId, long chatId) {
+    public SupportChat validateEntityAndOwnership(long userId, long chatId) {
 
         SupportChat supportChat = supportChatRepository.findById(chatId)
                 .orElseThrow(()->new EntityNotFoundException(SupportChat.class,chatId));

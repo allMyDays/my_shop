@@ -50,7 +50,7 @@ public class MinioService {
 
     }
 
-    String generateNewFileKey(@NonNull BucketEnum bucket){
+    public String generateNewFileKey(@NonNull BucketEnum bucket){
         return bucket.name()+fileNameSeparator+redisAtomicLong.incrementAndGet();
     }
 

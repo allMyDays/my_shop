@@ -166,7 +166,7 @@ public class OrderService {
 
 
 
-    private Order validateEntityAndOwnership(long userId, long orderId) {
+    public Order validateEntityAndOwnership(long userId, long orderId) {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException(Order.class,orderId));
@@ -176,8 +176,5 @@ public class OrderService {
         }
         return order;
     }
-
-
-
 
 }

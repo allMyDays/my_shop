@@ -90,16 +90,4 @@ public class SupportChatRestController {
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
 }

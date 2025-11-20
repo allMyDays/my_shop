@@ -53,17 +53,17 @@ public class ReviewService {
 
           productReview.setDateOfCreation(LocalDateTime.now());
 
-          Review review = reviewRepository.save(productReview);
-
           if(images!=null && !images.isEmpty()){
               if(images.size()>5){
                   throw new TooManyImagesToUploadException(5);
               }
               validateImages(images);
               String requestKey = UUID.randomUUID().toString();
+              Review review = reviewRepository.save(productReview);
               redisService.save(KAFKA_UPLOAD_IMAGES+":"+requestKey,review.getId().toString());
               mediaKafkaClient.sendSavingMediaRequest(images, BucketEnum.reviews,requestKey);
-          }
+              return;
+          } reviewRepository.save(productReview);
     }
     @Transactional
     public void edit(@NonNull Review reviewToEdit,
@@ -235,7 +235,7 @@ public class ReviewService {
     }
 
 
-    private Review validateEntityAndOwnership(long userId, long reviewId) {
+    public Review validateEntityAndOwnership(long userId, long reviewId) {
 
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(()->new EntityNotFoundException(Review.class, reviewId));
@@ -247,13 +247,4 @@ public class ReviewService {
 
 
     }
-
-
-
-
-
-
-
-
-
 }

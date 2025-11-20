@@ -101,6 +101,8 @@ public class ProductService {
 
     public int getTotalPrice(@NonNull List<ProductIdAndQuantityDto> productIdAndQuantityDtos) {
 
+        if(productIdAndQuantityDtos.isEmpty()) return 0;
+
         List<Long> ids = productIdAndQuantityDtos.stream()
                 .map(ProductIdAndQuantityDto::getProductId)
                 .toList();

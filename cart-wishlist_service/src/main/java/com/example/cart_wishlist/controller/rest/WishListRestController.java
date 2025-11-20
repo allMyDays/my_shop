@@ -81,15 +81,4 @@ public class WishListRestController {
         return wishService.productExists(productId,getMyUserEntityId(jwt));
     }
 
-
-
-
-
-
-
-
-
-
-
-
 }
