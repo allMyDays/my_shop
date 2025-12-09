@@ -3,6 +3,7 @@ package com.example.order_service.controller.rest;
 import com.example.common.dto.product.ProductIdAndQuantityDto;
 import com.example.common.exception.EntityNotFoundException;
 import com.example.common.exception.UserNotFoundException;
+import com.example.order_service.controller.rest.i.iDeliveryRestController;
 import com.example.order_service.dto.DeliveryInfoDto;
 import com.example.order_service.dto.OrderItemResponseDto;
 import com.example.order_service.dto.OrderResponseDto;
@@ -32,7 +33,7 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 @RequestMapping("/api/order/delivery")
 @RequiredArgsConstructor
 @PreAuthorize("isAuthenticated()")
-public class DeliveryRestController {
+public class DeliveryRestController implements iDeliveryRestController {
 
     private final DeliveryInfoService deliveryInfoService;
 

@@ -2,6 +2,7 @@ package com.example.support_service.controller.rest.user;
 
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.dto.support.SupportMessageResponseDTO;
+import com.example.support_service.controller.rest.i.ISupportMessageRestController;
 import com.example.support_service.mapper.SupportMessageMapper;
 import com.example.support_service.service.SupportUserService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 @RequiredArgsConstructor
 @RequestMapping("/api/support/message")
 @PreAuthorize("isAuthenticated()")
-public class SupportMessageRestController {
+public class SupportMessageRestController implements ISupportMessageRestController {
 
     private final SupportUserService supportUserService;
 

@@ -1,5 +1,6 @@
 package com.example.common.dto.product;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
+@Schema(description = "Сущность, представляющая собой ID товара и количество этого товара.")
 public class ProductIdAndQuantityDto {
 
     private Long productId;

@@ -1,6 +1,7 @@
 package com.example.review_service.controller.rest;
 
 import com.example.common.exception.UserNotFoundException;
+import com.example.review_service.controller.rest.i.IReviewRestController;
 import com.example.review_service.dto.EditReviewRequestDto;
 import com.example.review_service.dto.ProductReviewInfoDto;
 import com.example.review_service.dto.CreateReviewRequestDto;
@@ -31,7 +32,7 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 @RestController
 @RequestMapping("/api/review")
 @RequiredArgsConstructor
-public class ReviewRestController {
+public class ReviewRestController implements IReviewRestController {
 
     private final ReviewService reviewService;
 

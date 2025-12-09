@@ -39,6 +39,10 @@ public class CartService {
     }
 
     public void addItemToCart(long userId, long productID, int quantity) {
+        if(quantity>1){
+            addItemsToCart(userId, List.of(new ProductIdAndQuantityDto(productID, quantity)));
+            return;
+        }
 
         if(getCartSize(userId)>=4000){
            throw new TooManyItemsException(true);
@@ -53,14 +57,14 @@ public class CartService {
         CartItem cartItem;
         if(existingProduct.isPresent()){
             cartItem = existingProduct.get();
-            cartItem.setQuantity(cartItem.getQuantity()+quantity);
+            cartItem.setQuantity(cartItem.getQuantity()+1);
             cartRepository.save(cart);
 
         } else {
             cartItem = new CartItem();
             cartItem.setCart(cart);
             cartItem.setProductId(productID);
-            cartItem.setQuantity(quantity);
+            cartItem.setQuantity(1);
             cart.getItems().add(cartItem);
             cartRepository.save(cart);
         }
@@ -85,18 +89,20 @@ public class CartService {
             if(availableSize<=0) return addedQuantity;
             int requiredQuantity = productMap.get(productId);
 
-            CartItem cartItem = new CartItem();
-            cartItem.setCart(cart);
-            cartItem.setProductId(productId);
+            Optional<CartItem> existingItem = cartItemRepository.findByCartUserIdAndProductId(userId,productId);
+
+            CartItem newCartItem = existingItem.orElseGet(CartItem::new);
+            newCartItem.setCart(cart);
+            newCartItem.setProductId(productId);
 
             if(availableSize<=requiredQuantity){
-                cartItem.setQuantity(availableSize);
-                cartItemRepository.save(cartItem);
+                newCartItem.setQuantity(newCartItem.getQuantity()+availableSize);
+                cartItemRepository.save(newCartItem);
                 return addedQuantity+availableSize;
             }
 
-            cartItem.setQuantity(requiredQuantity);
-            cartItemRepository.save(cartItem);
+            newCartItem.setQuantity(newCartItem.getQuantity()+requiredQuantity);
+            cartItemRepository.save(newCartItem);
             addedQuantity+=requiredQuantity;
             availableSize-=requiredQuantity;
         }
@@ -141,7 +147,13 @@ public class CartService {
     public int updateProductQuantity(long userId, long productId, boolean increase){
 
         Optional<CartItem> cartItemOptional = cartItemRepository.findByCartUserIdAndProductId(userId,productId);
-        if (cartItemOptional.isEmpty()) return 0;
+        if (cartItemOptional.isEmpty()){
+            if(increase){
+                addItemToCart(userId, productId, 1);
+                return 1;
+            }
+            else return 0;
+        }
         CartItem cartItem = cartItemOptional.get();
 
         int quantity = cartItem.getQuantity();

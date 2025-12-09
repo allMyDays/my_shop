@@ -1,6 +1,7 @@
 package com.example.order_service.controller.rest;
 
 import com.example.order_service.client.DaDataClient;
+import com.example.order_service.controller.rest.i.IAddressRestController;
 import com.example.order_service.exception.AddressNotCorrectException;
 import com.example.order_service.service.DeliveryInfoService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 @RestController
 @RequestMapping("/api/order/address")
 @RequiredArgsConstructor
-public class AddressController {
+public class AddressRestController implements IAddressRestController {
 
     private final DaDataClient daDataClient;
 

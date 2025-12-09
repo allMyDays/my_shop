@@ -1,5 +1,6 @@
 package com.example.cart_wishlist.controller.rest;
 
+import com.example.cart_wishlist.controller.rest.i.IWishListRestController;
 import com.example.cart_wishlist.exception.TooManyItemsException;
 import com.example.cart_wishlist.mapper.WishItemMapper;
 import com.example.cart_wishlist.mapper.WishListMapper;
@@ -23,7 +24,7 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 @RequestMapping("/api/wish-list")
 @RequiredArgsConstructor
 @PreAuthorize("isAuthenticated()")
-public class WishListRestController {
+public class WishListRestController implements IWishListRestController{
 
     private final WishListService wishService;
     private final WishListMapper listMapper;

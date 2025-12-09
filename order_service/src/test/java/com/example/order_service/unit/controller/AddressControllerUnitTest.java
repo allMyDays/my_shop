@@ -1,11 +1,10 @@
 package com.example.order_service.unit.controller;
 
 import com.example.order_service.client.DaDataClient;
-import com.example.order_service.controller.rest.AddressController;
+import com.example.order_service.controller.rest.AddressRestController;
 import com.example.order_service.exception.AddressNotCorrectException;
 import com.example.order_service.service.DeliveryInfoService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -13,10 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -38,7 +33,7 @@ class AddressControllerUnitTest {
     private Jwt jwt;
 
     @InjectMocks
-    private AddressController addressController;
+    private AddressRestController addressController;
 
     private final Long TEST_USER_ID = 123L;
     private final String TEST_ADDRESS = "Москва, Тверская ул., 1";

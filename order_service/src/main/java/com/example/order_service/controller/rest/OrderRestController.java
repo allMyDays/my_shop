@@ -4,6 +4,7 @@ import com.example.common.dto.product.ProductIdAndQuantityDto;
 import com.example.common.dto.product.rest.ProductMinimalInfoResponseDto;
 import com.example.common.dto.product.rest.ProductResponseDTO;
 import com.example.common.exception.UserNotFoundException;
+import com.example.order_service.controller.rest.i.IOrderRestController;
 import com.example.order_service.dto.DeliveryInfoDto;
 import com.example.order_service.dto.OrderItemResponseDto;
 import com.example.order_service.dto.OrderResponseDto;
@@ -35,7 +36,7 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 @RequestMapping("/api/order")
 @RequiredArgsConstructor
 @PreAuthorize("isAuthenticated()")
-public class OrderRestController {
+public class OrderRestController implements IOrderRestController {
 
     private final OrderService orderService;
 

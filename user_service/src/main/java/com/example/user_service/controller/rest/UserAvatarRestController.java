@@ -1,6 +1,7 @@
 package com.example.user_service.controller.rest;
 
 import com.example.common.exception.UserNotFoundException;
+import com.example.user_service.controller.rest.i.IUserAvatarRestController;
 import com.example.user_service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -17,7 +18,7 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 @RequiredArgsConstructor
 @RequestMapping("/api/users/avatar")
 @PreAuthorize("isAuthenticated()")
-public class UserAvatarRestController {
+public class UserAvatarRestController implements IUserAvatarRestController {
 
     private final UserService userService;
 

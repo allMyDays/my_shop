@@ -6,6 +6,7 @@ import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.common.enumeration.user_service.UserExistenceStatus;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.service.CommonUserService;
+import com.example.user_service.controller.rest.i.IUserRestController;
 import com.example.user_service.dto.LoginRequestDTO;
 import com.example.user_service.dto.ResetPasswordDTO;
 import com.example.user_service.dto.VerifyEmailRequestDTO;
@@ -46,7 +47,7 @@ import static com.example.user_service.enumeration.RedisSubKeys.*;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 @Validated
-public class UserRestController {
+public class UserRestController implements IUserRestController {
 
     private final UserService userService;
 

@@ -2,6 +2,7 @@ package com.example.support_service.controller.rest.user;
 
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.dto.support.SupportChatResponseDTO;
+import com.example.support_service.controller.rest.i.ISupportChatRestController;
 import com.example.support_service.dto.CreateChatDto;
 import com.example.support_service.mapper.SupportChatMapper;
 import com.example.support_service.service.SupportUserService;
@@ -25,7 +26,7 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 @RequiredArgsConstructor
 @RequestMapping("/api/support/chat")
 @PreAuthorize("isAuthenticated()")
-public class SupportChatRestController {
+public class SupportChatRestController implements ISupportChatRestController{
 
     private final SupportUserService supportUserService;
 
@@ -46,8 +47,6 @@ public class SupportChatRestController {
         Long userId = getMyUserEntityId(jwt);
 
         Long newChatId = supportUserService.createSupportChat(userId, createChatDto.getTopic());
-
-        System.out.println("!!!!!!!!!!chat was created with id: " + newChatId);
 
         Map<String, Long> result = new HashMap<>();
         result.put("chatId", newChatId);
