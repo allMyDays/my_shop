@@ -208,7 +208,17 @@
         <div class="col-md-6 d-flex flex-column justify-content-between my-5">
             <div>
                 <h1 th:text="${product.title}" class="fw-bold mb-3"></h1>
-                <!-- БЛОК РЕЙТИНГА-->
+
+                  <div class="d-flex align-items-center">
+                  <span>Артикул:&nbsp;&nbsp;</span> <span id="product-article" class="me-1 fw-bold text-primary" style="cursor: pointer;" th:text="${product.article}">
+                     123456789</span>
+
+                      <span id="copy-status" class="text-success mx-5" style="display:none; font-size: 22px;">
+                     Артикул скопирован!
+                     </span>
+                  </div>
+
+                  <!-- БЛОК РЕЙТИНГА-->
                 <div class="product-rating-container mb-3" th:data-product-id="${product.id}" style="display: none;">
                     <div class="rating-stars d-inline-block">
                         <div class="stars-wrapper">
@@ -438,6 +448,25 @@
 <script src="/js/rating_view.js"></script>
 <script src="/js/cards_interactions.js"></script>
 <script src="/js/cart_wish.js"></script>
+
+<script>
+    document.getElementById("product-article").addEventListener("click", function () {
+
+        const text = this.textContent.trim();
+        navigator.clipboard.writeText(text).then(() => {
+            const status = document.getElementById("copy-status");
+            status.style.display = "inline";
+            setTimeout(() =>
+                status.style.display = "none", 1200);
+        })
+            .catch(err => {
+                console.error("Ошибка копирования", err);
+            });
+    });
+
+
+
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {

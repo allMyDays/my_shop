@@ -11,40 +11,135 @@
     <link rel="stylesheet" href="/css/loadingSpinner.css">
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
 </head>
 <body>
 <div th:insert="~{fragments/menu :: #nav-menu}"></div>
- <main>
-     <div id="carouselExampleAutoplaying" class="carousel slide carousel-fade" data-bs-ride="carousel">
-         <div class="carousel-inner">
-             <div class="carousel-item active">
-                 <img src="/images/woman.png" class="d-block w-100" alt="...">
-             </div>
-             <div class="carousel-item">
-                 <img src="/images/man.png" class="d-block w-100" alt="...">
-             </div>
-         </div>
-         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
-             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-             <span class="visually-hidden">Previous</span>
-         </button>
-         <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
-             <span class="carousel-control-next-icon" aria-hidden="true"></span>
-             <span class="visually-hidden">Next</span>
-         </button>
-     </div>
+
+<style>
+    .category-card {
+        cursor: pointer;
+        transition: transform .2s, box-shadow .2s;
+    }
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    .category-img {
+        height: 200px;
+        object-fit: cover;
+    }
+</style>
 
 
+<main>
+
+    <!-- Main Container -->
+    <div class="container py-5">
+
+        <h1 class="mb-4 text-center">Добро пожаловать в магазин DMARKET</h1>
+
+        <div class="row g-4">
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(1)">
+                    <img src="/images/categories/woman_clothes.jpg" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Женская одежда</h5>
+                    </div>
+                </div>
+            </div>
 
 
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(2)">
+                    <img src="/images/categories/man_clothes.png" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Мужская одежда</h5>
+                    </div>
+                </div>
+            </div>
 
 
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(3)">
+                    <img src="/images/categories/cosmetic.webp" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Косметика</h5>
+                    </div>
+                </div>
+            </div>
 
- </main>
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(4)">
+                    <img src="/images/categories/appliances.jpg" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Бытовая техника</h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(5)">
+                    <img src="/images/categories/gadjets.jpeg" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Электроника</h5>
+                    </div>
+                </div>
+            </div>
 
 
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(6)">
+                    <img src="/images/categories/food.jpg" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Продукты питания</h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(7)">
+                    <img src="/images/categories/furniture.png" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Мебель</h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(8)">
+                    <img src="/images/categories/books.jpg" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Книги</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick(9)">
+                    <img src="/images/categories/pharmacy.jpg" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Аптека</h5>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function onCategoryClick(categoryId) {
+
+            const params = new URLSearchParams();
+            params.append("categoryId", categoryId);
+
+            window.location.href = "/products/get/all?" + params.toString();
+
+        }
+    </script>
 
 
+</main>
 
 
 <div th:insert="~{fragments/support_chat :: #support-chat}"></div>

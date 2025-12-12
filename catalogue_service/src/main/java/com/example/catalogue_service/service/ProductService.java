@@ -9,6 +9,7 @@ import com.example.common.exception.ProductNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,21 +18,35 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.example.common.service.CommonProductService.extractProductId;
+
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public Stream<Product> getAll(Long categoryId, @NonNull String title, int offset) {
+    public Stream<Product> getAll(Long categoryId, String title, int offset) {
 
-        if(categoryId==null||categoryId==0){
+
+        if(categoryId==0){
             categoryId=null;
         }
-        if(title.length()<2){
+        if(title.trim().isEmpty()){
+            title=null;
+        }
+
+        System.out.println("categoryId is: "+categoryId);
+        System.out.println("title is: "+title);
+
+        if((title!=null&&title.length()<2)||(categoryId==null&&title==null)){
             return Stream.empty();
         }
 
+        if(title!=null&&title.matches("\\d{9}")){
+            Optional<Product> productOptional = productRepository.findById(extractProductId(title));
+            return productOptional.stream();
+        }
         int limit = 40;
 
         int page = offset/limit;
@@ -123,6 +138,8 @@ public class ProductService {
 
 
     }
+
+
 
     public List<ProductIdAndPriceDto> getProductsPrice(@NonNull List<Long> ids) {
 

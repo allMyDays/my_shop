@@ -25,4 +25,6 @@ public class ProductResponseDTO {
 
     private List<String> imageFileNames = new ArrayList<>();
 
+    private String article;
+
 }

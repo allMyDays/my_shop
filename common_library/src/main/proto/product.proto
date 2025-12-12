@@ -75,7 +75,7 @@ message ProductRequestByFilterAndCategory{
 
   optional int64 category_id = 1;
 
-  string filter = 2;
+  optional string filter = 2;
 
   int32 offset = 3;
 
@@ -98,6 +98,8 @@ message ProductResponse{
   string preview_image_file_name = 7;
 
   repeated string image_file_names = 8;
+
+  string article = 9;
 
 
 }

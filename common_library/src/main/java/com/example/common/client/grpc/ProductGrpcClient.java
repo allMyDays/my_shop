@@ -64,17 +64,17 @@ public class ProductGrpcClient {
 
     }
     public void lazyLoadProductBatchStream(Optional<Long> categoryId,
-                                           @NonNull String filter,
+                                           Optional<String> filter,
                                            int offset,
                                            @NonNull Consumer<ProductResponseDTO> consumer,
                                            @NonNull Runnable onComplete){
 
         ProductRequestByFilterAndCategory.Builder productRequestBuilder = ProductRequestByFilterAndCategory
                 .newBuilder()
-                .setOffset(offset)
-                .setFilter(filter);
+                .setOffset(offset);
 
         categoryId.ifPresent(productRequestBuilder::setCategoryId);
+        filter.ifPresent(productRequestBuilder::setFilter);
 
 
         productAsyncStubObjectProvider.getObject()

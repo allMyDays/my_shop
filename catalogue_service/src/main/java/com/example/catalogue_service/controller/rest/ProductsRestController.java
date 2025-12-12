@@ -23,7 +23,7 @@ public class ProductsRestController {
      private final LocalProductMapper productMapper;
 
     @GetMapping
-    public List<ProductResponseDTO> findProducts(@RequestParam(required = false) Long categoryId, @RequestParam String filter, @RequestParam int offset) {
+    public List<ProductResponseDTO> findProducts(@RequestParam(required = false) Long categoryId, @RequestParam(required = false) String filter, @RequestParam int offset) {
 
         try(Stream<Product> productStream = productService.getAll(categoryId,filter,offset)){
         return productMapper.toResponseProductDTOList(productStream.toList());

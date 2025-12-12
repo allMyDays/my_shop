@@ -27,7 +27,7 @@ public class Product {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column
+    @Column(columnDefinition="VARCHAR")
     @NotNull
     private String title;
 

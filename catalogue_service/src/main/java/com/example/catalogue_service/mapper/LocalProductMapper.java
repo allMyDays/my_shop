@@ -12,11 +12,14 @@ import java.time.ZoneOffset;
 import java.util.List;
 import com.google.protobuf.Timestamp;
 
+import static com.example.common.service.CommonProductService.generateArticle;
+
 @Mapper(componentModel = "spring")
 public abstract class LocalProductMapper {
 
     @Mapping(target = "priceView", expression = "java(com.example.common.service.CommonProductService.formatPrice(product.getPrice()))")
     @Mapping(target = "priceInt", source = "price")
+    @Mapping(target = "article", expression = "java(com.example.common.service.CommonProductService.generateArticle(product.getId()))")
      public abstract ProductResponseDTO toResponseProductDTO(Product product);
 
      //public abstract Product toProduct(ProductRequestDTO sendProductDTO);
@@ -36,6 +39,7 @@ public abstract class LocalProductMapper {
                   .setPreviewImageFileName(product.getPreviewImageFileName())
                   .addAllImageFileNames(product.getImageFileNames())
                   .setDateOfCreation(toProtoTimeStamp(product.getDateOfCreation()))
+                  .setArticle(generateArticle(product.getId()))
 
 
                 .build();

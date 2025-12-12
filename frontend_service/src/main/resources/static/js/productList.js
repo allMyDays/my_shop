@@ -6,8 +6,15 @@ let noSuchGoods=true;
 let productsToProcess= new Set();
 
 
-const filter = document.getElementById("main-search-input").value.trim();
-const categoryId = new URLSearchParams(window.location.search).get('categoryId');
+//const filter = document.getElementById("main-search-input").value.trim();
+//const categoryId = new URLSearchParams(window.location.search).get('categoryId');
+
+const categoryInput = document.getElementById("currentCategoryId");
+const categoryId = categoryInput? parseInt(categoryInput.value):null;
+
+const filterInput = document.getElementById("currentFilter");
+const filter = filterInput?filterInput.value:null;
+
 
 function loadMoreProducts() {
     if (loading||noMoreGoods) return;
@@ -19,7 +26,7 @@ function loadMoreProducts() {
 
     const params = new URLSearchParams();
 
-    params.append("filter",filter);
+    if(filter) params.append("filter",filter);
     if (categoryId) params.append("categoryId", categoryId);
     params.append("offset",currentOffset);
 

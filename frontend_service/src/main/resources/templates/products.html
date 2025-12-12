@@ -17,8 +17,8 @@
 <body>
 <div th:insert="~{fragments/menu :: #nav-menu}"></div>
 
-
-
+<input type="hidden" id="currentCategoryId" th:if="${categoryId!=null}" th:value="${categoryId}">
+<input type="hidden" id="currentFilter" th:if="${filter!=null}" th:value="${filter}">
 
 
 <main>
