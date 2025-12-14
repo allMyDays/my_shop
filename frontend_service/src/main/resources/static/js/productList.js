@@ -6,9 +6,6 @@ let noSuchGoods=true;
 let productsToProcess= new Set();
 
 
-//const filter = document.getElementById("main-search-input").value.trim();
-//const categoryId = new URLSearchParams(window.location.search).get('categoryId');
-
 const categoryInput = document.getElementById("currentCategoryId");
 const categoryId = categoryInput? parseInt(categoryInput.value):null;
 

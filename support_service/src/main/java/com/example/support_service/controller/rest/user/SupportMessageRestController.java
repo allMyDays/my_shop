@@ -1,11 +1,13 @@
 package com.example.support_service.controller.rest.user;
 
+import com.example.common.dto.product.rest.ProductResponseDTO;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.dto.support.SupportMessageResponseDTO;
 import com.example.support_service.controller.rest.i.ISupportMessageRestController;
 import com.example.support_service.mapper.SupportMessageMapper;
 import com.example.support_service.service.SupportUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,8 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.example.common.service.CommonUserService.getMyUserEntityId;
 
@@ -49,6 +55,5 @@ public class SupportMessageRestController implements ISupportMessageRestControll
         return supportMessageMapper.toSupportMessageDTOList(supportUserService.getAllSupportChatMessages(getMyUserEntityId(jwt),chatId));
 
     }
-
 
 }

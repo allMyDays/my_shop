@@ -147,7 +147,6 @@ function formatDateTime(timestampStr) {
 
 <!-- блок чата поддержки -->
 
-
 document.addEventListener("DOMContentLoaded", function () {     // отправка сообщений по Enter
     const input = document.getElementById("support-chat-input");
 
@@ -182,6 +181,15 @@ let supportStompClient = null;
 let supportChatStompSubscription = null;
 let supportTypingStompSubscription = null;
 let pendingDeleteChatId = null;
+const supportMessageSound = document.getElementById("support-message-sound");
+
+function playSupportMessageSound(){
+    supportMessageSound.currentTime=0;
+
+    supportMessageSound.play().catch(e => console.log("Автовоспроизведение звука не удалось: ", e));
+
+
+}
 
 //  блок статуса "печатает..."
 
@@ -279,7 +287,7 @@ function subscribeSupportChannels() {
 
     supportChatStompSubscription = supportStompClient.subscribe(`/support-chat-output-topic/${supportChatId}`, function (response) {
         const data = JSON.parse(response.body);
-        appendMessage(data.message, data.userMessage, data.dateOfCreation); // сообщение от юзера/поддержки
+        appendMessage(data.message, data.userMessage, data.dateOfCreation, true); // сообщение от юзера/поддержки
     });
 
     supportTypingStompSubscription = supportStompClient.subscribe(`/support-chat-output-topic/${supportChatId}/typing`, function (response) {
@@ -439,7 +447,7 @@ function deleteSupportChat() {
 }
 
 
-function appendMessage(message, isUser, timestampStr) {
+function appendMessage(message, isUser, timestampStr, isRealTime=false) {
     const msgContainer = document.getElementById("support-chat-body");
 
     const div = document.createElement("div");
@@ -457,6 +465,11 @@ function appendMessage(message, isUser, timestampStr) {
     div.appendChild(timeSpan);
 
     msgContainer.appendChild(div);
+
+    if(isRealTime&&!isUser){
+        playSupportMessageSound();
+    }
+
     msgContainer.scrollTop = msgContainer.scrollHeight;
 }
 

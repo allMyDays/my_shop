@@ -43,7 +43,7 @@ class ProductServiceUnitTest {
         product.setId(PRODUCT_ID);
         product.setTitle(TITLE);
 
-        when(productRepository.findByTitleAndOptionalCategory(eq(TITLE), eq(CATEGORY_ID), any(PageRequest.class)))
+        when(productRepository.findByTitleAndCategory(eq(TITLE), eq(CATEGORY_ID), any(PageRequest.class)))
                 .thenReturn(Stream.of(product));
 
         // When
@@ -52,14 +52,14 @@ class ProductServiceUnitTest {
         // Then
         assertNotNull(result);
         assertEquals(1, result.count());
-        verify(productRepository).findByTitleAndOptionalCategory(eq(TITLE), eq(CATEGORY_ID),
+        verify(productRepository).findByTitleAndCategory(eq(TITLE), eq(CATEGORY_ID),
                 argThat(page -> page.getPageNumber() == 0 && page.getPageSize() == 40));
     }
 
     @Test
     void getAll_WithNullCategory_ConvertsToNull() {
         // Given
-        when(productRepository.findByTitleAndOptionalCategory(eq(TITLE), isNull(), any(PageRequest.class)))
+        when(productRepository.findByTitleAndCategory(eq(TITLE), isNull(), any(PageRequest.class)))
                 .thenReturn(Stream.empty());
 
         // When
@@ -67,13 +67,13 @@ class ProductServiceUnitTest {
 
         // Then
         assertNotNull(result);
-        verify(productRepository).findByTitleAndOptionalCategory(eq(TITLE), isNull(), any(PageRequest.class));
+        verify(productRepository).findByTitleAndCategory(eq(TITLE), isNull(), any(PageRequest.class));
     }
 
     @Test
     void getAll_WithZeroCategory_ConvertsToNull() {
         // Given
-        when(productRepository.findByTitleAndOptionalCategory(eq(TITLE), isNull(), any(PageRequest.class)))
+        when(productRepository.findByTitleAndCategory(eq(TITLE), isNull(), any(PageRequest.class)))
                 .thenReturn(Stream.empty());
 
         // When
@@ -81,7 +81,7 @@ class ProductServiceUnitTest {
 
         // Then
         assertNotNull(result);
-        verify(productRepository).findByTitleAndOptionalCategory(eq(TITLE), isNull(), any(PageRequest.class));
+        verify(productRepository).findByTitleAndCategory(eq(TITLE), isNull(), any(PageRequest.class));
     }
 
     @Test
@@ -92,7 +92,7 @@ class ProductServiceUnitTest {
         // Then
         assertNotNull(result);
         assertEquals(0, result.count());
-        verify(productRepository, never()).findByTitleAndOptionalCategory(anyString(), anyLong(), any(PageRequest.class));
+        verify(productRepository, never()).findByTitleAndCategory(anyString(), anyLong(), any(PageRequest.class));
     }
 
     @Test
@@ -103,20 +103,20 @@ class ProductServiceUnitTest {
         // Then
         assertNotNull(result);
         assertEquals(0, result.count());
-        verify(productRepository, never()).findByTitleAndOptionalCategory(anyString(), anyLong(), any(PageRequest.class));
+        verify(productRepository, never()).findByTitleAndCategory(anyString(), anyLong(), any(PageRequest.class));
     }
 
     @Test
     void getAll_WithOffset40_UsesCorrectPage() {
         // Given
-        when(productRepository.findByTitleAndOptionalCategory(eq(TITLE), eq(CATEGORY_ID), any(PageRequest.class)))
+        when(productRepository.findByTitleAndCategory(eq(TITLE), eq(CATEGORY_ID), any(PageRequest.class)))
                 .thenReturn(Stream.empty());
 
         // When
         productService.getAll(CATEGORY_ID, TITLE, 40);
 
         // Then
-        verify(productRepository).findByTitleAndOptionalCategory(eq(TITLE), eq(CATEGORY_ID),
+        verify(productRepository).findByTitleAndCategory(eq(TITLE), eq(CATEGORY_ID),
                 argThat(page -> page.getPageNumber() == 1 && page.getPageSize() == 40));
     }
 

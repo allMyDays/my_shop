@@ -9,7 +9,6 @@ import com.example.common.exception.ProductNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.example.common.service.CommonProductService.ARTICLE_PATTERN;
 import static com.example.common.service.CommonProductService.extractProductId;
 
 @Service
@@ -29,30 +29,36 @@ public class ProductService {
     public Stream<Product> getAll(Long categoryId, String title, int offset) {
 
 
-        if(categoryId==0){
+        if(categoryId<=0){
             categoryId=null;
         }
-        if(title.trim().isEmpty()){
+        if(title!=null&&title.trim().isEmpty()){
             title=null;
         }
-
-        System.out.println("categoryId is: "+categoryId);
-        System.out.println("title is: "+title);
 
         if((title!=null&&title.length()<2)||(categoryId==null&&title==null)){
             return Stream.empty();
         }
 
-        if(title!=null&&title.matches("\\d{9}")){
+        if(title!=null&&title.matches(ARTICLE_PATTERN)){
             Optional<Product> productOptional = productRepository.findById(extractProductId(title));
             return productOptional.stream();
         }
+
         int limit = 40;
 
         int page = offset/limit;
 
+        if(title!=null&&categoryId==null){
+            return productRepository.findByTitle(title, PageRequest.of(page, limit));
+        }
+        if(title == null){
+            return productRepository.findByCategoryId(categoryId, PageRequest.of(page, limit));
+        }
 
-        return productRepository.findByTitleAndOptionalCategory(title, categoryId, PageRequest.of(page, limit));
+        return productRepository.findByTitleAndCategory(title, categoryId, PageRequest.of(page, limit));
+
+
     }
 
     @Transactional()
