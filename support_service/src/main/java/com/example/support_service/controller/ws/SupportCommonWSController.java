@@ -3,6 +3,7 @@ import com.example.common.exception.TooManyFunctionCallsException;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.dto.support.SupportChatTypingStatusDTO;
 import com.example.common.dto.support.SupportMessageResponseDTO;
+import com.example.support_service.dto.ChatIdAndUserIdDto;
 import com.example.support_service.entity.SupportMessage;
 import com.example.support_service.mapper.SupportMessageMapper;
 import com.example.support_service.service.SupportUserService;
@@ -49,8 +50,11 @@ public class SupportCommonWSController {
             }
 
             SupportMessage message =  supportService.saveSupportMessage(userId, dto.getChatId(),dto.getMessage());
+            SupportMessageResponseDTO messageDto = supportMessageMapper.toSupportMessageDTO(message);
 
-            messagingTemplate.convertAndSend("/support-chat-output-topic/" + dto.getChatId(), supportMessageMapper.toSupportMessageDTO(message));
+            messageDto.setChatId(dto.getChatId());
+
+            messagingTemplate.convertAndSend("/support-chat-output-topic/" + dto.getChatId(), messageDto);
 
     }
 
@@ -64,8 +68,11 @@ public class SupportCommonWSController {
         }
 
         SupportMessage message = supportAdminService.saveSupportMessage(payload.getChatId(),payload.getMessage());
+        SupportMessageResponseDTO messageDto = supportMessageMapper.toSupportMessageDTO(message);
 
-        messagingTemplate.convertAndSend("/support-chat-output-topic/" + payload.getChatId(), supportMessageMapper.toSupportMessageDTO(message));
+        messageDto.setChatId(payload.getChatId());
+
+        messagingTemplate.convertAndSend("/support-chat-output-topic/" + payload.getChatId(), messageDto);
 
     }
 
@@ -76,6 +83,20 @@ public class SupportCommonWSController {
         messagingTemplate.convertAndSend("/support-chat-output-topic/"+typingStatusDTO.getChatId()+"/typing", typingStatusDTO);
 
     }
+
+
+    /*@MessageMapping("/read")
+    public void handleUnreadChat(ChatIdAndUserIdDto dto, SimpMessageHeaderAccessor headerAccessor) throws UserNotFoundException {
+
+        supportService.markSupportChatAsRead(dto.getUserId(), dto.getChatId());
+
+        messagingTemplate.convertAndSend("/support-chat-output-topic/unread/"+dto.getUserId(), supportService.getUnreadSupportChats(dto.getUserId()));
+
+    }*/
+
+
+
+
 
     private Jwt getAndValidateJwt(SimpMessageHeaderAccessor headerAccessor) throws UserNotFoundException {
         Map<String, Object> temp = headerAccessor.getSessionAttributes();

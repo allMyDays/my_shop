@@ -49,6 +49,7 @@ public class SupportUserService {
          supportChat.setTopic(topic);
          supportChat.setContainsMessages(false);
          supportChat.setNeedsAnswer(false);
+         supportChat.setRead(true);
          supportChat = supportChatRepository.save(supportChat);
 
         Optional<String> keyOpt = redisService.get(SUPPORT_CHAT_CREATION_LIMITED+":"+userId);
@@ -115,6 +116,10 @@ public class SupportUserService {
         return supportChatRepository.findAllByUserIdOrderByIdDesc(userId);
     }
 
+    public SupportChat getOneUserSupportChat(long userId, long chatId){
+        return validateEntityAndOwnership(userId, chatId);
+    }
+
 
 
     public List<SupportMessage> getAllSupportChatMessages(long userId, long chatId) {
@@ -132,6 +137,26 @@ public class SupportUserService {
         supportChatRepository.delete(supportChat);
 
     }
+
+    public Integer countUnreadSupportChats(long userId){
+
+        return supportChatRepository.countUnreadChatsByUserId(userId);
+    }
+
+    public void markSupportChatAsRead(long userId, long chatId){
+
+        SupportChat chat = validateEntityAndOwnership(userId, chatId);
+
+        chat.setRead(true);
+        supportChatRepository.save(chat);
+    }
+
+    public List<Long> getUnansweredChatIds(long userId){
+        return supportChatRepository.findIdsWhereNeedsAnswerTrueByUser(userId);
+    }
+
+
+
 
     public SupportChat validateEntityAndOwnership(long userId, long chatId) {
 

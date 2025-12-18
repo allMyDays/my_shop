@@ -53,4 +53,29 @@
         </div>
 
     </div>
+
+    <!-- Модалка перейти на стр агента -->
+    <div class="modal fade" id="supportAgentSuggestModal" tabindex="-1" aria-labelledby="supportAgentSuggestModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="supportAgentSuggestModalLabel">Спасибо за вопрос!</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Чтобы быстрее получить ответ на свой вопрос, вы можете перейти на страницу агента поддержки и ответить на вопрос оттуда.
+
+                    <br>Логин: агент
+                    <br>Пароль: agent
+
+                </div>
+                <div class="modal-footer">
+                    <button onclick="goToSupportAgentPage()" type="button" class="btn btn-dark" data-bs-dismiss="modal">Перейти на страницу агента</button>
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>

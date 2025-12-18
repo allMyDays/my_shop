@@ -42,6 +42,9 @@ public class SupportChat {
     @Column(nullable = false)
     boolean containsMessages;
 
+    @Column(nullable = false)
+    boolean isRead;
+
 
     @PrePersist
     private void init(){

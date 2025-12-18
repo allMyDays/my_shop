@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-import static com.example.common.service.CommonUserService.getMyUserEntityId;
-import static com.example.common.service.CommonUserService.getUserKeycloakId;
+import static com.example.common.service.CommonUserService.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -48,11 +47,16 @@ public class UserController {
         addressDto.ifPresent(userAddressDto -> userResponseDTO.setFullAddress(userAddressDto.getFullAddress()));
 
         model.addAttribute("user", userResponseDTO);
+
+        model.addAttribute("isUserStaff", userIsAdminOrSupportAgent(jwt));
+        model.addAttribute("currentUserId", userId);
         return "profile";
     }
 
     @GetMapping("/reset_password")
-    public String reset_password() {
+    public String reset_password(Model model, @AuthenticationPrincipal Jwt jwt) {
+        model.addAttribute("isUserStaff", userIsAdminOrSupportAgent(jwt));
+        model.addAttribute("currentUserId", getMyUserEntityId(jwt));
         return "password_reset";
     }
 

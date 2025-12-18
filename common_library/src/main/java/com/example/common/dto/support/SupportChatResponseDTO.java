@@ -42,11 +42,15 @@ public class SupportChatResponseDTO {
     boolean containsMessages;
 
     @Setter
+    @Schema(description = "Прочитаны ли новые сообщения в чате", example = "true")
+    boolean isRead;
+
+    @Setter
     @Schema(description = "Сообщения чата")
     List<SupportMessageResponseDTO> messages = new ArrayList<>();
 
 
-    public SupportChatResponseDTO(Long id, LocalDateTime dateOfCreation, String topic, boolean closed, boolean needsAnswer, Long userId, List<SupportMessageResponseDTO> messages) {
+    public SupportChatResponseDTO(Long id, LocalDateTime dateOfCreation, String topic, boolean closed, boolean needsAnswer, Long userId,  List<SupportMessageResponseDTO> messages) {
         this.id = id;
         this.dateOfCreation = dateOfCreation;
         this.topic = XssSanitizer.sanitize(topic);

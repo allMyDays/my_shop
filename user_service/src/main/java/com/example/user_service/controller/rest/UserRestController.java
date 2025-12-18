@@ -189,7 +189,6 @@ public class UserRestController implements IUserRestController {
 
 
     @PostMapping("/login")
-    @PreAuthorize("!isAuthenticated()")
     public ResponseEntity<?> login(@RequestBody @Validated LoginRequestDTO loginRequestDTO, BindingResult bindingResult) throws UserNotFoundException {
 
         if (bindingResult.hasErrors()) {

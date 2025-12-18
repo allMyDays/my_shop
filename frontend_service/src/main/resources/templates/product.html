@@ -176,8 +176,6 @@
 <body>
 <div th:insert="~{fragments/menu :: #nav-menu}"></div>
 
-<input type="hidden" id="currentUserId" th:if="${currentUserId!=null}" th:value="${currentUserId}">
-
 <main class="container py-5">
     <div class="row justify-content-center">
 
@@ -586,8 +584,8 @@
 
         }
 
-        const userIdInput = document.getElementById("currentUserId");
-        const currentUserId = userIdInput? parseInt(userIdInput.value):null;
+
+        const currentUserId = getCurrentUserId();
 
         reviews.forEach(r => {
             const clone = reviewTemplate.content.cloneNode(true);
@@ -1143,6 +1141,8 @@
 
 
 </script>
+<script src="/js/support.js"></script>
+<script src="/js/order.js"></script>
 
 
 

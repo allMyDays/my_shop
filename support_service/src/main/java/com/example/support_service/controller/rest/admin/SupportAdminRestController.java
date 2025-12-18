@@ -46,6 +46,12 @@ public class SupportAdminRestController {
 
     }
 
+    @GetMapping("/count_active_chats")
+    public Integer countAllActiveSupportChats(){
+        return supportAdminService.countAllActiveSupportChats();
+
+    }
+
     @GetMapping("/get_chat_messages")
     public List<SupportMessageResponseDTO> getAllSupportChatMessages(@RequestParam Long chatId) {
 

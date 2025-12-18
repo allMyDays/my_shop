@@ -27,6 +27,11 @@ public class SupportAdminService {
 
     }
 
+    public int countAllActiveSupportChats(){
+        return supportChatRepository.countAllActiveChats();
+
+    }
+
     public List<SupportChat> getAllUserSupportChats(long userId){
 
         return supportChatRepository.findAllByUserIdOrderByIdDesc(userId);
@@ -48,6 +53,7 @@ public class SupportAdminService {
 
         supportChat.setNeedsAnswer(false);
         supportChat.setContainsMessages(true);
+        supportChat.setRead(false);
 
 
         SupportMessage supportMessage = new SupportMessage();

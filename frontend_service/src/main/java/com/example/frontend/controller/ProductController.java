@@ -23,6 +23,7 @@ import java.util.Optional;
 import static com.example.common.service.CommonProductService.ARTICLE_PATTERN;
 import static com.example.common.service.CommonProductService.extractProductId;
 import static com.example.common.service.CommonUserService.getMyUserEntityId;
+import static com.example.common.service.CommonUserService.userIsAdminOrSupportAgent;
 
 @Controller
 @RequiredArgsConstructor
@@ -38,6 +39,12 @@ public class ProductController {
         }
         if(filter!=null) model.addAttribute("filter",filter);
         if(categoryId!=null) model.addAttribute("categoryId",categoryId);
+
+        if(jwt!=null){
+            model.addAttribute("currentUserId",getMyUserEntityId(jwt));
+            model.addAttribute("isUserStaff", userIsAdminOrSupportAgent(jwt));
+        }
+
         return "products";
     }
 
@@ -56,6 +63,7 @@ public class ProductController {
         model.addAttribute("product",product);
         if(jwt!=null){
             model.addAttribute("currentUserId",getMyUserEntityId(jwt));
+            model.addAttribute("isUserStaff", userIsAdminOrSupportAgent(jwt));
         }
         return "product";
 

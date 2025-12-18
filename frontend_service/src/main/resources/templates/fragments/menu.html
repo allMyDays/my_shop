@@ -10,7 +10,11 @@
     <link rel="stylesheet" href="/css/login.css">
 </head>
 <body>
+
 <header id="nav-menu">
+    <input type="hidden" id="currentUserId" th:if="${currentUserId!=null}" th:value="${currentUserId}">
+    <input type="hidden" id="isUserStaff" th:if="${isUserStaff!=null}" th:value="${isUserStaff}">
+    <input type="hidden" id="isUserAuthenticated" sec:authorize="isAuthenticated()">
     <div class="header-top">
         <div class="container-fluid">
             <div class="row">
@@ -72,10 +76,18 @@
                                         <div class="modal-footer d-flex justify-content-between align-items-center">
                                             <div id="support-user-buttons" style="display: none;">
                                             <a onClick="openSupportChatList(false)"><button type="button" class="btn btn-outline-dark">Мои обращения в поддержку</button></a>
+                                                <span id="support-count-badge-2" class="position-absolute translate-middle badge rounded-pill bg-danger">
+                                                    0
+                                                <span class="visually-hidden">уведомления от поддержки</span>
+                                                </span>
                                             <a onclick="tryCreateNewSupportChat()" ><button type="button" class="btn btn-outline-dark my-2" data-bs-dismiss="modal">Создать новое обращение в поддержку</button></a>
                                             </div>
                                             <div id="support-agent-buttons" style="display: none;" >
                                                 <a onClick="openSupportChatList(true)"><button type="button" class="btn btn-outline-dark">Ответить на вопросы пользователей</button></a>
+                                                <span id="support-count-badge-3" class="position-absolute translate-middle badge rounded-pill bg-danger">
+                                                    0
+                                                <span class="visually-hidden">уведомления от поддержки</span>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>

@@ -89,4 +89,47 @@ public class SupportChatRestController implements ISupportChatRestController{
 
     }
 
+    @GetMapping("/get")
+    public SupportChatResponseDTO getOneUserSupportChat(@RequestParam Long chatId, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+        return supportChatMapper.toSupportChatDTO(supportUserService.getOneUserSupportChat(getMyUserEntityId(jwt), chatId));
+
+    }
+
+
+
+    @GetMapping("/count_unread")
+    public Integer countUnreadSupportChats(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+
+        return supportUserService.countUnreadSupportChats(getMyUserEntityId(jwt));
+
+    }
+
+    @PutMapping("/mark_as_read")
+    public ResponseEntity<?> markSupportChatAsRead(@RequestParam Long chatId, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+
+        supportUserService.markSupportChatAsRead(getMyUserEntityId(jwt),chatId);
+
+        return ResponseEntity
+                .ok()
+                .build();
+
+    }
+
+    @GetMapping("/get_unanswered")
+    public List<Long> getUnansweredChatIds(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
+        return supportUserService.getUnansweredChatIds(getMyUserEntityId(jwt));
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 }
