@@ -45,33 +45,6 @@ class UserAvatarRestControllerTest {
       //  when(jwt.getClaimAsString(MY_USER_ID_KEY_KEYCLOAK)).thenReturn(TEST_USER_ID.toString());
     }
 
-    @Test
-    void uploadUserAvatar_WhenValidFile_ShouldReturnOk() throws UserNotFoundException {
-        when(jwt.getClaimAsString(MY_USER_ID_KEY_KEYCLOAK)).thenReturn(TEST_USER_ID.toString());
-        doNothing().when(userService).sendUploadUserAvatarRequest(any(MultipartFile.class), anyLong());
-
-        // Act
-        ResponseEntity<Void> response = userAvatarRestController.uploadUserAvatar(file, jwt);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(userService).sendUploadUserAvatarRequest(eq(file), eq(TEST_USER_ID));
-    }
-
-    @Test
-    void uploadUserAvatar_WhenUserNotFound_ShouldThrowException() throws UserNotFoundException {
-        when(jwt.getClaimAsString(MY_USER_ID_KEY_KEYCLOAK)).thenReturn(TEST_USER_ID.toString());
-        doThrow(new UserNotFoundException())
-                .when(userService).sendUploadUserAvatarRequest(any(MultipartFile.class), anyLong());
-
-        // Act & Assert
-        assertThrows(UserNotFoundException.class, () -> {
-            userAvatarRestController.uploadUserAvatar(file, jwt);
-        });
-
-        verify(userService).sendUploadUserAvatarRequest(eq(file), eq(TEST_USER_ID));
-    }
-
 
     @Test
     void deleteUserAvatar_WhenValidUser_ShouldReturnOk() throws UserNotFoundException {

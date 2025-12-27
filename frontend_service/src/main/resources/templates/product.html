@@ -103,48 +103,6 @@
             cursor: pointer;
         }
 
-        /* preview */
-        .preview-item {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            border-radius: 6px;
-            overflow: hidden;
-            background: #f8f9fa;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        }
-        .preview-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .preview-remove {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.6);
-            color: #fff;
-            border: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 14px;
-            line-height: 1;
-        }
-        .preview-name {
-            width: 100px;
-            font-size: 11px;
-            color: #495057;
-            text-align: center;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
         #review-form .form-control,
         #review-form .form-select {
             width: 100%;
@@ -728,51 +686,51 @@
     });
 
     <!--скрипт для фото при создании отзыва-->
-    const MAX_FILES = 5;
-    let existingPhotos = []; // [{id: 10, url: "/uploads/rev/10.jpg"}]
-    let selectedFiles = [];  // новые файлы {id, file, url, key}
-    let deletedPhotoIds = []; // id старых фото, отмеченных на удаление
-    let nextFileId = 1;
-    const keys = new Set();
+    const MAX_REVIEW_PHOTOS = 5;
+    let existingReviewPhotos = []; // [{id: 10, url: "/uploads/rev/10.jpg"}]
+    let selectedReviewPhotos = [];  // новые файлы {id, file, url, key}
+    let deletedReviewPhotoIds = []; // id старых фото, отмеченных на удаление
+    let nextReviewPhotoId = 1;
+    const reviewPhotoKeys = new Set();
 
-    const photoInput = document.getElementById('photos');
-    const previewContainer = document.getElementById('photo-preview');
+    const reviewPhotoInput = document.getElementById('photos');
+    const reviewPreviewContainer = document.getElementById('photo-preview');
 
-    if (!photoInput || !previewContainer) {
+    if (!reviewPhotoInput || !reviewPreviewContainer) {
         console.warn('Не найден #photos или #photo-preview.');
     }
 
 
     // Генерация ключа файла
-    function fileKey(file) {
+    function reviewPhotoKey(file) {
         return `${file.name}_${file.size}_${file.lastModified}`;
     }
 
 
     // Удаляем новое фото
-    function removeNewFileById(id) {
-        const idx = selectedFiles.findIndex(x => x.id === id);
+    function removeNewReviewPhotoById(id) {
+        const idx = selectedReviewPhotos.findIndex(x => x.id === id);
         if (idx === -1) return;
-        try { URL.revokeObjectURL(selectedFiles[idx].url); } catch (e) {}
-        keys.delete(selectedFiles[idx].key);
-        selectedFiles.splice(idx, 1);
-        renderPreviews();
+        try { URL.revokeObjectURL(selectedReviewPhotos[idx].url); } catch (e) {}
+        reviewPhotoKeys.delete(selectedReviewPhotos[idx].key);
+        selectedReviewPhotos.splice(idx, 1);
+        renderReviewPreviewPhotos();
     }
 
     // Помечаем старое фото для удаления
-    function markOldPhotoForDelete(oldId) {
-        deletedPhotoIds.push(oldId);
-        existingPhotos = existingPhotos.filter(p => p.id !== oldId);
-        renderPreviews();
+    function markOldReviewPhotoForDelete(oldId) {
+        deletedReviewPhotoIds.push(oldId);
+        existingReviewPhotos = existingReviewPhotos.filter(p => p.id !== oldId);
+        renderReviewPreviewPhotos();
     }
 
 
     // Рендер превью (старые + новые)
-    function renderPreviews() {
-        previewContainer.innerHTML = '';
+    function renderReviewPreviewPhotos() {
+        reviewPreviewContainer.innerHTML = '';
 
         // Сначала существующие фото (если редактирование)
-        existingPhotos.forEach(obj => {
+        existingReviewPhotos.forEach(obj => {
             const wrapper = document.createElement('div');
             wrapper.className = 'd-flex flex-column align-items-center';
 
@@ -791,7 +749,7 @@
             btn.innerHTML = '&times;';
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                markOldPhotoForDelete(obj.id);
+                markOldReviewPhotoForDelete(obj.id);
             });
 
             item.appendChild(img);
@@ -803,11 +761,11 @@
             name.textContent = 'Старое фото';
 
             wrapper.appendChild(name);
-            previewContainer.appendChild(wrapper);
+            reviewPreviewContainer.appendChild(wrapper);
         });
 
         // Новые фото
-        selectedFiles.forEach(obj => {
+        selectedReviewPhotos.forEach(obj => {
             const wrapper = document.createElement('div');
             wrapper.className = 'd-flex flex-column align-items-center';
 
@@ -826,7 +784,7 @@
             btn.innerHTML = '&times;';
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                removeNewFileById(obj.id);
+                removeNewReviewPhotoById(obj.id);
             });
 
             item.appendChild(img);
@@ -838,7 +796,7 @@
             name.textContent = obj.file.name;
 
             wrapper.appendChild(name);
-            previewContainer.appendChild(wrapper);
+            reviewPreviewContainer.appendChild(wrapper);
         });
     }
 
@@ -848,36 +806,35 @@
 
 
 // ---------- ОБРАБОТКА ДОБАВЛЕНИЯ НОВЫХ ФАЙЛОВ ----------
-        photoInput.addEventListener('change', (e) => {
+        reviewPhotoInput.addEventListener('change', (e) => {
             const files = Array.from(e.target.files || []);
             if (files.length === 0) return;
 
-            const newFiles = files.filter(f => !keys.has(fileKey(f)));
+            const newFiles = files.filter(f => !reviewPhotoKeys.has(reviewPhotoKey(f)));
             if (newFiles.length === 0) {
-                photoInput.value = '';
+                reviewPhotoInput.value = '';
                 return;
             }
 
-            const totalExisting = existingPhotos.length;
-            const totalAfter = totalExisting + selectedFiles.length + newFiles.length;
+            const totalExisting = existingReviewPhotos.length;
+            const totalAfter = totalExisting + selectedReviewPhotos.length + newFiles.length;
 
-            if (totalAfter > MAX_FILES) {
-                const overflow = totalAfter - MAX_FILES;
-                alert(`К сожалению, нельзя загрузить больше чем ${MAX_FILES} фото. Удалите хотя бы одно для загрузки нового.`);
-                photoInput.value = '';
+            if (totalAfter > MAX_REVIEW_PHOTOS) {
+                alert(`К сожалению, нельзя загрузить больше чем ${MAX_REVIEW_PHOTOS} фото. Удалите хотя бы одно для загрузки нового.`);
+                reviewPhotoInput.value = '';
                 return;
             }
 
             for (const f of newFiles) {
-                if (existingPhotos.length + selectedFiles.length >= MAX_FILES) break;
-                const key = fileKey(f);
+                if (existingReviewPhotos.length + selectedReviewPhotos.length >= MAX_REVIEW_PHOTOS) break;
+                const key = reviewPhotoKey(f);
                 const url = URL.createObjectURL(f);
-                selectedFiles.push({ id: nextFileId++, file: f, url, key });
-                keys.add(key);
+                selectedReviewPhotos.push({ id: nextReviewPhotoId++, file: f, url, key });
+                reviewPhotoKeys.add(key);
             }
 
-            renderPreviews();
-            photoInput.value = '';
+            renderReviewPreviewPhotos();
+            reviewPhotoInput.value = '';
         });
 
         function openCreateReviewModal() {
@@ -905,11 +862,11 @@
             // Анонимность
             document.getElementById("anonymousReview").checked = false;
 
-            existingPhotos = [];
-            selectedFiles = [];
-            deletedPhotoIds = [];
-            nextFileId = 1;
-            keys.clear();
+            existingReviewPhotos = [];
+            selectedReviewPhotos = [];
+            deletedReviewPhotoIds = [];
+            nextReviewPhotoId = 1;
+            reviewPhotoKeys.clear();
 
             // Открываю модалку
             const modal = new bootstrap.Modal(document.getElementById("reviewModal"));
@@ -959,10 +916,10 @@
                     fd.append('usagePeriod', usagePer);
                     fd.append('anonymousReview', document.getElementById('anonymousReview').checked);
 
-                    if(editMode) deletedPhotoIds.forEach(p => fd.append("deletedPhotos", p));
+                    if(editMode) deletedReviewPhotoIds.forEach(p => fd.append("deletedPhotos", p));
 
                     // Добавляю изображения
-                    selectedFiles.forEach(obj => fd.append('images', obj.file));
+                    selectedReviewPhotos.forEach(obj => fd.append('images', obj.file));
 
                     const url = editMode?'/api/review/edit':'/api/review/create';
 
@@ -1014,15 +971,15 @@
                     }
 
                     // Успех — очистка
-                    selectedFiles.forEach(f => {
+                    selectedReviewPhotos.forEach(f => {
                         try {
                             URL.revokeObjectURL(f.url);
                         } catch (e) {
                         }
                     });
-                    selectedFiles = [];
-                    keys.clear();
-                    renderPreviews();
+                    selectedReviewPhotos = [];
+                    reviewPhotoKeys.clear();
+                    renderReviewPreviewPhotos();
                     reviewForm.reset();
 
                     const modal = bootstrap.Modal.getInstance(document.getElementById('reviewModal'));
@@ -1094,11 +1051,11 @@
                 subTitle.style.display = "";
 
 
-                existingPhotos = [];
-                selectedFiles = [];
-                deletedPhotoIds = [];
-                nextFileId = 1;
-                keys.clear();
+                existingReviewPhotos = [];
+                selectedReviewPhotos = [];
+                deletedReviewPhotoIds = [];
+                nextReviewPhotoId = 1;
+                reviewPhotoKeys.clear();
 
                 document.getElementById("advantagesInput").value = data.advantages ? data.advantages : "";
                 document.getElementById("disAdvantagesInput").value = data.disAdvantages ? data.disAdvantages : "";
@@ -1123,13 +1080,13 @@
                 // Анонимность
                 document.getElementById("anonymousReview").checked = data.anonymousReview;
 
-                existingPhotos = data.photoFileNames.map(name => ({
+                existingReviewPhotos = data.photoFileNames.map(name => ({
                     id: name,
                     url: `/api/media/get/${name}`
                 }));
 
-                console.log("EXISTING PHOTOS:", existingPhotos);
-                renderPreviews();
+                console.log("EXISTING PHOTOS:", existingReviewPhotos);
+                renderReviewPreviewPhotos();
 
                 // Открываем модалку
                 const modal = new bootstrap.Modal(document.getElementById("reviewModal"));

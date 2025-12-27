@@ -121,7 +121,7 @@ class SupportServiceUnitTest {
         ReflectionTestUtils.setField(supportUserService, "agent_email", AGENT_EMAIL);
 
         // When
-        SupportMessage result = supportUserService.saveSupportMessage(USER_ID, CHAT_ID, MESSAGE);
+        SupportMessage result = supportUserService.saveSupportMessage(USER_ID, CHAT_ID, MESSAGE,null);
 
         // Then
         assertNotNull(result);
@@ -160,7 +160,7 @@ class SupportServiceUnitTest {
         ReflectionTestUtils.setField(supportUserService, "agent_email", AGENT_EMAIL);
 
         // When
-        supportUserService.saveSupportMessage(USER_ID, CHAT_ID, MESSAGE);
+        supportUserService.saveSupportMessage(USER_ID, CHAT_ID, MESSAGE, null);
 
         // Then
         verify(redisService).get(redisKey);
@@ -189,7 +189,7 @@ class SupportServiceUnitTest {
         when(redisService.get(redisKey)).thenReturn(Optional.empty());
 
         // When
-        boolean result = supportUserService.chatCreationIsLimited(USER_ID);
+        boolean result = supportUserService.isChatCreationLimited(USER_ID);
 
         // Then
         assertFalse(result);
@@ -203,7 +203,7 @@ class SupportServiceUnitTest {
         when(redisService.get(redisKey)).thenReturn(Optional.of("3"));
 
         // When
-        boolean result = supportUserService.chatCreationIsLimited(USER_ID);
+        boolean result = supportUserService.isChatCreationLimited(USER_ID);
 
         // Then
         assertFalse(result);
@@ -216,7 +216,7 @@ class SupportServiceUnitTest {
         when(redisService.get(redisKey)).thenReturn(Optional.of("5"));
 
         // When
-        boolean result = supportUserService.chatCreationIsLimited(USER_ID);
+        boolean result = supportUserService.isChatCreationLimited(USER_ID);
 
         // Then
         assertTrue(result);
@@ -229,7 +229,7 @@ class SupportServiceUnitTest {
         when(redisService.get(redisKey)).thenReturn(Optional.of("7"));
 
         // When
-        boolean result = supportUserService.chatCreationIsLimited(USER_ID);
+        boolean result = supportUserService.isChatCreationLimited(USER_ID);
 
         // Then
         assertTrue(result);
@@ -242,7 +242,7 @@ class SupportServiceUnitTest {
         when(redisService.get(redisKey)).thenReturn(Optional.empty());
 
         // When
-        boolean result = supportUserService.messageSendingIsLimited(CHAT_ID);
+        boolean result = supportUserService.isMessageSendingLimited(CHAT_ID);
 
         // Then
         assertFalse(result);
@@ -256,7 +256,7 @@ class SupportServiceUnitTest {
         when(redisService.get(redisKey)).thenReturn(Optional.of("2"));
 
         // When
-        boolean result = supportUserService.messageSendingIsLimited(CHAT_ID);
+        boolean result = supportUserService.isMessageSendingLimited(CHAT_ID);
 
         // Then
         assertFalse(result);
@@ -269,7 +269,7 @@ class SupportServiceUnitTest {
         when(redisService.get(redisKey)).thenReturn(Optional.of("4"));
 
         // When
-        boolean result = supportUserService.messageSendingIsLimited(CHAT_ID);
+        boolean result = supportUserService.isMessageSendingLimited(CHAT_ID);
 
         // Then
         assertTrue(result);
@@ -282,7 +282,7 @@ class SupportServiceUnitTest {
         when(redisService.get(redisKey)).thenReturn(Optional.of("6"));
 
         // When
-        boolean result = supportUserService.messageSendingIsLimited(CHAT_ID);
+        boolean result = supportUserService.isMessageSendingLimited(CHAT_ID);
 
         // Then
         assertTrue(result);
@@ -296,7 +296,7 @@ class SupportServiceUnitTest {
 
         // When & Then
         assertThrows(EntityNotFoundException.class,
-                () -> supportUserService.saveSupportMessage(USER_ID, CHAT_ID, MESSAGE));
+                () -> supportUserService.saveSupportMessage(USER_ID, CHAT_ID, MESSAGE, null));
 
         verify(supportMessageRepository, never()).save(any(SupportMessage.class));
         verify(emailKafkaClient, never()).sendSimpleMail(anyString(), anyString(), anyString());
@@ -313,7 +313,7 @@ class SupportServiceUnitTest {
 
         // When & Then
         assertThrows(UserNotOwnerException.class,
-                () -> supportUserService.saveSupportMessage(USER_ID, CHAT_ID, MESSAGE));
+                () -> supportUserService.saveSupportMessage(USER_ID, CHAT_ID, MESSAGE, null));
 
         verify(supportMessageRepository, never()).save(any(SupportMessage.class));
     }
@@ -411,7 +411,7 @@ class SupportServiceUnitTest {
         when(supportChatRepository.findById(CHAT_ID)).thenReturn(Optional.of(expectedChat));
 
         // When
-        SupportChat result = supportUserService.validateEntityAndOwnership(USER_ID, CHAT_ID);
+        SupportChat result = supportUserService.validateChatEntityAndOwnership(USER_ID, CHAT_ID);
 
         // Then
         assertEquals(expectedChat, result);
@@ -425,7 +425,7 @@ class SupportServiceUnitTest {
 
         // When & Then
         assertThrows(EntityNotFoundException.class,
-                () -> supportUserService.validateEntityAndOwnership(USER_ID, CHAT_ID));
+                () -> supportUserService.validateChatEntityAndOwnership(USER_ID, CHAT_ID));
     }
 
     @Test
@@ -439,7 +439,7 @@ class SupportServiceUnitTest {
 
         // When & Then
         assertThrows(UserNotOwnerException.class,
-                () -> supportUserService.validateEntityAndOwnership(USER_ID, CHAT_ID));
+                () -> supportUserService.validateChatEntityAndOwnership(USER_ID, CHAT_ID));
     }
 
 }

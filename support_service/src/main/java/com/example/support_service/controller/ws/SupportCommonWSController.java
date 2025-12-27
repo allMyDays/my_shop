@@ -3,7 +3,6 @@ import com.example.common.exception.TooManyFunctionCallsException;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.dto.support.SupportChatTypingStatusDTO;
 import com.example.common.dto.support.SupportMessageResponseDTO;
-import com.example.support_service.dto.ChatIdAndUserIdDto;
 import com.example.support_service.entity.SupportMessage;
 import com.example.support_service.mapper.SupportMessageMapper;
 import com.example.support_service.service.SupportUserService;
@@ -17,7 +16,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Controller;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static com.example.common.service.CommonUserService.getMyUserEntityId;
 import static com.example.common.service.CommonUserService.userIsAdminOrSupportAgent;
@@ -28,10 +26,6 @@ public class SupportCommonWSController {
 
     private final SupportUserService supportService;
 
-    private final SupportAdminService supportAdminService;
-
-    private final SupportMessageMapper supportMessageMapper;
-
     private final SimpMessagingTemplate messagingTemplate;
 
     private final JwtDecoder jwtDecoder;
@@ -39,40 +33,30 @@ public class SupportCommonWSController {
 
 
     @MessageMapping("/handle_user_message")
-    public void handleSupportUserMessage(SupportMessageResponseDTO dto, SimpMessageHeaderAccessor headerAccessor) throws UserNotFoundException {
+    public void handleSupportUserMessage(SupportMessageResponseDTO messageDto, SimpMessageHeaderAccessor headerAccessor) throws UserNotFoundException {
 
-             System.out.println("chatId: "+ dto.getChatId());
-
-            Long userId = getMyUserEntityId(getAndValidateJwt(headerAccessor));
-
-            if(supportService.messageSendingIsLimited(dto.getChatId())){
+            if(supportService.isMessageSendingLimited(messageDto.getChatId())){
                 throw new TooManyFunctionCallsException();
             }
 
-            SupportMessage message =  supportService.saveSupportMessage(userId, dto.getChatId(),dto.getMessage());
-            SupportMessageResponseDTO messageDto = supportMessageMapper.toSupportMessageDTO(message);
+            messageDto.setUserMessage(true);
 
-            messageDto.setChatId(dto.getChatId());
-
-            messagingTemplate.convertAndSend("/support-chat-output-topic/" + dto.getChatId(), messageDto);
+            messagingTemplate.convertAndSend("/support-chat-output-topic/" + messageDto.getChatId(), messageDto);
 
     }
 
     @MessageMapping("/handle_agent_message")
-    public void handleSupportAgentMessage(SupportMessageResponseDTO payload, SimpMessageHeaderAccessor headerAccessor) throws UserNotFoundException {
+    public void handleSupportAgentMessage(SupportMessageResponseDTO messageDto, SimpMessageHeaderAccessor headerAccessor) throws UserNotFoundException {
 
         Jwt jwt = getAndValidateJwt(headerAccessor);
 
         if(!userIsAdminOrSupportAgent(jwt)){
-            throw new RuntimeException("You do not have access to send agent messages anymore");
+            throw new RuntimeException("User with id %d do not have access to send agent messages".formatted(getMyUserEntityId(jwt)));
         }
 
-        SupportMessage message = supportAdminService.saveSupportMessage(payload.getChatId(),payload.getMessage());
-        SupportMessageResponseDTO messageDto = supportMessageMapper.toSupportMessageDTO(message);
+        messageDto.setUserMessage(false);
 
-        messageDto.setChatId(payload.getChatId());
-
-        messagingTemplate.convertAndSend("/support-chat-output-topic/" + payload.getChatId(), messageDto);
+        messagingTemplate.convertAndSend("/support-chat-output-topic/" + messageDto.getChatId(), messageDto);
 
     }
 
@@ -83,16 +67,6 @@ public class SupportCommonWSController {
         messagingTemplate.convertAndSend("/support-chat-output-topic/"+typingStatusDTO.getChatId()+"/typing", typingStatusDTO);
 
     }
-
-
-    /*@MessageMapping("/read")
-    public void handleUnreadChat(ChatIdAndUserIdDto dto, SimpMessageHeaderAccessor headerAccessor) throws UserNotFoundException {
-
-        supportService.markSupportChatAsRead(dto.getUserId(), dto.getChatId());
-
-        messagingTemplate.convertAndSend("/support-chat-output-topic/unread/"+dto.getUserId(), supportService.getUnreadSupportChats(dto.getUserId()));
-
-    }*/
 
 
 

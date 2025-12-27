@@ -8,12 +8,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
 @Schema(description = "Сообщение в чате поддержки")
 public class SupportMessageResponseDTO {
 
+    private Long id;
 
     @Setter
     @Schema(description = "ID чата", example = "123")
@@ -29,6 +31,10 @@ public class SupportMessageResponseDTO {
     @Setter
     @Schema(description = "Дата создания (отправки) сообщения")
     private LocalDateTime dateOfCreation;
+
+    @Setter
+    @Schema(description = "Названия фотографий, прикрепленных к сообщению. Фото нужно получить через отдельный контроллер по названию.")
+    private List<String> photoFileNames;
 
 
     public SupportMessageResponseDTO(Long chatId, boolean isUserMessage, String message, LocalDateTime dateOfCreation) {

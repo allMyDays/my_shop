@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,6 +26,28 @@ public class RedisService {
     public Optional<String> get(@NonNull String key) {
         return Optional.ofNullable(stringRedisTemplate.opsForValue().get(key));
 
+    }
+
+    public Optional<String> get(@NonNull String key, boolean delete) {
+
+        String value = stringRedisTemplate.opsForValue().get(key);
+
+        if (delete&&value!=null) {
+            delete(key);
+        }
+
+        value=value==null?null:value.trim();
+
+
+        return Optional.ofNullable(value);
+    }
+
+    public void delete(@NonNull String key) {
+        stringRedisTemplate.delete(key);
+    }
+
+    public void delete(@NonNull List<String> keys) {
+        stringRedisTemplate.delete(keys);
     }
 
 

@@ -84,10 +84,16 @@ public class ReviewRestController implements IReviewRestController {
         }
         try{
          reviewService.edit(
-                reviewMapper.toReviewEntity(reviewDto),
-                getMyUserEntityId(jwt),
-                Optional.ofNullable(images),
-                Optional.ofNullable(reviewDto.getDeletedPhotos()));
+                reviewDto.getId(),
+                 getMyUserEntityId(jwt),
+                reviewDto.getRating(),
+                reviewDto.isAnonymousReview(),
+                reviewDto.getUsagePeriod(),
+                reviewDto.getAdvantages(),
+                reviewDto.getDisAdvantages(),
+                reviewDto.getComment(),
+                images,
+                reviewDto.getDeletedPhotos());
         }catch (NoChangesInEditingReviewException e){
             return ResponseEntity.status(409)
                  .body(e.getMessage());

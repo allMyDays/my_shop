@@ -1,13 +1,11 @@
 package com.example.media_service.unit.service;
 
-import com.example.common.dto.media.kafka.FileDataDTO;
+import com.example.common.dto.media.kafka.PhotoDataDTO;
 import com.example.common.enumeration.media_service.BucketEnum;
 import com.example.media_service.service.MinioService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -128,7 +126,7 @@ class MinioServiceUnitTest {
     @Test
     void uploadFile_WhenS3Fails_ThrowsException() {
         // Given
-        FileDataDTO file = new FileDataDTO();
+        PhotoDataDTO file = new PhotoDataDTO();
         file.setBytes(new byte[]{1, 2, 3});
         file.setContentType("image/jpeg");
 
@@ -177,7 +175,7 @@ class MinioServiceUnitTest {
     @Test
     void uploadFile_WithValidFile_ReturnsFileName() throws Exception {
         // Given
-        FileDataDTO file = new FileDataDTO();
+        PhotoDataDTO file = new PhotoDataDTO();
         file.setBytes(new byte[]{1, 2, 3});
         file.setContentType("image/jpeg");
 
@@ -314,15 +312,15 @@ class MinioServiceUnitTest {
     @Test
     void uploadFiles_WithValidFiles_ReturnsFileNames() throws Exception {
         // Given
-        FileDataDTO file1 = new FileDataDTO();
+        PhotoDataDTO file1 = new PhotoDataDTO();
         file1.setBytes(new byte[]{1, 2, 3});
         file1.setContentType("image/jpeg");
 
-        FileDataDTO file2 = new FileDataDTO();
+        PhotoDataDTO file2 = new PhotoDataDTO();
         file2.setBytes(new byte[]{4, 5, 6});
         file2.setContentType("image/png");
 
-        List<FileDataDTO> files = List.of(file1, file2);
+        List<PhotoDataDTO> files = List.of(file1, file2);
 
         when(redisAtomicLong.incrementAndGet()).thenReturn(100L, 101L);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
@@ -341,15 +339,15 @@ class MinioServiceUnitTest {
     @Test
     void uploadFiles_WhenOneFileFails_ContinuesWithOthers() throws Exception {
         // Given
-        FileDataDTO file1 = new FileDataDTO();
+        PhotoDataDTO file1 = new PhotoDataDTO();
         file1.setBytes(new byte[]{1, 2, 3});
         file1.setContentType("image/jpeg");
 
-        FileDataDTO file2 = new FileDataDTO();
+        PhotoDataDTO file2 = new PhotoDataDTO();
         file2.setBytes(new byte[]{4, 5, 6});
         file2.setContentType("image/png");
 
-        List<FileDataDTO> files = List.of(file1, file2);
+        List<PhotoDataDTO> files = List.of(file1, file2);
 
         when(redisAtomicLong.incrementAndGet()).thenReturn(100L, 101L);
         when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))

@@ -27,7 +27,7 @@ public class UserAvatarRestController implements IUserAvatarRestController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> uploadUserAvatar(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
 
-        userService.sendUploadUserAvatarRequest(file, getMyUserEntityId(jwt));
+        userService.saveUserAvatar(file, getMyUserEntityId(jwt));
 
         return ResponseEntity.ok()
                 .build();

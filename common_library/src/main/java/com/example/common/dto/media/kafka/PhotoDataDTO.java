@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FileDataDTO {
+public class PhotoDataDTO {
 
     private byte[] bytes;
 

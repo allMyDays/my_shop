@@ -7,7 +7,6 @@ import com.example.support_service.entity.SupportMessage;
 import com.example.support_service.mapper.SupportMessageMapper;
 import com.example.support_service.service.SupportUserService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -45,49 +44,6 @@ class SupportMessageRestControllerTest {
     private final Long TEST_USER_ID = 123L;
     private final Long TEST_CHAT_ID = 456L;
 
-
-    @Test
-    void checkMessageSendingAbility_WhenNotLimited_ShouldReturnOk() {
-        // Arrange
-        when(supportUserService.messageSendingIsLimited(eq(TEST_CHAT_ID))).thenReturn(false);
-
-        // Act
-        ResponseEntity<?> response = supportMessageRestController.checkMessageSendingAbility(TEST_CHAT_ID);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNull(response.getBody());
-        verify(supportUserService).messageSendingIsLimited(TEST_CHAT_ID);
-    }
-
-    @Test
-    void checkMessageSendingAbility_WhenLimited_ShouldReturnTooManyRequests() {
-        // Arrange
-        when(supportUserService.messageSendingIsLimited(eq(TEST_CHAT_ID))).thenReturn(true);
-
-        // Act
-        ResponseEntity<?> response = supportMessageRestController.checkMessageSendingAbility(TEST_CHAT_ID);
-
-        // Assert
-        assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
-        assertEquals("You temporarily exhausted the limit of sending support messages", response.getBody());
-        verify(supportUserService).messageSendingIsLimited(TEST_CHAT_ID);
-    }
-
-    @Test
-    void checkMessageSendingAbility_WithDifferentChatIds_ShouldCallServiceWithCorrectId() {
-        // Arrange
-        Long differentChatId = 789L;
-        when(supportUserService.messageSendingIsLimited(eq(differentChatId))).thenReturn(false);
-
-        // Act
-        ResponseEntity<?> response = supportMessageRestController.checkMessageSendingAbility(differentChatId);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(supportUserService).messageSendingIsLimited(differentChatId);
-    }
-
     @Test
     void getAllChatMessages_WhenValidRequest_ShouldReturnMessageList() throws UserNotFoundException {
         // Arrange
@@ -102,7 +58,7 @@ class SupportMessageRestControllerTest {
                 .thenReturn(expectedDTOs);
 
         // Act
-        List<SupportMessageResponseDTO> result = supportMessageRestController.getAllChatMessages(jwt, TEST_CHAT_ID);
+        List<SupportMessageResponseDTO> result = supportMessageRestController.getAllChatMessages(TEST_CHAT_ID,jwt);
 
         // Assert
         assertEquals(expectedDTOs, result);
@@ -121,7 +77,7 @@ class SupportMessageRestControllerTest {
 
         // Act & Assert
         assertThrows(UserNotFoundException.class, () -> {
-            supportMessageRestController.getAllChatMessages(jwt, TEST_CHAT_ID);
+            supportMessageRestController.getAllChatMessages(TEST_CHAT_ID, jwt);
         });
 
         verify(supportUserService).getAllSupportChatMessages(TEST_USER_ID, TEST_CHAT_ID);
@@ -142,7 +98,7 @@ class SupportMessageRestControllerTest {
                 .thenReturn(emptyDTOs);
 
         // Act
-        List<SupportMessageResponseDTO> result = supportMessageRestController.getAllChatMessages(jwt, TEST_CHAT_ID);
+        List<SupportMessageResponseDTO> result = supportMessageRestController.getAllChatMessages(TEST_CHAT_ID, jwt);
 
         // Assert
         assertTrue(result.isEmpty());
@@ -165,7 +121,7 @@ class SupportMessageRestControllerTest {
                 .thenReturn(expectedDTOs);
 
         // Act
-        List<SupportMessageResponseDTO> result = supportMessageRestController.getAllChatMessages(jwt, differentChatId);
+        List<SupportMessageResponseDTO> result = supportMessageRestController.getAllChatMessages(differentChatId, jwt);
 
         // Assert
         assertEquals(expectedDTOs, result);
@@ -181,7 +137,7 @@ class SupportMessageRestControllerTest {
 
         // Act & Assert
         assertThrows(RuntimeException.class, () -> {
-            supportMessageRestController.getAllChatMessages(jwt, TEST_CHAT_ID);
+            supportMessageRestController.getAllChatMessages(TEST_CHAT_ID, jwt);
         });
     }
 

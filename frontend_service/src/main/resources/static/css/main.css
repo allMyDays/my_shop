@@ -64,7 +64,7 @@ a:hover{
     bottom: 20px;
     right: 20px;
     width: 100%;
-    max-width: 400px;
+    max-width: 450px;
     height: 750px;
     z-index: 9999;
     display: none;
@@ -185,6 +185,63 @@ a:hover{
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
     background-color: black;
+}
+.support-chat-photos {
+}
+
+.support-chat-photo {
+    max-width: 80px;
+    max-height: 80px;
+    border-radius: 4px;
+    cursor: pointer;
+    object-fit: cover;
+    margin-right: 3px;
+    margin-top: 2px;
+}
+
+
+
+/* превью для любых фото*/
+.preview-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #f8f9fa;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.preview-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+}
+.preview-name {
+    width: 100px;
+    font-size: 11px;
+    color: #495057;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 

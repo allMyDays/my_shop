@@ -28,6 +28,121 @@ document.addEventListener("input", function (event) {      // авторост �
 });
 
 
+
+<!-- блок фото из чатов поддержки -->
+
+const MAX_SUPPORT_PHOTOS = 3;
+let selectedSupportPhotos = [];  // новые файлы {id, file, url, key}
+let nextSupportPhotoId = 1;
+const supportPhotoKeys = new Set();
+
+const supportPhotoInput = document.getElementById('supportPhotos');
+const supportPreviewContainer = document.getElementById('support-photo-preview');
+
+if (!supportPhotoInput || !supportPreviewContainer) {
+    console.warn('Не найден #photos или #photo-preview.');
+}
+// Генерация ключа файла
+function supportPhotoKey(file) {
+    return `${file.name}_${file.size}_${file.lastModified}`;
+}
+// Удаляем новое фото
+function removeNewSupportPhotoById(id) {
+    const idx = selectedSupportPhotos.findIndex(x => x.id === id);
+    if (idx === -1) return;
+    try { URL.revokeObjectURL(selectedSupportPhotos[idx].url); } catch (e) {}
+    supportPhotoKeys.delete(selectedSupportPhotos[idx].key);
+    selectedSupportPhotos.splice(idx, 1);
+    renderSupportPreviewPhotos();
+}
+// Рендер превью (только новые)
+function renderSupportPreviewPhotos() {
+    supportPreviewContainer.innerHTML = '';
+
+    // Новые фото
+    selectedSupportPhotos.forEach(obj => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'd-flex flex-column align-items-center';
+
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+        item.dataset.fileId = obj.id;
+
+        const img = document.createElement('img');
+        img.src = obj.url;
+        img.alt = obj.file.name;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'preview-remove';
+        btn.title = 'Удалить фото';
+        btn.innerHTML = '&times;';
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            removeNewSupportPhotoById(obj.id);
+        });
+
+        item.appendChild(img);
+        item.appendChild(btn);
+        wrapper.appendChild(item);
+
+        const name = document.createElement('div');
+        name.className = 'preview-name mt-1';
+        name.textContent = obj.file.name;
+
+        wrapper.appendChild(name);
+        supportPreviewContainer.appendChild(wrapper);
+    });
+}
+function clearSupportPhotoInput(){
+
+    const photosToRemove = [...selectedSupportPhotos];
+    photosToRemove.forEach(obj => {removeNewSupportPhotoById(obj.id)});
+    selectedSupportPhotos = [];
+    nextSupportPhotoId = 1;
+    supportPhotoKeys.clear();
+    supportPhotoInput.value = '';
+
+
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+// ---------- ОБРАБОТКА ДОБАВЛЕНИЯ НОВЫХ ФАЙЛОВ ----------
+    supportPhotoInput.addEventListener('change', (e) => {
+
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const newFiles = files.filter(f => !supportPhotoKeys.has(supportPhotoKey(f)));
+        if (newFiles.length === 0) {
+            supportPhotoInput.value = '';
+            return;
+        }
+
+        const totalAfter = selectedSupportPhotos.length + newFiles.length;
+
+        if (totalAfter > MAX_SUPPORT_PHOTOS) {
+            alert(`К сожалению, к сообщению нельзя прикрепить больше чем ${MAX_SUPPORT_PHOTOS} фото.`);
+            supportPhotoInput.value = '';
+            return;
+        }
+
+        for (const f of newFiles) {
+            if (selectedSupportPhotos.length >= MAX_SUPPORT_PHOTOS) break;
+            const key = supportPhotoKey(f);
+            const url = URL.createObjectURL(f);
+            selectedSupportPhotos.push({ id: nextSupportPhotoId++, file: f, url, key });
+            supportPhotoKeys.add(key);
+        }
+
+        renderSupportPreviewPhotos();
+        supportPhotoInput.value = '';
+    });
+
+});
+
+
+
 let currentSupportChatId = null;
 let currentSupportChatCreatorId = null;
 let supportStompClient = null;
@@ -38,7 +153,7 @@ const supportMessageSound = document.getElementById("support-message-sound");
 document.addEventListener("DOMContentLoaded", async function () {
 
 
-        fetch(userIsStaff()===false?`/api/support/chat/count_unread`:`/api/support/admin/count_active_chats`, {
+        fetch(userIsStaff()===false?`/api/support/chat/count_unread`:`/api/support/admin/chat/count_active`, {
             method: "GET"
         }).then(res => {
             if (!res.ok) {
@@ -187,7 +302,7 @@ async function subscribeToChatChannel(chatId) {
                 playSupportMessageSound();
             }
         } else{
-            appendMessage(data.message, data.userMessage, data.dateOfCreation, true);
+            appendMessage(data.message, data.userMessage, data.dateOfCreation, true, data.photoFileNames);
             markSupportChatAsRead(data.chatId);
 
 
@@ -277,9 +392,17 @@ function closeSupportChat() {
     document.getElementById("support-chat-input").value = "";
     document.getElementById("support-chat-footer").style.display = "flex";
     document.getElementById("support-chat-closed-msg").style.display = "none";
+    document.getElementById("support-photo-preview") .innerHTML = '';
+
+    clearSupportPhotoInput();
+
 
     currentSupportChatId = null;
     currentSupportChatCreatorId = null;
+
+    const chatBody = document.getElementById("support-chat-body");
+
+    chatBody.scrollTop = chatBody.scrollHeight;
 }
 
 
@@ -386,27 +509,57 @@ function deleteSupportChat() {
     pendingDeleteChatId = null;
 }
 
-
-function appendMessage(message, isUser, timestampStr, isRealTime=false) {
+function appendMessage(message, isUser, timestampStr, isRealTime, photoFileNames= null) {
     const msgContainer = document.getElementById("support-chat-body");
 
+    if (userIsStaff() === true) {
+        isUser = !isUser;
+    }
+
     const div = document.createElement("div");
-    if (userIsStaff() === true) isUser = !isUser;
-    div.className = (isUser ? "chat-message user" : "chat-message agent");
+    div.className = isUser ? "chat-message user" : "chat-message agent";
 
-    const msgText = document.createElement("div");
-    msgText.textContent = message;
+    // Текст сообщения
+    if (message && message.trim() !== "") {
+        const msgText = document.createElement("div");
+        msgText.classList.add("chat-text");
+        msgText.textContent = message;
+        div.appendChild(msgText);
+    }
 
+    // Фотографии
+    if (Array.isArray(photoFileNames) && photoFileNames.length > 0) {
+        const photosWrapper = document.createElement("div");
+        photosWrapper.classList.add("support-chat-photos");
+
+        photoFileNames.forEach(fileName => {
+            const img = document.createElement("img");
+            img.src = `/api/media/get/${encodeURIComponent(fileName)}`;
+            img.alt = "photo";
+            img.classList.add("support-chat-photo");
+            img.setAttribute("data-bs-toggle","modal");
+            img.setAttribute("data-bs-target","#supportImageModal");
+
+            img.onclick = () => {
+                const modalImage = document.getElementById("supportBigImage");
+                modalImage.src = img.src;
+            };
+
+            photosWrapper.appendChild(img);
+        });
+
+        div.appendChild(photosWrapper);
+    }
+
+    // Время
     const timeSpan = document.createElement("span");
     timeSpan.textContent = formatDateTime(timestampStr);
     timeSpan.classList.add("chat-timestamp");
-
-    div.appendChild(msgText);
     div.appendChild(timeSpan);
 
     msgContainer.appendChild(div);
 
-    if(isRealTime&&!isUser){
+    if (isRealTime && !isUser) {
         playSupportMessageSound();
     }
 
@@ -415,12 +568,11 @@ function appendMessage(message, isUser, timestampStr, isRealTime=false) {
 
 async function collectExistingChat(chatId, topic, closed, needsAnswer, userId, containsMessages, isRead) {
     closeSupportChat(); // очистить визуально прошлый чат если он есть
-    // unsubscribeSupportChannels();
 
     let request = `/api/support/message/get_all?chatId=${chatId}`;
 
     if (userIsStaff() === true) {
-        request = `/api/support/admin/get_chat_messages?chatId=${chatId}`;
+        request = `/api/support/admin/message/get_all?chatId=${chatId}`;
     }
 
     try {
@@ -438,7 +590,7 @@ async function collectExistingChat(chatId, topic, closed, needsAnswer, userId, c
 
         messages.forEach(message => {
 
-            appendMessage(message.message, message.userMessage, message.dateOfCreation);
+            appendMessage(message.message, message.userMessage, message.dateOfCreation, false, message.photoFileNames);
 
         });
 
@@ -486,7 +638,7 @@ function openUserPageStaffMethod() {
     }
     window.location.href = "/admin/profile?userId=" + currentSupportChatCreatorId;
 }
-async function goToSupportAgentPage() {
+async function goToSupportAgentAccount() {
     try {
         const response = await fetch("/api/users/login", {
             method: "POST",
@@ -516,52 +668,58 @@ async function sendSupportMessage() {
 
     const message = messageInput.value.trim();
 
-    if(!currentSupportChatId) alert("Ошибка: currentSupportChatId is null");
-
-    if (!message || !currentSupportChatId) return;
-
-    if (userIsStaff() === false) {
-        try {
-            const response = await fetch(`/api/support/message/send-ability?chatId=${currentSupportChatId}`, {
-                method: "GET"
-            });
-
-            if (response.status === 429) {
-                alert("К сожалению, сообщения в чат нельзя отправлять так часто. Попробуйте снова чуть позже.");
-                return;
-            }
-        } catch (error) {
-            console.error("Ошибка при проверке лимита:", error);
-        }
+    if(!currentSupportChatId){
+        alert("Ошибка: currentSupportChatId is null");
+        return;
     }
+
+    if (!message&&selectedSupportPhotos.length===0) return;
+
     await subscribeToChatChannel(currentSupportChatId);
 
+    const fd = new FormData();
+    selectedSupportPhotos.forEach(obj => fd.append('images', obj.file));
+    fd.append('chatId', currentSupportChatId);
+    fd.append('message', message);
 
+    const resp = await fetch(userIsStaff()===false?'/api/support/message/create':'/api/support/admin/message/create', {
+        method:'POST',
+        body: fd
+    });
+
+    if (resp.status === 429&&userIsStaff()===false) {
+        alert("К сожалению, сообщения в чат нельзя отправлять так часто. Попробуйте снова чуть позже.");
+        return;
+    }
+
+    if (!resp.ok) {
+        const text = await resp.text();
+        alert('Произошла ошибка при попытке создать сообщение.');
+        console.log('Произошла ошибка при попытке создать сообщение: ' + text);
+        return;
+    }
     messageInput.value = "";
     messageInput.style.height = "auto";
 
 
-    const payload = {
-        chatId: currentSupportChatId,
-        message: message
-    };
+    const gottenMessageDto = await resp.json();
 
     try {
-        supportStompClient.send("/support-chat-input-controller/" + (userIsStaff() ? "handle_agent_message" : "handle_user_message"), {}, JSON.stringify(payload));
+        supportStompClient.send("/support-chat-input-controller/" + (userIsStaff()===true ? "handle_agent_message" : "handle_user_message"), {}, JSON.stringify(gottenMessageDto));
     } catch (error) {
         alert("При отправке сообщения произошла ошибка. Пожалуйста, попробуйте еще раз.");
     }
+    clearSupportPhotoInput();
 
     if (userIsStaff()===true) updateSupportBadgeQuantity(true);
     else{
         setTimeout(() => {
             new bootstrap.Modal(document.getElementById('supportAgentSuggestModal')).show();
-        }, 700);
+        }, 1200);
 
     }
-
-
 }
+
 
 <!-- блок списка чатов поддержки -->
 
@@ -574,9 +732,9 @@ function openSupportChatList(getAllActiveChats) {
 
     if (userIsStaff() === true) {
         if (getAllActiveChats === true) {
-            request = `/api/support/admin/get_active_chats`
+            request = `/api/support/admin/chat/get_active`
         } else {
-            request = `/api/support/admin/get_user_chats/${currentSupportChatCreatorId}`
+            request = `/api/support/admin/chat/get_all?userId=${currentSupportChatCreatorId}`
         }
     } else {
         request = `/api/support/chat/get_all`

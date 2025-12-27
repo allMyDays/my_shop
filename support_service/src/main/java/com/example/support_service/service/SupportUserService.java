@@ -1,6 +1,9 @@
 package com.example.support_service.service;
 
+import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.EmailKafkaClient;
+import com.example.common.client.kafka.MediaKafkaClient;
+import com.example.common.enumeration.media_service.BucketEnum;
 import com.example.common.exception.EntityNotFoundException;
 import com.example.common.exception.TooManyFunctionCallsException;
 import com.example.common.exception.UserNotFoundException;
@@ -9,17 +12,20 @@ import com.example.support_service.entity.SupportChat;
 import com.example.support_service.entity.SupportMessage;
 import com.example.support_service.repository.SupportChatRepository;
 import com.example.support_service.repository.SupportMessageRepository;
+import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 
-import static com.example.support_service.enumeration.RedisSubKeys.SUPPORT_CHAT_CREATION_LIMITED;
-import static com.example.support_service.enumeration.RedisSubKeys.SUPPORT_MESSAGE_SENDING_LIMITED;
+import static com.example.support_service.enumeration.RedisSubKeys.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +39,16 @@ public class SupportUserService {
 
     private final EmailKafkaClient emailKafkaClient;
 
+    private final MediaGrpcClient mediaGrpcClient;
+
+    private SupportUserService selfLink;
+
+    @Autowired
+    @Lazy
+    public void setSelfLink(SupportUserService selfLink) {
+        this.selfLink = selfLink;
+    }
+
 
     @Value("${support_agent.email}")
     private String agent_email;
@@ -40,7 +56,7 @@ public class SupportUserService {
 
     public Long createSupportChat(long userId, @NonNull String topic) {
 
-         if(chatCreationIsLimited(userId)){
+         if(isChatCreationLimited(userId)){
              throw new TooManyFunctionCallsException();
          }
 
@@ -52,26 +68,26 @@ public class SupportUserService {
          supportChat.setRead(true);
          supportChat = supportChatRepository.save(supportChat);
 
-        Optional<String> keyOpt = redisService.get(SUPPORT_CHAT_CREATION_LIMITED+":"+userId);
+        Optional<String> keyOpt = redisService.get(SUPPORT_CHAT_CREATION_LIMIT +":"+userId);
 
-         redisService.saveTemp(SUPPORT_CHAT_CREATION_LIMITED+":"+userId, keyOpt.map(s -> String.valueOf(Integer.parseInt(s) + 1)).orElse("1"),7200);
+         redisService.saveTemp(SUPPORT_CHAT_CREATION_LIMIT +":"+userId, keyOpt.map(s -> String.valueOf(Integer.parseInt(s) + 1)).orElse("1"),7200);
 
          return supportChat.getId();
 
     }
 
-    public boolean chatCreationIsLimited(long userId) {
+    public boolean isChatCreationLimited(long userId) {
 
-        Optional<String> keyOpt = redisService.get(SUPPORT_CHAT_CREATION_LIMITED+":"+userId);
+        Optional<String> keyOpt = redisService.get(SUPPORT_CHAT_CREATION_LIMIT +":"+userId);
         if(keyOpt.isEmpty()) return false;
 
         int key = Integer.parseInt(keyOpt.get());
 
         return key >= 5;
     }
-    public boolean messageSendingIsLimited(long chatId){
+    public boolean isMessageSendingLimited(long chatId){
 
-        Optional<String> keyOpt = redisService.get(SUPPORT_MESSAGE_SENDING_LIMITED+":"+chatId);
+        Optional<String> keyOpt = redisService.get(SUPPORT_MESSAGE_SENDING_LIMIT +":"+chatId);
         if(keyOpt.isEmpty()) return false;
 
         int key = Integer.parseInt(keyOpt.get());
@@ -80,22 +96,16 @@ public class SupportUserService {
 
     }
 
-    public SupportMessage saveSupportMessage(long userId, long chatId, @NonNull String message) {
+    public SupportMessage saveSupportMessage(long userId, long chatId, @NonNull String message, List<MultipartFile> photos) {
 
-            SupportChat supportChat = validateEntityAndOwnership(userId, chatId);
+        SupportChat supportChat = validateChatEntityAndOwnership(userId, chatId);
 
-            Optional<String> keyOpt = redisService.get(SUPPORT_MESSAGE_SENDING_LIMITED+":"+chatId);
+        Optional<String> keyOpt = redisService.get(SUPPORT_MESSAGE_SENDING_LIMIT +":"+chatId);
 
-            redisService.saveTemp(SUPPORT_MESSAGE_SENDING_LIMITED+":"+chatId,
+        redisService.saveTemp(SUPPORT_MESSAGE_SENDING_LIMIT +":"+chatId,
                     keyOpt.map(s -> String.valueOf(Integer.parseInt(s) + 1)).orElse("1"), 120);
-            supportChat.setNeedsAnswer(true);
-            supportChat.setContainsMessages(true);
-            emailKafkaClient.sendSimpleMail(
-                    agent_email,
-                    "Новое сообщение в чат поддержки № %d".formatted(chatId),"Сообщение:\n\n %s".formatted(message)
-            );
-
-
+        supportChat.setNeedsAnswer(true);
+        supportChat.setContainsMessages(true);
 
         SupportMessage supportMessage = new SupportMessage();
 
@@ -106,9 +116,18 @@ public class SupportUserService {
 
         supportChatRepository.save(supportChat);
 
-        return supportMessageRepository.save(supportMessage);
+        if(photos != null&&!photos.isEmpty()){
+            supportMessage.setPhotoFileNames(mediaGrpcClient.uploadPhotos(photos, BucketEnum.chats));
+        }
 
+        supportMessage = supportMessageRepository.save(supportMessage);
 
+        emailKafkaClient.sendSimpleMail(
+                agent_email,
+                "Новое сообщение в чат поддержки № %d".formatted(chatId),
+                "Сообщение:\n\n %s".formatted(message)
+        );
+        return supportMessage;
     }
 
     public List<SupportChat> getAllUserSupportChats(long userId){
@@ -117,22 +136,28 @@ public class SupportUserService {
     }
 
     public SupportChat getOneUserSupportChat(long userId, long chatId){
-        return validateEntityAndOwnership(userId, chatId);
+        return validateChatEntityAndOwnership(userId, chatId);
     }
 
 
 
     public List<SupportMessage> getAllSupportChatMessages(long userId, long chatId) {
 
-        SupportChat supportChat = validateEntityAndOwnership(userId, chatId);
+        SupportChat supportChat = validateChatEntityAndOwnership(userId, chatId);
 
         return supportMessageRepository.findAllByChatOrderById(supportChat);
 
     }
 
+    public SupportMessage getOneSupportChatMessage(long userId, long messageId) {
+
+        return selfLink.validateMessageEntityAndOwnership(userId, messageId);
+
+    }
+
     public void deleteSupportChat(long userId, long chatId) throws UserNotFoundException {
 
-        SupportChat supportChat = validateEntityAndOwnership(userId, chatId);
+        SupportChat supportChat = validateChatEntityAndOwnership(userId, chatId);
 
         supportChatRepository.delete(supportChat);
 
@@ -145,7 +170,7 @@ public class SupportUserService {
 
     public void markSupportChatAsRead(long userId, long chatId){
 
-        SupportChat chat = validateEntityAndOwnership(userId, chatId);
+        SupportChat chat = validateChatEntityAndOwnership(userId, chatId);
 
         chat.setRead(true);
         supportChatRepository.save(chat);
@@ -156,9 +181,7 @@ public class SupportUserService {
     }
 
 
-
-
-    public SupportChat validateEntityAndOwnership(long userId, long chatId) {
+    public SupportChat validateChatEntityAndOwnership(long userId, long chatId) {
 
         SupportChat supportChat = supportChatRepository.findById(chatId)
                 .orElseThrow(()->new EntityNotFoundException(SupportChat.class,chatId));
@@ -168,9 +191,22 @@ public class SupportUserService {
         }  return supportChat;
 
 
+    }
 
+    @Transactional
+    public SupportMessage validateMessageEntityAndOwnership(long userId, long messageId) {
+
+        SupportMessage message = supportMessageRepository.findById(messageId)
+                .orElseThrow(()->new EntityNotFoundException(SupportMessage.class,messageId));
+
+        if(!message.getChat().getUserId().equals(userId)){
+            throw new UserNotOwnerException(userId,message.getChat().getUserId(),SupportMessage.class);
+        }  return message;
 
     }
+
+
+
 }
 
 

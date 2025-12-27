@@ -1,6 +1,7 @@
 package com.example.user_service.service;
 
 
+import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.EmailKafkaClient;
 import com.example.common.client.kafka.MediaKafkaClient;
 import com.example.common.dto.user.rest.CreateUserRequestDTO;
@@ -41,6 +42,8 @@ public class UserService {
     private final RedisService redisService;
 
     private final MediaKafkaClient mediaKafkaClient;
+
+    private final MediaGrpcClient mediaGrpcClient;
 
     @Autowired
     @Lazy
@@ -87,24 +90,16 @@ public class UserService {
         return selfLink.collectCommonUserInfo(userEntity.getKeycloakId());
     }
 
+    public void saveUserAvatar(@NonNull MultipartFile image, long userId){
 
+        List<String> newFileNames = mediaGrpcClient.uploadPhotos(List.of(image), BucketEnum.users);
+        if(newFileNames.isEmpty()){
+            throw new RuntimeException("Failed to upload avatar: generated avatar name absents");
+        }
 
-    public void sendUploadUserAvatarRequest(@NonNull MultipartFile image, long userId) {
-
-        validateImages(List.of(image));
 
         MyUser userEntity = getUserEntity(userId);
-
-        String requestKey = UUID.randomUUID().toString();
-
-        redisService.save(KAFKA_UPLOAD_AVATAR+":"+requestKey,userEntity.getId().toString());
-
-        mediaKafkaClient.sendSavingMediaRequest(List.of(image), BucketEnum.users, requestKey);
-    }
-
-    public void saveUserAvatar(@NonNull String fileName, long userId){
-        MyUser userEntity = getUserEntity(userId);
-        userEntity.setAvatarFileName(fileName);
+        userEntity.setAvatarFileName(newFileNames.get(0));
         userRepository.save(userEntity);
 
     }

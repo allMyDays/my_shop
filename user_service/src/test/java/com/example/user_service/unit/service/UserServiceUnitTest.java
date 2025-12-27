@@ -1,5 +1,6 @@
 package com.example.user_service.unit.service;
 
+import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.EmailKafkaClient;
 import com.example.common.client.kafka.MediaKafkaClient;
 import com.example.common.dto.user.rest.CreateUserRequestDTO;
@@ -50,6 +51,9 @@ class UserServiceUnitTest {
     @Mock
     private MediaKafkaClient mediaKafkaClient;
 
+    @Mock
+    private MediaGrpcClient mediaGrpcClient;
+
     private final Long USER_ID = 1L;
     private final String KEYCLOAK_ID = "keycloak-123";
     private final String EMAIL = "test@example.com";
@@ -57,7 +61,7 @@ class UserServiceUnitTest {
     @BeforeEach
     void setUp() {
         // Создаем реальный экземпляр сервиса
-        userService = new UserService(userRepository, userKeycloakService, emailKafkaClient, redisService, mediaKafkaClient);
+        userService = new UserService(userRepository, userKeycloakService, emailKafkaClient, redisService, mediaKafkaClient, mediaGrpcClient);
 
         // Инициализируем selfLink тем же экземпляром
         ReflectionTestUtils.setField(userService, "selfLink", userService);
@@ -143,38 +147,6 @@ class UserServiceUnitTest {
                 () -> userService.collectCommonUserInfo(USER_ID));
     }
 
-    @Test
-    void sendUploadUserAvatarRequest_WhenUserNotFound_ThrowsException() {
-        // Given
-        MultipartFile image = mock(MultipartFile.class);
-        when(image.getContentType()).thenReturn("image/jpeg");
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
-
-        // When & Then
-        assertThrows(UserNotFoundException.class,
-                () -> userService.sendUploadUserAvatarRequest(image, USER_ID));
-
-        verify(redisService, never()).save(anyString(), anyString());
-        verify(mediaKafkaClient, never()).sendSavingMediaRequest(anyList(), any(), anyString());
-    }
-
-    @Test
-    void saveUserAvatar_WithValidFileName_SavesAvatar() {
-        // Given
-        String fileName = "avatar.jpg";
-        MyUser userEntity = new MyUser();
-        userEntity.setId(USER_ID);
-
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(userEntity));
-        when(userRepository.save(userEntity)).thenReturn(userEntity);
-
-        // When
-        userService.saveUserAvatar(fileName, USER_ID);
-
-        // Then
-        assertEquals(fileName, userEntity.getAvatarFileName());
-        verify(userRepository).save(userEntity);
-    }
 
     @Test
     void deleteUserAvatar_WithExistingAvatar_DeletesAvatar() {
@@ -424,38 +396,6 @@ class UserServiceUnitTest {
         // Then
         assertFalse(result);
         verify(emailKafkaClient).sendSimpleMail(eq(EMAIL), anyString(), anyString());
-    }
-
-    @Test
-    void sendUploadUserAvatarRequest_WhenFileNotImage_ThrowsException() {
-        // Given
-        MultipartFile image = mock(MultipartFile.class);
-
-        // When & Then
-        assertThrows(FileIsNotImageException.class,
-                () -> userService.sendUploadUserAvatarRequest(image, USER_ID));
-
-        verify(redisService, never()).save(anyString(), anyString());
-        verify(mediaKafkaClient, never()).sendSavingMediaRequest(anyList(), any(), anyString());
-    }
-
-    @Test
-    void sendUploadUserAvatarRequest_WithValidImage_SendsRequest() {
-        // Given
-        MultipartFile image = mock(MultipartFile.class);
-        when(image.getContentType()).thenReturn("image/jpeg");
-        MyUser userEntity = new MyUser();
-        userEntity.setId(USER_ID);
-
-        when(userRepository.findById(USER_ID)).thenReturn(Optional.of(userEntity));
-
-        // When
-        userService.sendUploadUserAvatarRequest(image, USER_ID);
-
-        // Then
-        verify(userRepository).findById(USER_ID);
-        verify(redisService).save(anyString(), eq(USER_ID.toString()));
-        verify(mediaKafkaClient).sendSavingMediaRequest(anyList(), eq(BucketEnum.users), anyString());
     }
 
 

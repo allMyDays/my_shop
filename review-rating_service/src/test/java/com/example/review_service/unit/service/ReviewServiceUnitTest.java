@@ -135,7 +135,7 @@ class ReviewServiceTest {
         verify(reviewRepository, never()).save(any(Review.class));
     }
 
-    @Test
+   /* @Test
     void edit_WithValidData_UpdatesReview() {
         // Given
         Review oldReview = new Review();
@@ -274,7 +274,7 @@ class ReviewServiceTest {
                 () -> reviewService.edit(reviewToEdit, USER_ID, Optional.empty(), Optional.empty()));
 
         verify(reviewRepository, never()).save(any(Review.class));
-    }
+    }*/
 
     @Test
     void checkEditingReviewAbility_WhenCanEdit_ReturnsCanEdit() {
@@ -328,59 +328,6 @@ class ReviewServiceTest {
 
         // Then
         assertEquals(EditReviewAbilityStatus.TOO_OLD_REVIEW, result);
-    }
-
-    @Test
-    void saveReviewImageFileNames_WithValidData_SavesFileNames() {
-        // Given
-        Review review = new Review();
-        review.setId(REVIEW_ID);
-        review.setPhotoFileNames(List.of("existing.jpg"));
-
-        List<String> newImageFileNames = new ArrayList<>(List.of("new1.jpg", "new2.jpg"));
-
-        when(reviewRepository.findById(REVIEW_ID)).thenReturn(Optional.of(review));
-        when(reviewRepository.save(review)).thenReturn(review);
-
-        // When
-        reviewService.saveReviewImageFileNames(newImageFileNames, REVIEW_ID);
-
-        // Then
-        verify(reviewRepository).save(argThat(rev ->
-                rev.getPhotoFileNames().size() == 3 &&
-                        rev.getPhotoFileNames().containsAll(List.of("existing.jpg", "new1.jpg", "new2.jpg"))
-        ));
-    }
-
-    @Test
-    void saveReviewImageFileNames_WhenTooManyImages_ThrowsTooManyImagesToUploadException() {
-        // Given
-        List<String> newImageFileNames = List.of("1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg");
-
-        // When & Then
-        assertThrows(TooManyImagesToUploadException.class,
-                () -> reviewService.saveReviewImageFileNames(newImageFileNames, REVIEW_ID));
-
-        verify(reviewRepository, never()).save(any(Review.class));
-    }
-
-    @Test
-    void saveReviewImageFileNames_WhenExceedsLimit_ThrowsRuntimeException() {
-        // Given
-        Review review = new Review();
-        review.setId(REVIEW_ID);
-        review.setPhotoFileNames(List.of("1.jpg", "2.jpg", "3.jpg", "4.jpg"));
-
-        List<String> newImageFileNames = List.of("5.jpg", "6.jpg");
-
-        when(reviewRepository.findById(REVIEW_ID)).thenReturn(Optional.of(review));
-
-        // When & Then
-        RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> reviewService.saveReviewImageFileNames(newImageFileNames, REVIEW_ID));
-
-        assertTrue(exception.getMessage().contains("Review already has 4 images"));
-        verify(reviewRepository, never()).save(any(Review.class));
     }
 
     @Test

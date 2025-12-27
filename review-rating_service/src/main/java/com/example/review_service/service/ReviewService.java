@@ -1,5 +1,6 @@
 package com.example.review_service.service;
 
+import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.grpc.ProductGrpcClient;
 import com.example.common.client.kafka.MediaKafkaClient;
 import com.example.common.enumeration.media_service.BucketEnum;
@@ -9,12 +10,15 @@ import com.example.review_service.dto.ProductReviewStats;
 import com.example.review_service.entity.Review;
 import com.example.review_service.enumeration.EditReviewAbilityStatus;
 import com.example.review_service.enumeration.ReviewSortType;
+import com.example.review_service.enumeration.UsagePeriod;
 import com.example.review_service.exception.NoChangesInEditingReviewException;
 import com.example.review_service.exception.ReviewAlreadyExistsException;
 import com.example.review_service.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,6 +45,8 @@ public class ReviewService {
 
     private final RedisService redisService;
 
+    private final MediaGrpcClient mediaGrpcClient;
+
 
     public void create(@NonNull Review productReview, List<MultipartFile> images){
 
@@ -57,66 +63,69 @@ public class ReviewService {
               if(images.size()>5){
                   throw new TooManyImagesToUploadException(5);
               }
-              validateImages(images);
-              String requestKey = UUID.randomUUID().toString();
-              Review review = reviewRepository.save(productReview);
-              redisService.save(KAFKA_UPLOAD_IMAGES+":"+requestKey,review.getId().toString());
-              mediaKafkaClient.sendSavingMediaRequest(images, BucketEnum.reviews,requestKey);
-              return;
+              productReview.setPhotoFileNames(mediaGrpcClient.uploadPhotos(images, BucketEnum.reviews));
           } reviewRepository.save(productReview);
     }
     @Transactional
-    public void edit(@NonNull Review reviewToEdit,
+    public void edit(long reviewId,
                      long userId,
-                     Optional<List<MultipartFile>> imageToSaveOptional,
-                     Optional<List<String>> imagesToDeleteOptional){
+                     int newRating,
+                     boolean isNewReviewAnonymous,
+                     @NonNull UsagePeriod newUsagePeriod,
+                     String newAdvantages,
+                     String newDisAdvantages,
+                     String newComment,
+                     List<MultipartFile> imagesToSave,
+                     List<String> imagesToDelete){
 
-        Review oldReview = validateEntityAndOwnership(userId,reviewToEdit.getId());
+        Review existingReview = validateEntityAndOwnership(userId,reviewId);
 
-        if(!checkEditingReviewAbility(userId, oldReview.getId()).equals(CAN_EDIT))
+        if(!checkEditingReviewAbility(userId, reviewId).equals(CAN_EDIT)){
             throw new RuntimeException("Review cannot be edited anymore.");
-
-        reviewToEdit.setUserId(userId);
-        reviewToEdit.setProductId(oldReview.getProductId());
-        reviewToEdit.setDateOfCreation(oldReview.getDateOfCreation());
-
-        List<String> imagesToDelete = new ArrayList<>(oldReview.getPhotoFileNames());
-        imagesToDelete.retainAll(imagesToDeleteOptional.orElse(new ArrayList<>()));
-
-        List<MultipartFile> imagesToSave = imageToSaveOptional.orElse(new ArrayList<>());
-
-        if(!imagesToDelete.isEmpty()){
-            mediaKafkaClient.deleteMedia(imagesToDelete);
-            List<String> tempImgToSave = new ArrayList<>(oldReview.getPhotoFileNames());
-            tempImgToSave.removeAll(imagesToDelete);
-            reviewToEdit.setPhotoFileNames(tempImgToSave);
-
-        } else{
-            reviewToEdit.setPhotoFileNames(oldReview.getPhotoFileNames());
-            if(imageToSaveOptional.isEmpty()
-                    &&reviewToEdit.getUsagePeriod().equals(oldReview.getUsagePeriod())
-                     &&reviewToEdit.getRating().equals(oldReview.getRating())
-                      &&reviewToEdit.isAnonymousReview()==oldReview.isAnonymousReview()
-                       &&Objects.equals(reviewToEdit.getAdvantages(), oldReview.getAdvantages())
-                        &&Objects.equals(reviewToEdit.getDisAdvantages(), oldReview.getDisAdvantages())
-                         &&Objects.equals(reviewToEdit.getComment(), oldReview.getComment())){
-                            throw new NoChangesInEditingReviewException(oldReview.getId());
-            }
         }
-        reviewToEdit.setDateOfLastEditing(LocalDateTime.now());
-        reviewToEdit.setEditingQuantity(oldReview.getEditingQuantity()+1);
 
-        reviewRepository.save(reviewToEdit);
+        existingReview.setDateOfLastEditing(LocalDateTime.now());
+        existingReview.setEditingQuantity(existingReview.getEditingQuantity()+1);
 
-        if(!imagesToSave.isEmpty()){
-            if((oldReview.getPhotoFileNames().size()-imagesToDelete.size()+imagesToSave.size())>5){
+        List<String> finalImages = new ArrayList<>(existingReview.getPhotoFileNames());
+
+        boolean changed = false;
+
+        if(imagesToDelete!=null&&!imagesToDelete.isEmpty()){
+            mediaKafkaClient.deleteMedia(imagesToDelete);
+            finalImages.removeAll(imagesToDelete);
+            changed = true;
+
+        }
+        if(imagesToSave!=null&&!imagesToSave.isEmpty()){
+
+            if(finalImages.size()+imagesToSave.size()>5){
                 throw new TooManyImagesToUploadException(5);
             }
-            validateImages(imagesToSave);
-            String requestKey = UUID.randomUUID().toString();
-            redisService.save(KAFKA_UPLOAD_IMAGES+":"+requestKey,oldReview.getId().toString());
-            mediaKafkaClient.sendSavingMediaRequest(imagesToSave, BucketEnum.reviews,requestKey);
+            finalImages.addAll(mediaGrpcClient.uploadPhotos(imagesToSave, BucketEnum.reviews));
+            changed = true;
         }
+        existingReview.setPhotoFileNames(finalImages);
+
+        if(!changed
+                &&newUsagePeriod.equals(existingReview.getUsagePeriod())
+                 && existingReview.getRating()==newRating
+                  &&isNewReviewAnonymous==existingReview.isAnonymousReview()
+                   &&Objects.equals(newAdvantages, existingReview.getAdvantages())
+                    &&Objects.equals(newDisAdvantages, existingReview.getDisAdvantages())
+                     &&Objects.equals(newComment, existingReview.getComment())){
+                throw new NoChangesInEditingReviewException(existingReview.getId());
+            }
+
+        existingReview.setUsagePeriod(newUsagePeriod);
+        existingReview.setRating(newRating);
+        existingReview.setAnonymousReview(isNewReviewAnonymous);
+        existingReview.setAdvantages(newAdvantages);
+        existingReview.setDisAdvantages(newDisAdvantages);
+        existingReview.setComment(newComment);
+
+        reviewRepository.save(existingReview);
+
     }
 
     public EditReviewAbilityStatus checkEditingReviewAbility(long userId, long reviewId){
@@ -128,30 +137,6 @@ public class ReviewService {
         return CAN_EDIT;
     }
 
-    @Transactional
-    public void saveReviewImageFileNames(@NonNull List<String> newImageFileNames, long reviewId){
-
-        if(newImageFileNames.size()>5){
-            throw new TooManyImagesToUploadException(5);
-        }
-
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(()->new EntityNotFoundException(Review.class, reviewId));
-
-        int currentPhotoQuantity = review.getPhotoFileNames().size();
-
-        if(currentPhotoQuantity>0){
-            if((currentPhotoQuantity+newImageFileNames.size())>5){
-                throw new RuntimeException("Review already has %d images, so you can't save %d new images"
-                        .formatted(currentPhotoQuantity,newImageFileNames.size()));
-            }
-            newImageFileNames.addAll(review.getPhotoFileNames());
-
-        }
-        review.setPhotoFileNames(newImageFileNames);
-
-        reviewRepository.save(review);
-    }
     @Transactional
     public void deleteByReviewId(long userId, long reviewId){
 

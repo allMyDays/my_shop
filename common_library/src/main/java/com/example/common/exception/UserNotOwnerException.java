@@ -1,7 +1,5 @@
 package com.example.common.exception;
 
-import com.example.common.dto.media.kafka.FileDataDTO;
-import com.example.common.service.CommonMediaService;
 import jakarta.validation.constraints.Positive;
 import lombok.NonNull;
 

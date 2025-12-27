@@ -20,41 +20,6 @@ import java.util.List;
 @SecurityRequirement(name = "JWT") // Требует JWT токен для всех методов
 public interface ISupportMessageRestController {
 
-    @Operation(
-            summary = "Проверить возможность отправки сообщения",
-            description = "Проверяет, можно ли отправить сообщение в указанный чат (не превышен ли лимит отправки сообщений)"
-    )
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Можно отправлять сообщения"
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Пользователь не аутентифицирован"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Ошибки при выполнении, возможно чат не найден или недоступен"
-            ),
-            @ApiResponse(
-                    responseCode = "429",
-                    description = "Превышен лимит отправки сообщений",
-                    content = @Content(mediaType = "text/plain",
-                            schema = @Schema(type = "string"),
-                            examples = @ExampleObject(
-                                    value = "You temporarily exhausted the limit of sending support messages"
-                            )
-                    )
-            )
-    })
-     ResponseEntity<?> checkMessageSendingAbility(
-            @Parameter(
-                    description = "ID чата поддержки",
-                    required = true,
-                    example = "123"
-            ) Long chatId);
-
 
     @Operation(
             summary = "Получить все сообщения чата",
@@ -77,11 +42,10 @@ public interface ISupportMessageRestController {
             )
     })
     List<SupportMessageResponseDTO> getAllChatMessages(
-            @Parameter(hidden = true) Jwt jwt,
-
             @Parameter(
                     description = "ID чата поддержки",
                     required = true,
                     example = "123"
-            ) Long chatId) throws UserNotFoundException;
+            ) Long chatId,
+            @Parameter(hidden = true) Jwt jwt) throws UserNotFoundException;
 }

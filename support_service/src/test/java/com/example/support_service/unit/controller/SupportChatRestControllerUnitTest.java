@@ -112,7 +112,7 @@ class SupportChatRestControllerUnitTest {
     @Test
     void checkChatCreationAbility_WhenNotLimited_ShouldReturnOk() throws UserNotFoundException {
         // Arrange
-        when(supportUserService.chatCreationIsLimited(eq(TEST_USER_ID))).thenReturn(false);
+        when(supportUserService.isChatCreationLimited(eq(TEST_USER_ID))).thenReturn(false);
         when(jwt.getClaimAsString(MY_USER_ID_KEY_KEYCLOAK)).thenReturn(TEST_USER_ID.toString());
 
         // Act
@@ -120,13 +120,13 @@ class SupportChatRestControllerUnitTest {
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(supportUserService).chatCreationIsLimited(TEST_USER_ID);
+        verify(supportUserService).isChatCreationLimited(TEST_USER_ID);
     }
 
     @Test
     void checkChatCreationAbility_WhenLimited_ShouldReturnTooManyRequests() throws UserNotFoundException {
         // Arrange
-        when(supportUserService.chatCreationIsLimited(eq(TEST_USER_ID))).thenReturn(true);
+        when(supportUserService.isChatCreationLimited(eq(TEST_USER_ID))).thenReturn(true);
         when(jwt.getClaimAsString(MY_USER_ID_KEY_KEYCLOAK)).thenReturn(TEST_USER_ID.toString());
 
         // Act
@@ -135,7 +135,7 @@ class SupportChatRestControllerUnitTest {
         // Assert
         assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
         assertEquals("You temporarily exhausted the limit of creation support chats", response.getBody());
-        verify(supportUserService).chatCreationIsLimited(TEST_USER_ID);
+        verify(supportUserService).isChatCreationLimited(TEST_USER_ID);
     }
 
     @Test

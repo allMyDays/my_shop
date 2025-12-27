@@ -1,8 +1,6 @@
 package com.example.media_service.controller.kafka;
 
 import com.example.common.dto.media.kafka.DeleteMediaFilesRequestDTO;
-import com.example.common.dto.media.kafka.SaveMediaFilesRequestDTO;
-import com.example.common.dto.media.kafka.SavedMediaFilesResponseDTO;
 import com.example.media_service.service.MinioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -35,14 +33,8 @@ public class MediaRequestsConsumer {
 
         try{
          switch (key){
-             case SAVE_MEDIA_FILES:
-                 var saveFileDto = objectMapper.readValue(rawJsonString, SaveMediaFilesRequestDTO.class);
-                 List<String> newFileNames =  minioService.uploadFiles(saveFileDto.getFileDataDTOs(),saveFileDto.getBucket());
-                 kafkaTemplate.send(MEDIA_RESPONSE_TOPIC, SAVED_MEDIA_FILES, new SavedMediaFilesResponseDTO(newFileNames, saveFileDto.getBucket(),saveFileDto.getRequestKey()));
-                 break;
-
              case DELETE_MEDIA_FILES:
-                 var deleteFileDto = objectMapper.readValue(rawJsonString, DeleteMediaFilesRequestDTO.class);
+                 DeleteMediaFilesRequestDTO deleteFileDto = objectMapper.readValue(rawJsonString, DeleteMediaFilesRequestDTO.class);
                  minioService.deleteMultipleFiles(deleteFileDto.getFileNames());
                  break;
 

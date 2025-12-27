@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -24,19 +25,25 @@ public class SupportMessage {
     private Long id;
 
     @NotNull
+    @Column(nullable = false)
     private LocalDateTime dateOfCreation;
 
     @NotNull
-    @Column(columnDefinition="TEXT")
+    @Column(columnDefinition="TEXT", nullable = false)
     private String message;
 
     @NotNull
+    @Column(columnDefinition="TEXT", nullable = false)
     private boolean isUserMessage;
 
     @NotNull
     @ManyToOne
     @JoinColumn(name = "chat_id")
     private SupportChat chat;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name="support_message_photo")
+    private List<String> photoFileNames;
 
 
     @PrePersist

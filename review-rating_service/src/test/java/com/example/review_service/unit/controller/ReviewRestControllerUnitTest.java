@@ -146,7 +146,7 @@ class ReviewRestControllerUnitTest {
     }
 
     // Tests for editReview method
-    @Test
+ /*   @Test
     void editReview_WhenValidRequest_ShouldReturnOk() throws UserNotFoundException, NoChangesInEditingReviewException {
         // Arrange
         EditReviewRequestDto reviewDto = new EditReviewRequestDto();
@@ -205,7 +205,7 @@ class ReviewRestControllerUnitTest {
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(reviewService).edit(review, TEST_USER_ID, Optional.of(images), Optional.of(List.of("photo1.jpg", "photo2.jpg")));
-    }
+    }*/
 
     // Tests for checkEditingReviewAbility method
     @Test

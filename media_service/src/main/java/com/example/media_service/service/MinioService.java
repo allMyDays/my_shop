@@ -1,7 +1,7 @@
 package com.example.media_service.service;
 
 import com.example.common.enumeration.media_service.BucketEnum;
-import com.example.common.dto.media.kafka.FileDataDTO;
+import com.example.common.dto.media.kafka.PhotoDataDTO;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.support.atomic.RedisAtomicLong;
@@ -54,7 +54,7 @@ public class MinioService {
         return bucket.name()+fileNameSeparator+redisAtomicLong.incrementAndGet();
     }
 
-    public String uploadFile(FileDataDTO file, BucketEnum bucket) throws Exception {
+    public String uploadFile(PhotoDataDTO file, BucketEnum bucket) throws Exception {
 
         String newFileName = generateNewFileKey(bucket);
 
@@ -128,9 +128,9 @@ public class MinioService {
         }
     }
 
-    public List<String> uploadFiles(@NonNull List<FileDataDTO> files, @NonNull BucketEnum bucket) throws Exception {
+    public List<String> uploadFiles(@NonNull List<PhotoDataDTO> files, @NonNull BucketEnum bucket) {
         List<String> newFileNames = new ArrayList<>();
-        for (FileDataDTO file : files) {
+        for (PhotoDataDTO file : files) {
 
             String newFileName = generateNewFileKey(bucket);
 

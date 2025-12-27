@@ -60,7 +60,7 @@ public class SupportChatRestController implements ISupportChatRestController{
     }
     @GetMapping("/create-ability")
     public ResponseEntity<?> checkChatCreationAbility(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {
-        if(supportUserService.chatCreationIsLimited(getMyUserEntityId(jwt))){
+        if(supportUserService.isChatCreationLimited(getMyUserEntityId(jwt))){
             return ResponseEntity
                     .status(429)
                     .body("You temporarily exhausted the limit of creation support chats");

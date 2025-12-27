@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option java_package="com.example.common.grpc.media";
+
+service MediaService {
+  rpc UploadPhotos(UploadPhotosRequest) returns (UploadPhotosResponse){}
+}
+
+message UploadPhotosRequest{
+  repeated PhotoData photos = 1;
+  BucketName bucketName = 2;
+}
+
+message PhotoData{
+  bytes bytes = 1;
+  string contentType = 2;
+}
+
+message UploadPhotosResponse{
+  repeated string fileNames = 1;
+
+}
+
+enum BucketName{
+    products = 0;
+    users = 1;
+    reviews = 2;
+    chats = 3;
+}
