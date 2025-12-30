@@ -1,12 +1,9 @@
 package com.example.support_service.controller.ws;
 import com.example.common.exception.TooManyFunctionCallsException;
 import com.example.common.exception.UserNotFoundException;
-import com.example.common.dto.support.SupportChatTypingStatusDTO;
+import com.example.support_service.dto.SupportChatTypingStatusDTO;
 import com.example.common.dto.support.SupportMessageResponseDTO;
-import com.example.support_service.entity.SupportMessage;
-import com.example.support_service.mapper.SupportMessageMapper;
 import com.example.support_service.service.SupportUserService;
-import com.example.support_service.service.admin.SupportAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;

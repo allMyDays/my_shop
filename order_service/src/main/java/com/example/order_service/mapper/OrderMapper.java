@@ -5,7 +5,6 @@ import com.example.common.client.grpc.UserGrpcClient;
 import com.example.common.dto.cart.rest.CartItemResponseDTO;
 import com.example.common.dto.product.rest.ProductMinimalInfoResponseDto;
 import com.example.common.dto.product.rest.ProductResponseDTO;
-import com.example.common.dto.user.rest.UserMinimalInfoDto;
 import com.example.common.mapper.ProductMapper;
 import com.example.order_service.dto.OrderResponseDto;
 import com.example.order_service.entity.Order;

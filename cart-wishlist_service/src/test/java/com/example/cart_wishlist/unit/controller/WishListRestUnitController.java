@@ -6,8 +6,8 @@ import com.example.cart_wishlist.exception.TooManyItemsException;
 import com.example.cart_wishlist.mapper.WishItemMapper;
 import com.example.cart_wishlist.mapper.WishListMapper;
 import com.example.cart_wishlist.service.WishListService;
-import com.example.common.dto.wish.rest.WishItemResponseDTO;
-import com.example.common.dto.wish.rest.WishListResponseDTO;
+import com.example.cart_wishlist.dto.WishItemResponseDTO;
+import com.example.cart_wishlist.dto.WishListResponseDTO;
 import com.example.common.exception.UserNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,9 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 

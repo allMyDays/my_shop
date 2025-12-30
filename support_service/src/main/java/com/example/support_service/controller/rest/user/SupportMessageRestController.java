@@ -60,7 +60,6 @@ public class SupportMessageRestController implements ISupportMessageRestControll
                     .body("You temporarily exhausted the limit of sending support messages");
         }
 
-
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest()
                     .body(bindingResult.getAllErrors().stream()

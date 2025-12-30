@@ -3,7 +3,7 @@ package com.example.cart_wishlist.mapper;
 import com.example.cart_wishlist.entity.WishItem;
 import com.example.common.client.grpc.ProductGrpcClient;
 import com.example.common.dto.product.rest.ProductResponseDTO;
-import com.example.common.dto.wish.rest.WishItemResponseDTO;
+import com.example.cart_wishlist.dto.WishItemResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,8 +1,8 @@
 package com.example.user_service.controller.rest.i;
 
 
-import com.example.common.dto.user.rest.CreateUserRequestDTO;
-import com.example.common.dto.user.rest.UpdateUserRequestDTO;
+import com.example.user_service.dto.CreateUserRequestDTO;
+import com.example.user_service.dto.UpdateUserRequestDTO;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.common.exception.UserNotFoundException;
 import com.example.user_service.dto.LoginRequestDTO;

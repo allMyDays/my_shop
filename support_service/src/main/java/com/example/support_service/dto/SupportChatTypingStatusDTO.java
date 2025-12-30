@@ -1,4 +1,4 @@
-package com.example.common.dto.support;
+package com.example.support_service.dto;
 
 
 import lombok.AllArgsConstructor;

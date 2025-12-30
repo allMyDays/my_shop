@@ -965,7 +965,7 @@
 
                     if (!resp.ok) {
                         const text = await resp.text();
-                        alert('Ошибка при отправке отзыва.');
+                        alert('Ошибка при отправке отзыва: '+text);
                         console.log('Ошибка при отправке отзыва.' + text);
                         return;
                     }

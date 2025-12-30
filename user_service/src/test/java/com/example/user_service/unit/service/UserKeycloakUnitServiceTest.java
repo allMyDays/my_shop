@@ -1,6 +1,6 @@
 package com.example.user_service.unit.service;
 
-import com.example.common.dto.user.rest.UpdateUserRequestDTO;
+import com.example.user_service.dto.UpdateUserRequestDTO;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.common.enumeration.user_service.UserExistenceStatus;
 import com.example.user_service.dto.UserFullNameDto;
@@ -9,7 +9,6 @@ import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -18,7 +17,6 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.oauth2.jwt.Jwt;

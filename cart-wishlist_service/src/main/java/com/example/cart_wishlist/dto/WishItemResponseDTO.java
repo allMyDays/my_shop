@@ -1,4 +1,4 @@
-package com.example.common.dto.wish.rest;
+package com.example.cart_wishlist.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

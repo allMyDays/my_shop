@@ -4,10 +4,7 @@ import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.EmailKafkaClient;
 import com.example.common.client.kafka.MediaKafkaClient;
 import com.example.common.enumeration.media_service.BucketEnum;
-import com.example.common.exception.EntityNotFoundException;
-import com.example.common.exception.TooManyFunctionCallsException;
-import com.example.common.exception.UserNotFoundException;
-import com.example.common.exception.UserNotOwnerException;
+import com.example.common.exception.*;
 import com.example.support_service.entity.SupportChat;
 import com.example.support_service.entity.SupportMessage;
 import com.example.support_service.repository.SupportChatRepository;
@@ -22,6 +19,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +40,7 @@ public class SupportUserService {
     private final MediaGrpcClient mediaGrpcClient;
 
     private SupportUserService selfLink;
+    private MediaKafkaClient mediaKafkaClient;
 
     @Autowired
     @Lazy
@@ -114,12 +113,14 @@ public class SupportUserService {
         supportMessage.setUserMessage(true);
         supportMessage.setChat(supportChat);
 
-        supportChatRepository.save(supportChat);
-
         if(photos != null&&!photos.isEmpty()){
+            if(photos.size() > 3){
+                throw new TooManyImagesToUploadException(3);
+            }
             supportMessage.setPhotoFileNames(mediaGrpcClient.uploadPhotos(photos, BucketEnum.chats));
         }
 
+        supportChatRepository.save(supportChat);
         supportMessage = supportMessageRepository.save(supportMessage);
 
         emailKafkaClient.sendSimpleMail(
@@ -155,11 +156,22 @@ public class SupportUserService {
 
     }
 
+    @Transactional
     public void deleteSupportChat(long userId, long chatId) throws UserNotFoundException {
 
         SupportChat supportChat = validateChatEntityAndOwnership(userId, chatId);
 
+        List<String> imagesToDelete = new ArrayList<>();
+
+        supportChat.getMessages().forEach(m-> {
+                    if(m.getPhotoFileNames()!=null&&!m.getPhotoFileNames().isEmpty()){
+                        imagesToDelete.addAll(m.getPhotoFileNames());
+                    }
+                   }
+                );
+
         supportChatRepository.delete(supportChat);
+        mediaKafkaClient.deleteMedia(imagesToDelete);
 
     }
 
@@ -206,7 +218,10 @@ public class SupportUserService {
     }
 
 
-
+    @Autowired
+    public void setMediaKafkaClient(MediaKafkaClient mediaKafkaClient) {
+        this.mediaKafkaClient = mediaKafkaClient;
+    }
 }
 
 

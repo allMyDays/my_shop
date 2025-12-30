@@ -4,7 +4,7 @@ package com.example.user_service.service;
 import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.EmailKafkaClient;
 import com.example.common.client.kafka.MediaKafkaClient;
-import com.example.common.dto.user.rest.CreateUserRequestDTO;
+import com.example.user_service.dto.CreateUserRequestDTO;
 import com.example.common.enumeration.media_service.BucketEnum;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.dto.user.rest.UserResponseDTO;
@@ -24,9 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.UUID;
 
-import static com.example.common.service.CommonMediaService.validateImages;
 import static com.example.user_service.enumeration.RedisSubKeys.*;
 
 @Service

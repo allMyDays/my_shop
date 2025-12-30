@@ -1,6 +1,6 @@
 package com.example.user_service.unit.controller;
 
-import com.example.common.dto.user.rest.CreateUserRequestDTO;
+import com.example.user_service.dto.CreateUserRequestDTO;
 import com.example.common.enumeration.user_service.UserExistenceStatus;
 import com.example.common.service.CommonUserService;
 import com.example.user_service.controller.rest.UserRestController;
@@ -12,7 +12,6 @@ import com.example.user_service.service.RedisService;
 import com.example.user_service.service.UserKeycloakService;
 import com.example.user_service.service.UserService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -27,9 +26,7 @@ import org.springframework.validation.ObjectError;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
-import java.util.Collections;
 
-import static com.example.user_service.enumeration.RedisSubKeys.CONFIRMED_EMAIL;
 import static com.example.user_service.enumeration.RedisSubKeys.CONFIRMING_EMAIL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;

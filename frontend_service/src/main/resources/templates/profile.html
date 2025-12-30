@@ -211,15 +211,17 @@
             })
             .then(data => {
                 msg.innerHTML = "";
-
                 if (data.ERRORS) {
+                    let errors='';
                     data.ERRORS.forEach(err => {
-                        msg.innerHTML += `<div class="alert alert-danger">${err}</div>`;
+                        errors +=`${err}<br><br>`;
                     });
+                    msg.innerHTML = `<div class="alert alert-danger">${errors}</div>`;
                     submitBTN.style.display = "";
-                    loadingIndicator.style.display = "none";
+                    loadingIndicator.style.display="none";
                     return;
                 }
+
 
                 if (data.EMAIL_SENT) {
                     loadingIndicator.style.display = "none";

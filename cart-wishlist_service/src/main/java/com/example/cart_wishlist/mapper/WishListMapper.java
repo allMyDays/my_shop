@@ -2,7 +2,7 @@ package com.example.cart_wishlist.mapper;
 
 
 import com.example.cart_wishlist.service.WishListService;
-import com.example.common.dto.wish.rest.WishListResponseDTO;
+import com.example.cart_wishlist.dto.WishListResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

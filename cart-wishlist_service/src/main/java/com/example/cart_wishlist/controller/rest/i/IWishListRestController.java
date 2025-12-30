@@ -1,10 +1,7 @@
 package com.example.cart_wishlist.controller.rest.i;
 
-import com.example.cart_wishlist.mapper.WishItemMapper;
-import com.example.cart_wishlist.mapper.WishListMapper;
-import com.example.cart_wishlist.service.WishListService;
-import com.example.common.dto.wish.rest.WishItemResponseDTO;
-import com.example.common.dto.wish.rest.WishListResponseDTO;
+import com.example.cart_wishlist.dto.WishItemResponseDTO;
+import com.example.cart_wishlist.dto.WishListResponseDTO;
 import com.example.common.exception.UserNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

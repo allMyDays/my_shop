@@ -4,6 +4,7 @@ import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.MediaKafkaClient;
 import com.example.common.enumeration.media_service.BucketEnum;
 import com.example.common.exception.EntityNotFoundException;
+import com.example.common.exception.TooManyImagesToUploadException;
 import com.example.support_service.entity.SupportChat;
 import com.example.support_service.entity.SupportMessage;
 import com.example.support_service.repository.SupportChatRepository;
@@ -80,6 +81,9 @@ public class SupportAdminService {
         supportChatRepository.save(supportChat);
 
         if(photos != null&&!photos.isEmpty()){
+            if(photos.size() > 9){
+                throw new TooManyImagesToUploadException(9);
+            }
             supportMessage.setPhotoFileNames(mediaGrpcClient.uploadPhotos(photos, BucketEnum.chats));
         }
 

@@ -1,6 +1,6 @@
 package com.example.user_service.service;
 
-import com.example.common.dto.user.rest.UpdateUserRequestDTO;
+import com.example.user_service.dto.UpdateUserRequestDTO;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.common.enumeration.user_service.UserExistenceStatus;
 import com.example.user_service.dto.UserFullNameDto;

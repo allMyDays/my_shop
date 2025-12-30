@@ -1,6 +1,5 @@
 package com.example.common.client.grpc;
 
-import com.example.common.dto.user.rest.UserAddressDto;
 import com.example.common.dto.user.rest.UserMinimalInfoDto;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.common.enumeration.user_service.UserExistenceStatus;

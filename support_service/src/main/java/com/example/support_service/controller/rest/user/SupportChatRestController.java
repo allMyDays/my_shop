@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -33,7 +34,7 @@ public class SupportChatRestController implements ISupportChatRestController{
     private final SupportChatMapper supportChatMapper;
 
     @PostMapping("/create")
-    public ResponseEntity<?> createSupportChat(@AuthenticationPrincipal Jwt jwt, @RequestBody CreateChatDto createChatDto, BindingResult bindingResult) throws UserNotFoundException {
+    public ResponseEntity<?> createSupportChat(@AuthenticationPrincipal Jwt jwt, @RequestBody  @Validated CreateChatDto createChatDto, BindingResult bindingResult) throws UserNotFoundException {
 
         if(bindingResult.hasErrors()) {
 

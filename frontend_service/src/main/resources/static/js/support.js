@@ -31,7 +31,7 @@ document.addEventListener("input", function (event) {      // авторост �
 
 <!-- блок фото из чатов поддержки -->
 
-const MAX_SUPPORT_PHOTOS = 3;
+const MAX_SUPPORT_PHOTOS = userIsStaff()===true?9:3;
 let selectedSupportPhotos = [];  // новые файлы {id, file, url, key}
 let nextSupportPhotoId = 1;
 const supportPhotoKeys = new Set();
@@ -458,7 +458,9 @@ async function createNewSupportChat(isOrderSupport=false) {
             body: JSON.stringify({topic: topic})
         });
         if (!response.ok) {
-            alert("Произошла ошибка при создани чата. Пожалуйста, попробуйте еще раз.")
+            const text = await response.text();
+            alert("Произошла ошибка при создани чата: "+text)
+            console.log("Произошла ошибка при создани чата: "+text);
             return;
         }
 
@@ -694,8 +696,8 @@ async function sendSupportMessage() {
 
     if (!resp.ok) {
         const text = await resp.text();
-        alert('Произошла ошибка при попытке создать сообщение.');
-        console.log('Произошла ошибка при попытке создать сообщение: ' + text);
+        alert("Произошла ошибка: "+text);
+        console.log("Произошла ошибка при попытке создать сообщение: " + text);
         return;
     }
     messageInput.value = "";
