@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 @Schema(description = "Сообщение в чате поддержки")
 public class SupportMessageResponseDTO {
-
+    @Setter
     private Long id;
 
     @Setter
@@ -37,7 +37,8 @@ public class SupportMessageResponseDTO {
     private List<String> photoFileNames;
 
 
-    public SupportMessageResponseDTO(Long chatId, boolean isUserMessage, String message, LocalDateTime dateOfCreation) {
+    public SupportMessageResponseDTO(long id, long chatId, boolean isUserMessage, String message, LocalDateTime dateOfCreation){
+        this.id = id;
         this.chatId = chatId;
         this.isUserMessage = isUserMessage;
         this.message = XssSanitizer.sanitize(message);

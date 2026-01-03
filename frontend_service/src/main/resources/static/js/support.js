@@ -211,14 +211,14 @@ messageInput.addEventListener("input", () => {
         sendTypingStatus(true);
         typingSentRecently = true;
 
-        setTimeout(() => typingSentRecently = false, 300);
+        setTimeout(() => typingSentRecently = false, 600);
     }
 
     // Обновляем таймаут очистки индикатора
     if (typingTimeout) clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
         sendTypingStatus(false); // остановка печати
-    }, 500); // если пользователь перестал печатать
+    }, 1000); // если пользователь перестал печатать
 });
 
 // 📤 Отправка статуса через WebSocket

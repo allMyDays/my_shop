@@ -82,7 +82,7 @@ public class SupportUserService {
 
         int key = Integer.parseInt(keyOpt.get());
 
-        return key >= 5;
+        return key >= 7;
     }
     public boolean isMessageSendingLimited(long chatId){
 
@@ -91,18 +91,13 @@ public class SupportUserService {
 
         int key = Integer.parseInt(keyOpt.get());
 
-        return key >= 4;
+        return key >= 5;
 
     }
 
     public SupportMessage saveSupportMessage(long userId, long chatId, @NonNull String message, List<MultipartFile> photos) {
 
         SupportChat supportChat = validateChatEntityAndOwnership(userId, chatId);
-
-        Optional<String> keyOpt = redisService.get(SUPPORT_MESSAGE_SENDING_LIMIT +":"+chatId);
-
-        redisService.saveTemp(SUPPORT_MESSAGE_SENDING_LIMIT +":"+chatId,
-                    keyOpt.map(s -> String.valueOf(Integer.parseInt(s) + 1)).orElse("1"), 120);
         supportChat.setNeedsAnswer(true);
         supportChat.setContainsMessages(true);
 
@@ -122,6 +117,10 @@ public class SupportUserService {
 
         supportChatRepository.save(supportChat);
         supportMessage = supportMessageRepository.save(supportMessage);
+
+        Optional<String> keyOpt = redisService.get(SUPPORT_MESSAGE_SENDING_LIMIT +":"+chatId);
+        redisService.saveTemp(SUPPORT_MESSAGE_SENDING_LIMIT +":"+chatId,
+                keyOpt.map(s -> String.valueOf(Integer.parseInt(s) + 1)).orElse("1"), 120);
 
         emailKafkaClient.sendSimpleMail(
                 agent_email,

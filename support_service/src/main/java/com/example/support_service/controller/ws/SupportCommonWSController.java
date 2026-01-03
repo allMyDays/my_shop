@@ -32,10 +32,6 @@ public class SupportCommonWSController {
     @MessageMapping("/handle_user_message")
     public void handleSupportUserMessage(SupportMessageResponseDTO messageDto, SimpMessageHeaderAccessor headerAccessor) throws UserNotFoundException {
 
-            if(supportService.isMessageSendingLimited(messageDto.getChatId())){
-                throw new TooManyFunctionCallsException();
-            }
-
             messageDto.setUserMessage(true);
 
             messagingTemplate.convertAndSend("/support-chat-output-topic/" + messageDto.getChatId(), messageDto);
