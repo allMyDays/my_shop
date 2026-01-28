@@ -27,13 +27,12 @@ public class UserController {
     private final OrderGrpcClient orderGrpcClient;
 
     @GetMapping("/registration")
-    @PreAuthorize("!isAuthenticated()")
     public String showRegistrationForm() {
+
         return "registration";
     }
 
     @GetMapping("/welcome")
-    @PreAuthorize("!isAuthenticated()")
     public String showLoginForm() {
         return "my_login";
     }
@@ -41,6 +40,9 @@ public class UserController {
     @GetMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public String profile(Model model, @AuthenticationPrincipal Jwt jwt){
+        if(jwt == null){
+            return "redirect:/welcome";
+        }
         long userId = getMyUserEntityId(jwt);
         UserResponseDTO userResponseDTO =  userGrpcClient.getUserInfoByEntityId(userId);
         Optional<UserAddressDto> addressDto = orderGrpcClient.getUserAddress(userId);
@@ -55,8 +57,10 @@ public class UserController {
 
     @GetMapping("/reset_password")
     public String reset_password(Model model, @AuthenticationPrincipal Jwt jwt) {
-        model.addAttribute("isUserStaff", userIsAdminOrSupportAgent(jwt));
-        model.addAttribute("currentUserId", getMyUserEntityId(jwt));
+       if(jwt!=null){
+           model.addAttribute("isUserStaff", userIsAdminOrSupportAgent(jwt));
+           model.addAttribute("currentUserId", getMyUserEntityId(jwt));
+       }
         return "password_reset";
     }
 

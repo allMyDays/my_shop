@@ -2,6 +2,7 @@ package com.example.frontend.controller;
 
 import com.example.common.client.grpc.ProductGrpcClient;
 import com.example.common.dto.product.rest.ProductResponseDTO;
+import com.example.common.enumeration.category.CategoryCode;
 import com.example.common.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -33,12 +34,12 @@ public class ProductController {
     private final ProductGrpcClient productGrpcClient;
 
     @GetMapping("/get/all")
-    public String productsPage(Model model, @RequestParam(required = false) String filter, @RequestParam(required = false) Long categoryId, @AuthenticationPrincipal Jwt jwt) {
+    public String productsPage(Model model, @RequestParam(required = false) String filter, @RequestParam(required = false) CategoryCode categoryCode, @AuthenticationPrincipal Jwt jwt) {
         if(filter != null && filter.trim().matches(ARTICLE_PATTERN)) {
             return productPage(extractProductId(filter.trim()), model,jwt);
         }
         if(filter!=null) model.addAttribute("filter",filter);
-        if(categoryId!=null) model.addAttribute("categoryId",categoryId);
+        if(categoryCode!=null) model.addAttribute("categoryCode",categoryCode.name());
 
         if(jwt!=null){
             model.addAttribute("currentUserId",getMyUserEntityId(jwt));
@@ -72,11 +73,13 @@ public class ProductController {
 
 
     @GetMapping(value = "/lazy", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter productsLazyLoad(@RequestParam(required = false) String filter, @RequestParam(required = false) Long categoryId, @RequestParam int offset) {
+    public SseEmitter productsLazyLoad(@RequestParam(required = false) String filter, @RequestParam(required = false) CategoryCode categoryCode, @RequestParam int offset) {
 
+        System.out.println("CATEGORYCODE: " + categoryCode);
+        System.out.println("FILTER: " + filter);
         SseEmitter emitter = new SseEmitter();
 
-        productGrpcClient.lazyLoadProductBatchStream(Optional.ofNullable(categoryId), Optional.ofNullable(filter), offset, productResponseDTO -> {
+        productGrpcClient.lazyLoadProductBatchStream(Optional.ofNullable(categoryCode), Optional.ofNullable(filter), offset, productResponseDTO -> {
             try {
                 emitter.send(productResponseDTO);
 

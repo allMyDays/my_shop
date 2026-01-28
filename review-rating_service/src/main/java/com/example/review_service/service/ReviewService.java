@@ -3,8 +3,9 @@ package com.example.review_service.service;
 import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.grpc.ProductGrpcClient;
 import com.example.common.client.kafka.MediaKafkaClient;
-import com.example.common.enumeration.media_service.BucketEnum;
+import com.example.common.enumeration.media.BucketEnum;
 import com.example.common.exception.*;
+import com.example.common.mapper.MediaMapper;
 import com.example.review_service.dto.ProductReviewInfoDto;
 import com.example.review_service.dto.ProductReviewStats;
 import com.example.review_service.entity.Review;
@@ -17,8 +18,6 @@ import com.example.review_service.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,9 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.common.service.CommonMediaService.validateImages;
 import static com.example.review_service.enumeration.EditReviewAbilityStatus.*;
-import static com.example.review_service.enumeration.RedisSubKeys.KAFKA_UPLOAD_IMAGES;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +43,8 @@ public class ReviewService {
     private final RedisService redisService;
 
     private final MediaGrpcClient mediaGrpcClient;
+
+    private final MediaMapper mediaMapper;
 
 
     public void create(@NonNull Review productReview, List<MultipartFile> images){
@@ -63,7 +62,7 @@ public class ReviewService {
               if(images.size()>5){
                   throw new TooManyImagesToUploadException(5);
               }
-              productReview.setPhotoFileNames(mediaGrpcClient.uploadPhotos(images, BucketEnum.reviews));
+              productReview.setPhotoFileNames(mediaGrpcClient.uploadPhotos(mediaMapper.toPhotoDataDtoList(images), BucketEnum.reviews));
           } reviewRepository.save(productReview);
     }
     @Transactional
@@ -102,7 +101,7 @@ public class ReviewService {
             if(finalImages.size()+imagesToSave.size()>5){
                 throw new TooManyImagesToUploadException(5);
             }
-            finalImages.addAll(mediaGrpcClient.uploadPhotos(imagesToSave, BucketEnum.reviews));
+            finalImages.addAll(mediaGrpcClient.uploadPhotos(mediaMapper.toPhotoDataDtoList(imagesToSave), BucketEnum.reviews));
             changed = true;
         }
         existingReview.setPhotoFileNames(finalImages);

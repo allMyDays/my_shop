@@ -64,7 +64,10 @@
             });
             if (response.ok) {
                 window.location.href = '/';
-            } else{
+            }else if(response.status===401){
+                msg.innerHTML += `<div class="alert alert-danger">Неверный логин или пароль.</div>`;
+            }
+            else{
                 const errorData = await response.json();
                 if(Array.isArray(errorData)){
                     errorData.forEach(err => {

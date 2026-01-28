@@ -1,16 +1,14 @@
 package com.example.support_service.service.admin;
 
 import com.example.common.client.grpc.MediaGrpcClient;
-import com.example.common.client.kafka.MediaKafkaClient;
-import com.example.common.enumeration.media_service.BucketEnum;
+import com.example.common.enumeration.media.BucketEnum;
 import com.example.common.exception.EntityNotFoundException;
 import com.example.common.exception.TooManyImagesToUploadException;
+import com.example.common.mapper.MediaMapper;
 import com.example.support_service.entity.SupportChat;
 import com.example.support_service.entity.SupportMessage;
 import com.example.support_service.repository.SupportChatRepository;
 import com.example.support_service.repository.SupportMessageRepository;
-import com.example.support_service.service.RedisService;
-import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +25,8 @@ public class SupportAdminService {
     private final SupportMessageRepository supportMessageRepository;
 
     private final MediaGrpcClient mediaGrpcClient;
+
+    private final MediaMapper mediaMapper;
 
 
 
@@ -84,7 +84,7 @@ public class SupportAdminService {
             if(photos.size() > 9){
                 throw new TooManyImagesToUploadException(9);
             }
-            supportMessage.setPhotoFileNames(mediaGrpcClient.uploadPhotos(photos, BucketEnum.chats));
+            supportMessage.setPhotoFileNames(mediaGrpcClient.uploadPhotos(mediaMapper.toPhotoDataDtoList(photos), BucketEnum.chats));
         }
 
         return supportMessageRepository.save(supportMessage);

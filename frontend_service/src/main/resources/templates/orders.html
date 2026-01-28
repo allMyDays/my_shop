@@ -47,7 +47,7 @@
 
         <!-- Кнопка подгрузки заказов -->
         <div class="text-center mt-3">
-            <button id="loadMoreOrdersBtn" class="btn btn-outline-dark" style="display: none">Загрузить ещё</button>
+            <button id="loadMoreOrdersBtn" class="btn btn-outline-dark" style="display: none" onclick="loadOrders(false)">Загрузить еще..</button>
         </div>
     </div>
 
@@ -83,8 +83,8 @@
                 <h3 id="orderMenuBody" class="modal-title fs-5" >...</h3>
             </div>
             <div class="modal-footer">
-                <button id="cancelOrderBtn" onclick="confirmCancelOrder()" type="button" class="btn btn-dark" data-bs-dismiss="modal">Отменить заказ</button>
-                <button type="button" onclick="tryCreateNewSupportChat(true)" class="btn btn-dark" data-bs-dismiss="modal">Помощь по заказу</button>
+                <button id="cancelOrderBtn" onclick="confirmCancelingOrder()" type="button" class="btn btn-dark" data-bs-dismiss="modal">Отменить заказ</button>
+                <button  th:if="${isUserStaff==false}" type="button" onclick="tryCreateNewSupportChat(true)" class="btn btn-dark" data-bs-dismiss="modal">Помощь по заказу</button>
                 <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Закрыть</button>
             </div>
         </div>
@@ -126,9 +126,16 @@
         if (reset) {
             orderPageOffset = 0;
             ordersContainer.innerHTML = "";
+            ordersContainer.innerHTML = "<p class='text-muted'>Подождите, идёт загрузка заказов...</p>";
         }
 
         const response = await fetch(`/api/order?sortingStatus=${orderSortingStatus}&offset=${orderPageOffset}`);
+        if(!response.ok){
+            alert('Произошла ошибка при попытке загрузить заказы.');
+            if(orderPageOffset===0) ordersContainer.innerHTML = "<p class='text-muted'>Ошибка загрузки заказов! Перезагрузите страницу.</p>";
+            return;
+
+        }if(reset===true) ordersContainer.innerHTML = "";
         const orders = await response.json();
 
         if (orders.length === 0 && orderPageOffset === 0) {
@@ -152,13 +159,13 @@
         <div class="me-2 text-center mx-4">
             <a href="/products/get/${item.productId}" target="_blank">
                 <img src="/api/media/get/${item.previewImageFileName}" alt="${item.title}"
-                     style="width: 60px; height: 60px; object-fit: cover;" class="rounded border">
+                     style="width: 150px; height: 150px; object-fit: cover;" class="rounded border">
             </a>
-            <div>
-                <strong class="small text-truncate" style="max-width: 70px;">${item.title}</strong>
+            <div class="mt-3">
+                <strong class="small" style="max-width: 220px; display: block;">${item.title}</strong>
                 <div class="text-secondary">Количество: ${item.productQuantity}</div>
                 <div class="text-secondary">${item.priceInt + '₽ за ед.'}</div>
-                <div class="text-secondary">${(item.priceInt * item.productQuantity) + '₽ общая стоимость'}</div>
+                <div class="text-secondary">${(item.priceInt * item.productQuantity) + '₽ итого'}</div>
             </div>
         </div>
     `).join("");
@@ -195,6 +202,7 @@
                 <div class="mt-2"><strong>Статус:</strong> ${order.orderStatusView}</div>
                 <div class="mt-2"><strong>Стоимость товаров:</strong> ${order.totalPriceView}</div>
                 <div class="mt-2"><strong>Количество товаров:</strong> ${order.commonItemQuantity}</div>
+                <div class="mt-2"><strong>Уникальных товаров:</strong> ${order.uniqueItemQuantity}</div>
                 <div class="mt-2"><strong>Стоимость доставки:</strong> ${order.deliveryPriceView}</div>
             </div>
             <div>
@@ -237,7 +245,7 @@
 
     }
 
-    function confirmCancelOrder(){
+    function confirmCancelingOrder(){
         new bootstrap.Modal(document.getElementById('cancelOrderModal')).show();
     }
 
@@ -254,7 +262,7 @@
             if(returnItemsToCart===true){
                 document.getElementById("closingCart").click();
 
-                setInterval(() => { loadCartSize();}, 700);
+                setTimeout(() => { loadCartSize();}, 10_000);
             }
 
         }
@@ -268,10 +276,14 @@
 
     let itemsOffset = 0;
     let currentOrderId = null;
+    let loadingOrders = false;
+    let noMoreOrderItems=false;
 
     async function openOrderItemsModal(orderId, orderQuantity) {
         currentOrderId = orderId;
         itemsOffset = 0;
+        loadingOrders=false;
+        noMoreOrderItems=false;
         document.getElementById("modalOrderId").textContent = orderId + " ("+orderQuantity+" шт.)";
         document.getElementById("modalItemsContainer").innerHTML = "";
 
@@ -282,32 +294,42 @@
     }
 
     async function loadOrderItems() {
-        const response = await fetch(`/api/order/items?orderId=${currentOrderId}&offset=${itemsOffset}`);
-        const items = await response.json();
+         try {
+             if(loadingOrders===true||noMoreOrderItems===true) return;
+             loadingOrders=true;
 
-        const container = document.getElementById("modalItemsContainer");
 
-        items.forEach(item => {
-            container.innerHTML += `
+             const response = await fetch(`/api/order/items?orderId=${currentOrderId}&offset=${itemsOffset}`);
+             const items = await response.json();
+             if(items.length<40) noMoreOrderItems=true;
+
+             const container = document.getElementById("modalItemsContainer");
+
+             items.forEach((item,index) => {
+                 container.innerHTML += `
             <div class="card mb-2 p-2 d-flex flex-row align-items-center mt-2">
+                <span class="me-2">${itemsOffset + index + 1}</span>
                 <a href="/products/get/${item.productId}" target="_blank">
                 <img src="/api/media/get/${item.previewImageFileName}" style="width: 70px; height: 70px; object-fit: cover;" class="rounded me-3">
                 </a>
                 <div>
-                    <strong class="ms-3">${item.title}</strong>
-                    <strong class="ms-4">Кол-во:</strong> ${item.productQuantity}
-                    <strong class="ms-4">Цена за ед:</strong> ${(item.priceInt)+"₽"}
-                    <strong class="ms-4">Итого:</strong> ${(item.productQuantity*item.priceInt)+"₽"}
+                    <div class="my-1" ><span >${item.title}</span></div>
+                    <strong style="color: darkred" class="ms-0">Количество:</strong> ${item.productQuantity}
+                    <strong style="color: darkred" class="ms-4">Цена за единицу:</strong> ${(item.priceInt) + "₽"}
+                    <strong style="color: darkred" class="ms-4">Общая цена:</strong> ${(item.productQuantity * item.priceInt) + "₽"}
                 </div>
             </div>
         `;
-        });
+             });
 
-        itemsOffset += items.length;
+             itemsOffset += items.length;
+         }finally {
+             loadingOrders=false;
+         }
     }
 
-    // Подгрузка при прокрутке модалки до конца
-    document.getElementById("orderItemsModal").addEventListener("scroll", async (e) => {
+    // Подгрузка при прокрутке до конца модалки всех товаров заказа
+    document.getElementById("modalItemsContainer").addEventListener("scroll", async (e) => {
         const el = e.target;
         if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
             await loadOrderItems();
@@ -326,7 +348,7 @@
     });
 
     // Загрузка при входе
-    loadOrders();
+    loadOrders(true);
 
 
 </script>

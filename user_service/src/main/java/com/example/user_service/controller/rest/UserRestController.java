@@ -1,9 +1,10 @@
 package com.example.user_service.controller.rest;
 
+import com.example.common.enumeration.user.KeycloakRole;
 import com.example.user_service.dto.UpdateUserRequestDTO;
 import com.example.user_service.dto.CreateUserRequestDTO;
 import com.example.common.dto.user.rest.UserResponseDTO;
-import com.example.common.enumeration.user_service.UserExistenceStatus;
+import com.example.common.enumeration.user.UserExistenceStatus;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.service.CommonUserService;
 import com.example.user_service.controller.rest.i.IUserRestController;
@@ -25,6 +26,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.BindingResult;
@@ -36,8 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.example.common.enumeration.user_service.UserExistenceStatus.EMAIL_EXISTS;
-import static com.example.common.enumeration.user_service.UserExistenceStatus.NOT_EXISTS;
+import static com.example.common.enumeration.user.UserExistenceStatus.EMAIL_EXISTS;
+import static com.example.common.enumeration.user.UserExistenceStatus.NOT_EXISTS;
 import static com.example.common.service.CommonUserService.getMyUserEntityId;
 import static com.example.common.service.CommonUserService.getUserKeycloakId;
 import static com.example.user_service.enumeration.EmailConfirmationStatus.*;
@@ -86,7 +88,7 @@ public class UserRestController implements IUserRestController {
         if (!userService.userEmailIsVerifiedOrSendCodeOtherwise(userDTO.getEmail())) {
             return Map.of(UserCreationStatus.EMAIL_SENT,true);
         }
-        boolean success = userService.createCommonUser(userDTO);
+        boolean success = userService.createCommonUser(userDTO, KeycloakRole.ROLE_CUSTOMER);
         return Map.of(UserCreationStatus.SUCCESS,success);
 
     }
@@ -199,15 +201,19 @@ public class UserRestController implements IUserRestController {
                             .toList());
         }
 
-        Optional<Jwt> optionalToken = userKeycloakService.generateJwtToken(loginRequestDTO.getNickName(), loginRequestDTO.getPassword());
 
-        if(optionalToken.isEmpty()){
+        Jwt token;
+        try{
+         token = userKeycloakService.generateJwtToken(loginRequestDTO.getNickName(), loginRequestDTO.getPassword());
+        }catch (BadCredentialsException e){
+            return ResponseEntity.status(401)
+                    .body(List.of(e.getMessage()));
+        }catch (Exception e){
             return ResponseEntity.badRequest()
-                    .body(List.of("Не удалось войти. Проверьте правильность введенных данных."));
+                    .body(List.of("Произошла ошибка при попытке входа. Попробуйте снова чуть позже."));
         }
-        Jwt token = optionalToken.get();
 
-        Long userId = getMyUserEntityId(token);
+        long userId = getMyUserEntityId(token);
 
         if(userService.getUserOptionalEntity(userId).isEmpty()){
             userService.getOrCreateMyUser(userId, getUserKeycloakId(token));

@@ -67,7 +67,7 @@ function loadCart(initial = false) {
         <img src="/api/media/get/${item.previewImageFileName}" height="60">
         </a>
         </td>
-        <td class="fw-bold">${item.title}</td>
+        <td >${item.title}</td>
          <td>
          
          <div id="totalPrice-${item.productId}" class="fw-bold">${item.totalPriceView}</div>
@@ -204,10 +204,9 @@ function loadWishList(initial = false) {
 
     wishListLoading = true;
     const tableBody = document.getElementById("wish-items-table");
-
     if (initial) {
-        resetWishList()
         const row = document.createElement("tr");
+        resetWishList()
         row.innerHTML = `
                 <td colspan="5" class="text-center text-muted">Подождите, идет загрузка...</td>
             `;
@@ -251,7 +250,7 @@ function loadWishList(initial = false) {
                         <img src="/api/media/get/${item.previewImageFileName}" height="60" class="rounded">
                         </a>
                         </td>
-                        <td class="fw-bold">${item.title}</td>
+                        <td>${item.title}</td>
                         <td class="fw-bold">${item.priceView}</td>
                         <td><i class="fa-solid fa-trash text-danger" style="cursor:pointer"
                                onclick="removeFromWishList(${item.productId})"></i></td>

@@ -41,8 +41,34 @@
 
         <div class="row g-4">
 
+
             <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(1)">
+                <div class="card category-card" onclick="onCategoryClick('APPLIANCES')">
+                    <img src="/images/categories/appliances.jpg" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Бытовая техника</h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick('ELECTRONICS')">
+                    <img src="/images/categories/gadjets.jpeg" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Электроника</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick('COSMETIC')">
+                    <img src="/images/categories/cosmetic.webp" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Косметика</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick('WOMAN_CLOTHES')">
                     <img src="/images/categories/woman_clothes.jpg" class="card-img-top category-img">
                     <div class="card-body">
                         <h5 class="card-title">Женская одежда</h5>
@@ -52,45 +78,7 @@
 
 
             <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(2)">
-                    <img src="/images/categories/man_clothes.png" class="card-img-top category-img">
-                    <div class="card-body">
-                        <h5 class="card-title">Мужская одежда</h5>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(3)">
-                    <img src="/images/categories/cosmetic.webp" class="card-img-top category-img">
-                    <div class="card-body">
-                        <h5 class="card-title">Косметика</h5>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(4)">
-                    <img src="/images/categories/appliances.jpg" class="card-img-top category-img">
-                    <div class="card-body">
-                        <h5 class="card-title">Бытовая техника</h5>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(5)">
-                    <img src="/images/categories/gadjets.jpeg" class="card-img-top category-img">
-                    <div class="card-body">
-                        <h5 class="card-title">Электроника</h5>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(6)">
+                <div class="card category-card" onclick="onCategoryClick('FOOD')">
                     <img src="/images/categories/food.jpg" class="card-img-top category-img">
                     <div class="card-body">
                         <h5 class="card-title">Продукты питания</h5>
@@ -99,7 +87,7 @@
             </div>
 
             <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(7)">
+                <div class="card category-card" onclick="onCategoryClick('FURNITURE')">
                     <img src="/images/categories/furniture.png" class="card-img-top category-img">
                     <div class="card-body">
                         <h5 class="card-title">Мебель</h5>
@@ -108,7 +96,7 @@
             </div>
 
             <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(8)">
+                <div class="card category-card" onclick="onCategoryClick('BOOKS')">
                     <img src="/images/categories/books.jpg" class="card-img-top category-img">
                     <div class="card-body">
                         <h5 class="card-title">Книги</h5>
@@ -116,10 +104,18 @@
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-lg-4">
-                <div class="card category-card" onclick="onCategoryClick(9)">
+                <div class="card category-card" onclick="onCategoryClick('PHARMACY')">
                     <img src="/images/categories/pharmacy.jpg" class="card-img-top category-img">
                     <div class="card-body">
                         <h5 class="card-title">Аптека</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-4">
+                <div class="card category-card" onclick="onCategoryClick('MAN_CLOTHES')">
+                    <img src="/images/categories/man_clothes.png" class="card-img-top category-img">
+                    <div class="card-body">
+                        <h5 class="card-title">Мужская одежда</h5>
                     </div>
                 </div>
             </div>
@@ -128,10 +124,10 @@
     </div>
 
     <script>
-        function onCategoryClick(categoryId) {
+        function onCategoryClick(categoryCode) {
 
             const params = new URLSearchParams();
-            params.append("categoryId", categoryId);
+            params.append("categoryCode", categoryCode);
 
             window.location.href = "/products/get/all?" + params.toString();
 

@@ -1,7 +1,7 @@
 package com.example.user_service.unit.controller;
 
 import com.example.user_service.dto.CreateUserRequestDTO;
-import com.example.common.enumeration.user_service.UserExistenceStatus;
+import com.example.common.enumeration.user.UserExistenceStatus;
 import com.example.common.service.CommonUserService;
 import com.example.user_service.controller.rest.UserRestController;
 import com.example.user_service.dto.LoginRequestDTO;

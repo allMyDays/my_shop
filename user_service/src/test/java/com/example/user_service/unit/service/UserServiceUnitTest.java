@@ -3,6 +3,7 @@ package com.example.user_service.unit.service;
 import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.EmailKafkaClient;
 import com.example.common.client.kafka.MediaKafkaClient;
+import com.example.common.enumeration.user.KeycloakRole;
 import com.example.user_service.dto.CreateUserRequestDTO;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.common.exception.UserNotFoundException;
@@ -54,6 +55,7 @@ class UserServiceUnitTest {
     private final Long USER_ID = 1L;
     private final String KEYCLOAK_ID = "keycloak-123";
     private final String EMAIL = "test@example.com";
+    private final KeycloakRole ROLE = KeycloakRole.ROLE_CUSTOMER;
 
     @BeforeEach
     void setUp() {
@@ -320,11 +322,11 @@ class UserServiceUnitTest {
         savedUser.setId(USER_ID);
 
         when(userRepository.save(any(MyUser.class))).thenReturn(savedUser);
-        when(userKeycloakService.createUser(anyString(), anyString(), anyString(), anyString(), anyLong()))
+        when(userKeycloakService.createUser(anyString(), anyString(), anyString(), anyString(), anyLong(), ROLE))
                 .thenThrow(new RuntimeException("Keycloak error"));
 
         // When
-        boolean result = userService.createCommonUser(userDTO);
+        boolean result = userService.createCommonUser(userDTO,ROLE);
 
         // Then
         assertFalse(result);
@@ -343,13 +345,13 @@ class UserServiceUnitTest {
         savedUser.setId(USER_ID);
 
         when(userRepository.save(any(MyUser.class))).thenReturn(savedUser);
-        when(userKeycloakService.createUser(anyString(), anyString(), anyString(), anyString(), anyLong()))
+        when(userKeycloakService.createUser(anyString(), anyString(), anyString(), anyString(), anyLong(),ROLE))
                 .thenReturn(KEYCLOAK_ID);
         doThrow(new RuntimeException("Password error"))
                 .when(userKeycloakService).setUserPassword(KEYCLOAK_ID, "password123");
 
         // When
-        boolean result = userService.createCommonUser(userDTO);
+        boolean result = userService.createCommonUser(userDTO,ROLE);
 
         // Then
         assertFalse(result);
@@ -366,17 +368,17 @@ class UserServiceUnitTest {
         savedUser.setId(USER_ID);
 
         when(userRepository.save(any(MyUser.class))).thenReturn(savedUser);
-        when(userKeycloakService.createUser(anyString(), anyString(), anyString(), anyString(), anyLong()))
+        when(userKeycloakService.createUser(anyString(), anyString(), anyString(), anyString(), anyLong(),ROLE))
                 .thenReturn(KEYCLOAK_ID);
         when(userKeycloakService.setUserPassword(KEYCLOAK_ID, "password123")).thenReturn(true);
 
         // When
-        boolean result = userService.createCommonUser(userDTO);
+        boolean result = userService.createCommonUser(userDTO,ROLE);
 
         // Then
         assertTrue(result);
         verify(userRepository, times(2)).save(any(MyUser.class));
-        verify(userKeycloakService).createUser("testuser", "John", "Doe", EMAIL, USER_ID);
+        verify(userKeycloakService).createUser("testuser", "John", "Doe", EMAIL, USER_ID,ROLE);
         verify(userKeycloakService).setUserPassword(KEYCLOAK_ID, "password123");
     }
 

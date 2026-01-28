@@ -5,6 +5,7 @@ import com.example.catalogue_service.repository.ProductRepository;
 import com.example.catalogue_service.service.ProductService;
 import com.example.common.dto.product.ProductIdAndPriceDto;
 import com.example.common.dto.product.ProductIdAndQuantityDto;
+import com.example.common.enumeration.category.CategoryCode;
 import com.example.common.exception.ProductNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,7 @@ class ProductServiceUnitTest {
 
     private final Long PRODUCT_ID = 100L;
     private final Long CATEGORY_ID = 1L;
+    private final CategoryCode CATEGORY_CODE = CategoryCode.BOOKS;
     private final String TITLE = "Test Product";
 
     @Test
@@ -47,7 +49,7 @@ class ProductServiceUnitTest {
                 .thenReturn(Stream.of(product));
 
         // When
-        Stream<Product> result = productService.getAll(CATEGORY_ID, TITLE, offset);
+        Stream<Product> result = productService.getAll(CATEGORY_CODE, TITLE, offset);
 
         // Then
         assertNotNull(result);
@@ -71,23 +73,9 @@ class ProductServiceUnitTest {
     }
 
     @Test
-    void getAll_WithZeroCategory_ConvertsToNull() {
-        // Given
-        when(productRepository.findByTitleAndCategory(eq(TITLE), isNull(), any(PageRequest.class)))
-                .thenReturn(Stream.empty());
-
-        // When
-        Stream<Product> result = productService.getAll(0L, TITLE, 0);
-
-        // Then
-        assertNotNull(result);
-        verify(productRepository).findByTitleAndCategory(eq(TITLE), isNull(), any(PageRequest.class));
-    }
-
-    @Test
     void getAll_WithShortTitle_ReturnsEmptyStream() {
         // When
-        Stream<Product> result = productService.getAll(CATEGORY_ID, "A", 0);
+        Stream<Product> result = productService.getAll(CATEGORY_CODE, "A", 0);
 
         // Then
         assertNotNull(result);
@@ -98,7 +86,7 @@ class ProductServiceUnitTest {
     @Test
     void getAll_WithEmptyTitle_ReturnsEmptyStream() {
         // When
-        Stream<Product> result = productService.getAll(CATEGORY_ID, "", 0);
+        Stream<Product> result = productService.getAll(CATEGORY_CODE, "", 0);
 
         // Then
         assertNotNull(result);
@@ -113,7 +101,7 @@ class ProductServiceUnitTest {
                 .thenReturn(Stream.empty());
 
         // When
-        productService.getAll(CATEGORY_ID, TITLE, 40);
+        productService.getAll(CATEGORY_CODE, TITLE, 40);
 
         // Then
         verify(productRepository).findByTitleAndCategory(eq(TITLE), eq(CATEGORY_ID),

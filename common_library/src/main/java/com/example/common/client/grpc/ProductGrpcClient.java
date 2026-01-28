@@ -3,7 +3,9 @@ package com.example.common.client.grpc;
 import com.example.common.dto.product.ProductIdAndPriceDto;
 import com.example.common.dto.product.ProductIdAndQuantityDto;
 import com.example.common.dto.product.rest.ProductResponseDTO;
+import com.example.common.enumeration.category.CategoryCode;
 import com.example.common.grpc.product.*;
+import com.example.common.mapper.CategoryMapper;
 import com.example.common.mapper.ProductMapper;
 import com.netflix.discovery.EurekaClient;
 import io.grpc.ManagedChannel;
@@ -35,6 +37,8 @@ public class ProductGrpcClient {
 
     private final ProductMapper productMapper;
 
+    private final CategoryMapper categoryMapper;
+
     private final ObjectProvider<ProductServiceGrpc.ProductServiceBlockingStub> productBlockingStubObjectProvider;
 
     private final ObjectProvider<ProductServiceGrpc.ProductServiceStub> productAsyncStubObjectProvider;
@@ -63,7 +67,7 @@ public class ProductGrpcClient {
         }
 
     }
-    public void lazyLoadProductBatchStream(Optional<Long> categoryId,
+    public void lazyLoadProductBatchStream(Optional<CategoryCode> categoryCode,
                                            Optional<String> filter,
                                            int offset,
                                            @NonNull Consumer<ProductResponseDTO> consumer,
@@ -73,7 +77,9 @@ public class ProductGrpcClient {
                 .newBuilder()
                 .setOffset(offset);
 
-        categoryId.ifPresent(productRequestBuilder::setCategoryId);
+        System.out.println(categoryCode);
+
+        categoryCode.ifPresent(c-> productRequestBuilder.setCategory(categoryMapper.toCategoryGrpcCode(c)));
         filter.ifPresent(productRequestBuilder::setFilter);
 
 

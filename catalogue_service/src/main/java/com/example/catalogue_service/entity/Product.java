@@ -2,10 +2,7 @@ package com.example.catalogue_service.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,9 +48,11 @@ public class Product {
 
     @Column
     @NotNull
+    @Setter
     private String previewImageFileName;
 
     @ElementCollection
+    @Setter
     private List<String> imageFileNames = new ArrayList<>();
 
     @PrePersist
@@ -62,4 +61,11 @@ public class Product {
 
     }
 
+    public Product(String title, String description, int price, List<Category> categories, LocalDateTime dateOfCreation) {
+        this.title = title;
+        this.description = description;
+        this.price = price;
+        this.categories = categories;
+        this.dateOfCreation = dateOfCreation;
+    }
 }

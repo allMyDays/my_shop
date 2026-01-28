@@ -6,8 +6,8 @@ let noSuchGoods=true;
 let productsToProcess= new Set();
 
 
-const categoryInput = document.getElementById("currentCategoryId");
-const categoryId = categoryInput? parseInt(categoryInput.value):null;
+const categoryInput = document.getElementById("currentCategoryCode");
+const categoryCode = categoryInput?categoryInput.value:null;
 
 const filterInput = document.getElementById("currentFilter");
 const filter = filterInput?filterInput.value:null;
@@ -24,7 +24,7 @@ function loadMoreProducts() {
     const params = new URLSearchParams();
 
     if(filter) params.append("filter",filter);
-    if (categoryId) params.append("categoryId", categoryId);
+    if (categoryCode) params.append("categoryCode", categoryCode);
     params.append("offset",currentOffset);
 
     let loadingIndicator = document.getElementById("products-loading-indicator");

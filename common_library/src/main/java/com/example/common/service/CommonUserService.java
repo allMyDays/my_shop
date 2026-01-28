@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.example.common.enumeration.user.KeycloakRole.ROLE_ADMIN;
+import static com.example.common.enumeration.user.KeycloakRole.ROLE_AGENT;
+
 @Service
 @ConditionalOnClass(Jwt.class)
 public final class CommonUserService {
@@ -63,7 +66,7 @@ public final class CommonUserService {
         if(optional.isEmpty()) return false;
 
         for(String role : optional.get()){
-            if(role.matches("ROLE_(ADMIN|AGENT)")) return true;
+            if(role.equals(ROLE_ADMIN.name())||role.equals(ROLE_AGENT.name())) return true;
 
         } return false;
 

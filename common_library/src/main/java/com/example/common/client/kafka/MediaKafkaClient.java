@@ -1,7 +1,5 @@
 package com.example.common.client.kafka;
 
-import com.example.common.dto.media.kafka.PhotoDataDTO;
-import com.example.common.enumeration.media_service.BucketEnum;
 import com.example.common.dto.media.kafka.DeleteMediaFilesRequestDTO;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +8,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 import static com.example.common.constant.kafka.Topics.MEDIA_REQUEST_TOPIC;

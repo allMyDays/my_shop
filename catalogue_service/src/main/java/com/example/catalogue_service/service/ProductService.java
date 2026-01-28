@@ -1,10 +1,13 @@
 package com.example.catalogue_service.service;
 
 
+import com.example.catalogue_service.entity.Category;
 import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.repository.ProductRepository;
 import com.example.common.dto.product.ProductIdAndPriceDto;
 import com.example.common.dto.product.ProductIdAndQuantityDto;
+import com.example.common.enumeration.category.CategoryCode;
+import com.example.common.exception.EntityNotFoundException;
 import com.example.common.exception.ProductNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
@@ -26,17 +29,18 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public Stream<Product> getAll(Long categoryId, String title, int offset) {
+    private final CategoryService categoryService;
 
+    public Stream<Product> getAll(CategoryCode categoryCode, String title, int offset) {
 
-        if(categoryId<=0){
-            categoryId=null;
-        }
+        System.out.println("CATEGORYCODE: " + categoryCode);
+        System.out.println("TITLE: " + title);
+
         if(title!=null&&title.trim().isEmpty()){
             title=null;
         }
 
-        if((title!=null&&title.length()<2)||(categoryId==null&&title==null)){
+        if((title!=null&&title.length()<2)||(categoryCode==null&&title==null)){
             return Stream.empty();
         }
 
@@ -49,9 +53,15 @@ public class ProductService {
 
         int page = offset/limit;
 
-        if(title!=null&&categoryId==null){
+        if(title!=null&&categoryCode==null){
             return productRepository.findByTitle(title, PageRequest.of(page, limit));
         }
+
+        Long categoryId = categoryService.getCategoryByCode(categoryCode)
+                .map(Category::getId)
+                .orElseThrow(()-> new RuntimeException("Category not found"));
+
+
         if(title == null){
             return productRepository.findByCategoryId(categoryId, PageRequest.of(page, limit));
         }

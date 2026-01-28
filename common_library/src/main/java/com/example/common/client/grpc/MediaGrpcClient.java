@@ -1,13 +1,14 @@
 package com.example.common.client.grpc;
 
 import com.example.common.dto.media.kafka.PhotoDataDTO;
-import com.example.common.enumeration.media_service.BucketEnum;
+import com.example.common.enumeration.media.BucketEnum;
 import com.example.common.grpc.media.Media;
 import com.example.common.grpc.media.MediaServiceGrpc;
 import com.example.common.mapper.MediaMapper;
 import com.netflix.discovery.EurekaClient;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -33,22 +34,9 @@ public class MediaGrpcClient {
     private final MediaMapper mediaMapper;
 
 
-    public List<String> uploadPhotos(List<MultipartFile> multipartFileList, BucketEnum bucketEnum){
+    public List<String> uploadPhotos(@NonNull List<PhotoDataDTO> photoDataDTOList, @NonNull BucketEnum bucketEnum){
 
-        validateImages(multipartFileList);
-
-        List<PhotoDataDTO> photoDataDTOList = multipartFileList.stream()
-                .map(f->{
-                    try {
-                        return new PhotoDataDTO(f.getBytes(),f.getContentType());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                })
-                .toList();
-
-
+        validateImages(photoDataDTOList);
 
         Media.UploadPhotosRequest uploadPhotosRequest = Media.UploadPhotosRequest
                 .newBuilder()

@@ -7,7 +7,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - /c/Users/foshi/Desktop/my_shop_3/config/redis/import:/data
+      - ./config/redis/import:/data
     restart: always
 
   keycloak:
@@ -20,7 +20,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     volumes:
-      - /c/Users/foshi/Desktop/my_shop_3/config/keycloak/import:/opt/keycloak/data/import
+      - ./config/keycloak/import:/opt/keycloak/data/import
     restart: unless-stopped
 
   postgres:
@@ -33,7 +33,7 @@ services:
       ports:
         - "5433:5432"
       volumes:
-        - /c/Users/foshi/Desktop/my_shop_3/config/postgres/import:/var/lib/postgresql/data
+        - ./config/postgres/import:/var/lib/postgresql/data
 
   minio:
     image: minio/minio
@@ -41,7 +41,7 @@ services:
       - "9000:9000"   # Web API
       - "9001:9001"   # Web UI (админка)
     volumes:
-      - /c/Users/foshi/Desktop/my_shop_3/config/minIO/import:/data
+      - ./config/minIO/import:/data
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -117,6 +117,7 @@ services:
       - redis
       - eureka
 
+
   support-service:
       image: support-service:1.0
       ports:
@@ -187,6 +188,7 @@ services:
       - keycloak
       - kafka
       - eureka
+      - media-service
 
 
   email-service:

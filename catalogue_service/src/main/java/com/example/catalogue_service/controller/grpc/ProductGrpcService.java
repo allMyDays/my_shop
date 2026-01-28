@@ -2,10 +2,12 @@ package com.example.catalogue_service.controller.grpc;
 
 import com.example.catalogue_service.entity.Product;
 import com.example.catalogue_service.mapper.LocalProductMapper;
+import com.example.catalogue_service.service.CategoryService;
 import com.example.catalogue_service.service.ProductService;
 import com.example.common.dto.product.ProductIdAndPriceDto;
 import com.example.common.dto.product.ProductIdAndQuantityDto;
 import com.example.common.grpc.product.*;
+import com.example.common.mapper.CategoryMapper;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import jakarta.transaction.Transactional;
@@ -24,6 +26,8 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ProductService productService;
 
     private final LocalProductMapper productMapper;
+
+    private final CategoryMapper categoryMapper;
 
 
 
@@ -68,7 +72,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     @Override
     public void getAllProducts(ProductRequestByFilterAndCategory request, StreamObserver<ProductResponse> responseObserver) {
 
-        try(Stream<Product> productStream = productService.getAll(request.getCategoryId(), request.getFilter(), request.getOffset())){
+        try(Stream<Product> productStream = productService.getAll(request.hasCategory()?categoryMapper.toCategoryCode(request.getCategory()):null, request.hasFilter()?request.getFilter():null, request.getOffset())){
 
             productStream.forEach(product -> {
 

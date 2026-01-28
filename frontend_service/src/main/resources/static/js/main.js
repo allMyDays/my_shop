@@ -1,8 +1,8 @@
 
 document.addEventListener("DOMContentLoaded", async function () {
 
-    const urlParams = new URLSearchParams(window.location.search);  // загрузить категории на фронт
-    const selectedCategoryId = urlParams.get('categoryId');
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedCategoryCode = urlParams.get('categoryCode');
 
     fetch('/api/catalogue/categories', {
         method: "GET"
@@ -12,12 +12,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             const select = document.getElementById('categorySelect');
             categories.forEach(cat => {
                 const option = document.createElement('option');
-                option.value = cat.id;
+                option.value = cat.code;
                 option.textContent = cat.name;
                 select.appendChild(option);
             });
-            if (selectedCategoryId) {
-                select.value = selectedCategoryId;
+            if (selectedCategoryCode) {
+                select.value = selectedCategoryCode;
             }
         });
 
@@ -45,7 +45,7 @@ function mainSearchFind() {
 
     const input = document.getElementById("main-search-input");
 
-    const categoryId = document.getElementById("categorySelect").value;
+    const categoryCode = document.getElementById("categorySelect").value;
 
     const inputValue = input.value.trim();
 
@@ -57,7 +57,7 @@ function mainSearchFind() {
     const params = new URLSearchParams();
 
     params.append("filter", inputValue);
-    if (categoryId) params.append("categoryId", categoryId);
+    if (categoryCode) params.append("categoryCode", categoryCode);
 
     window.location.href = "/products/get/all?" + params.toString();
 }

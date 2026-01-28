@@ -3,8 +3,9 @@ package com.example.support_service.service;
 import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.EmailKafkaClient;
 import com.example.common.client.kafka.MediaKafkaClient;
-import com.example.common.enumeration.media_service.BucketEnum;
+import com.example.common.enumeration.media.BucketEnum;
 import com.example.common.exception.*;
+import com.example.common.mapper.MediaMapper;
 import com.example.support_service.entity.SupportChat;
 import com.example.support_service.entity.SupportMessage;
 import com.example.support_service.repository.SupportChatRepository;
@@ -38,6 +39,8 @@ public class SupportUserService {
     private final EmailKafkaClient emailKafkaClient;
 
     private final MediaGrpcClient mediaGrpcClient;
+
+    private final MediaMapper mediaMapper;
 
     private SupportUserService selfLink;
     private MediaKafkaClient mediaKafkaClient;
@@ -112,7 +115,7 @@ public class SupportUserService {
             if(photos.size() > 3){
                 throw new TooManyImagesToUploadException(3);
             }
-            supportMessage.setPhotoFileNames(mediaGrpcClient.uploadPhotos(photos, BucketEnum.chats));
+            supportMessage.setPhotoFileNames(mediaGrpcClient.uploadPhotos(mediaMapper.toPhotoDataDtoList(photos), BucketEnum.chats));
         }
 
         supportChatRepository.save(supportChat);

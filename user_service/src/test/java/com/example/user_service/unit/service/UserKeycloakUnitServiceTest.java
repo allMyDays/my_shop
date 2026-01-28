@@ -1,8 +1,9 @@
 package com.example.user_service.unit.service;
 
+import com.example.common.enumeration.user.KeycloakRole;
 import com.example.user_service.dto.UpdateUserRequestDTO;
 import com.example.common.dto.user.rest.UserResponseDTO;
-import com.example.common.enumeration.user_service.UserExistenceStatus;
+import com.example.common.enumeration.user.UserExistenceStatus;
 import com.example.user_service.dto.UserFullNameDto;
 import com.example.user_service.service.UserKeycloakService;
 import jakarta.ws.rs.core.Response;
@@ -250,7 +251,7 @@ class UserKeycloakUnitServiceTest {
 
         // Act & Assert
         assertThrows(RuntimeException.class, () ->
-                userKeycloakService.createUser(username, "John", "Doe", email, 123L));
+                userKeycloakService.createUser(username, "John", "Doe", email, 123L, KeycloakRole.ROLE_CUSTOMER));
         verify(responseMock).close();
     }
 

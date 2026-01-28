@@ -4,11 +4,13 @@ package com.example.user_service.service;
 import com.example.common.client.grpc.MediaGrpcClient;
 import com.example.common.client.kafka.EmailKafkaClient;
 import com.example.common.client.kafka.MediaKafkaClient;
+import com.example.common.mapper.MediaMapper;
 import com.example.user_service.dto.CreateUserRequestDTO;
-import com.example.common.enumeration.media_service.BucketEnum;
+import com.example.common.enumeration.media.BucketEnum;
 import com.example.common.exception.UserNotFoundException;
 import com.example.common.dto.user.rest.UserResponseDTO;
 import com.example.user_service.entity.MyUser;
+import com.example.common.enumeration.user.KeycloakRole;
 import com.example.user_service.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
@@ -43,16 +45,24 @@ public class UserService {
 
     private final MediaGrpcClient mediaGrpcClient;
 
+    private final MediaMapper mediaMapper;
+
     @Autowired
     @Lazy
     private UserService selfLink;
 
-    public boolean createCommonUser(@NonNull CreateUserRequestDTO userDTO) {
+    public boolean createCommonUser(@NonNull CreateUserRequestDTO userDTO, KeycloakRole keycloakRole) {
         MyUser newUserEntity = null;
        String newKeycloakId = null;
        try{
            newUserEntity = selfLink.saveUserEntity(new MyUser());
-           newKeycloakId = userKeycloakService.createUser(userDTO.getNickName(),userDTO.getFirstName(),userDTO.getLastName(),userDTO.getEmail(),newUserEntity.getId());
+           newKeycloakId = userKeycloakService.createUser(
+                   userDTO.getNickName(),
+                   userDTO.getFirstName(),
+                   userDTO.getLastName(),
+                   userDTO.getEmail(),
+                   newUserEntity.getId(),
+                   keycloakRole);
 
            userKeycloakService.setUserPassword(newKeycloakId, userDTO.getPassword());
            newUserEntity.setKeycloakId(newKeycloakId);
@@ -90,7 +100,7 @@ public class UserService {
 
     public void saveUserAvatar(@NonNull MultipartFile image, long userId){
 
-        List<String> newFileNames = mediaGrpcClient.uploadPhotos(List.of(image), BucketEnum.users);
+        List<String> newFileNames = mediaGrpcClient.uploadPhotos(mediaMapper.toPhotoDataDtoList(List.of(image)), BucketEnum.users);
         if(newFileNames.isEmpty()){
             throw new RuntimeException("Failed to upload avatar: generated avatar name absents");
         }

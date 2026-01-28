@@ -2,9 +2,11 @@ package com.example.user_service.service;
 
 import com.example.user_service.dto.UpdateUserRequestDTO;
 import com.example.common.dto.user.rest.UserResponseDTO;
-import com.example.common.enumeration.user_service.UserExistenceStatus;
+import com.example.common.enumeration.user.UserExistenceStatus;
 import com.example.user_service.dto.UserFullNameDto;
+import com.example.common.enumeration.user.KeycloakRole;
 import jakarta.annotation.PostConstruct;
+import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.core.Response;
 import lombok.NonNull;
 import org.keycloak.admin.client.CreatedResponseUtil;
@@ -12,10 +14,12 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
@@ -40,6 +44,8 @@ public class UserKeycloakService {
     private String issuerUri;
 
     private final JwtDecoder jwtDecoder;
+
+    String SUPPORT_AGENT_ROLE_NAME = "ROLE_AGENT";
 
 
     @Autowired
@@ -68,7 +74,9 @@ public class UserKeycloakService {
             @NonNull String firstName,
             @NonNull String lastName,
             @NonNull String email,
-            long userEntityId) throws Exception {
+            long userEntityId,
+            KeycloakRole keycloakRole
+    ) throws Exception {
         Response response = null;
         RuntimeException exception = new RuntimeException("Error creating user");
       try {
@@ -89,10 +97,29 @@ public class UserKeycloakService {
           if (response.getStatus() != Response.Status.CREATED.getStatusCode()) {
               throw exception;
           }
-          return CreatedResponseUtil.getCreatedId(response);
+          String newUserId =  CreatedResponseUtil.getCreatedId(response);
+          setRoleToUser(newUserId, keycloakRole);
+          return newUserId;
       } finally {
           if(response!=null) response.close();
       }
+    }
+
+    public void setRoleToUser(@NonNull String userId, @NonNull KeycloakRole keycloakRole) {
+
+        RoleRepresentation role = keycloakClientInstance
+                .realm(realm)
+                .roles()
+                .get(keycloakRole.name())
+                .toRepresentation();
+
+        keycloakClientInstance
+                .realm(realm)
+                .users()
+                .get(userId)
+                .roles()
+                .realmLevel()
+                .add(List.of(role));
     }
 
     public boolean setUserPassword(@NonNull String userId, @NonNull String newPassword) {
@@ -178,35 +205,50 @@ public class UserKeycloakService {
 
     }
 
+    public UserExistenceStatus userExists(
+            String email,
+            String username,
+            String excludedUserId
+    ) {
+        if (email != null) {
+            List<UserRepresentation> users =
+                    keycloakClientInstance.realm(realm)
+                            .users()
+                            .searchByEmail(email, true);
 
-    public UserExistenceStatus userExists(String email, String username, String excludedUser){
-
-        if(email==null&&username==null) return UserExistenceStatus.NOT_EXISTS;
-
-        int first = 0;
-        int maxResults = 100;
-
-        while (true) {
-            List<UserRepresentation> users = keycloakClientInstance.realm(realm).users().list(first, maxResults);
-
-            if (users.isEmpty()) {
-                break;
+            if (users.stream().anyMatch(u -> !u.getId().equals(excludedUserId))) {
+                return UserExistenceStatus.EMAIL_EXISTS;
             }
+        }
 
-            for (UserRepresentation user : users) {
+        if (username != null) {
+            List<UserRepresentation> users =
+                    keycloakClientInstance.realm(realm)
+                            .users()
+                            .search(username, true);
 
-                if(excludedUser!=null && user.getId().equals(excludedUser)) continue;
-
-                if (email!=null&&email.equalsIgnoreCase(user.getEmail())) return UserExistenceStatus.EMAIL_EXISTS;
-                if (username!=null&&username.equalsIgnoreCase(user.getUsername())) return UserExistenceStatus.USERNAME_EXISTS;
+            if (users.stream().anyMatch(u -> !u.getId().equals(excludedUserId))) {
+                return UserExistenceStatus.USERNAME_EXISTS;
             }
-
-            first += maxResults;
         }
 
         return UserExistenceStatus.NOT_EXISTS;
-
     }
+
+    public boolean existsSupportAgent() {
+
+        int first = 0;
+        int max = 1;
+
+        Set<UserRepresentation> users = keycloakClientInstance
+                        .realm(realm)
+                        .roles()
+                        .get(SUPPORT_AGENT_ROLE_NAME)
+                        .getRoleUserMembers(first, max);
+
+        return !users.isEmpty();
+    }
+
     public String getUserRealm(@NonNull Jwt jwt){
         String issuer = jwt.getClaimAsString("iss");
         return issuer.substring(issuer.lastIndexOf("/")+1);
@@ -260,7 +302,7 @@ public class UserKeycloakService {
 
     }
 
-    public Optional<Jwt> generateJwtToken(@NonNull String nickName,@NonNull String password){
+    public Jwt generateJwtToken(@NonNull String nickName,@NonNull String password){
         try(Keycloak keycloak = keycloakBuilderProvider
                     .getObject()
                     .grantType(PASSWORD)
@@ -268,11 +310,10 @@ public class UserKeycloakService {
                     .username(nickName)
                     .build()) {
 
-            Jwt jwt = jwtDecoder.decode(keycloak.tokenManager().getAccessTokenString());
-            return Optional.of(jwt);
+            return jwtDecoder.decode(keycloak.tokenManager().getAccessTokenString());
 
-        }catch (Exception e){
-            return Optional.empty();
+        }catch (NotAuthorizedException e){
+            throw new BadCredentialsException("Неверный логин или пароль.");
         }
     }
 

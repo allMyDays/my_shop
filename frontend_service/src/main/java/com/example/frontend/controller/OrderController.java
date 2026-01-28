@@ -16,15 +16,15 @@ import static com.example.common.service.CommonUserService.userIsAdminOrSupportA
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/orders")
-@PreAuthorize("isAuthenticated()")
 public class OrderController {
 
     @GetMapping("/all")
     public String OrdersPage(Model model, @AuthenticationPrincipal Jwt jwt) {
-        if(jwt!=null){
-            model.addAttribute("currentUserId",getMyUserEntityId(jwt));
-            model.addAttribute("isUserStaff", userIsAdminOrSupportAgent(jwt));
+        if(jwt == null){
+            return "redirect:/welcome";
         }
+        model.addAttribute("currentUserId",getMyUserEntityId(jwt));
+        model.addAttribute("isUserStaff", userIsAdminOrSupportAgent(jwt));
         return "orders";
     }
 

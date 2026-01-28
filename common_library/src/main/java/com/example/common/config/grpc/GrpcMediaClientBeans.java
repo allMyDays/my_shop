@@ -29,6 +29,7 @@ public class GrpcMediaClientBeans {
 
             return ManagedChannelBuilder
                     .forAddress(instanceInfo.getIPAddr(), port)
+                    .maxInboundMessageSize(50 * 1024 * 1024)
                     .usePlaintext()
                     .build();
         }

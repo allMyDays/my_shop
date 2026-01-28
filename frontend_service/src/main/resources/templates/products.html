@@ -17,11 +17,10 @@
 <body>
 <div th:insert="~{fragments/menu :: #nav-menu}"></div>
 
-<input type="hidden" id="currentCategoryId" th:if="${categoryId!=null}" th:value="${categoryId}">
-<input type="hidden" id="currentFilter" th:if="${filter!=null}" th:value="${filter}">
-
 
 <main>
+    <input type="hidden" id="currentCategoryCode" th:if="${categoryCode!=null}" th:value="${categoryCode}">
+    <input type="hidden" id="currentFilter" th:if="${filter!=null}" th:value="${filter}">
 
     <div class="container-fluid main" style="display:none" id="no-such-goods">
         <h1 class="pt-5">Похоже, что по данному запросу товаров нет!</h1>

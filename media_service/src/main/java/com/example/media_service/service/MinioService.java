@@ -1,6 +1,6 @@
 package com.example.media_service.service;
 
-import com.example.common.enumeration.media_service.BucketEnum;
+import com.example.common.enumeration.media.BucketEnum;
 import com.example.common.dto.media.kafka.PhotoDataDTO;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

@@ -6,6 +6,8 @@ import com.example.catalogue_service.service.ProductService;
 import com.example.common.dto.product.PriceDto;
 import com.example.common.dto.product.ProductIdAndQuantityDto;
 import com.example.common.dto.product.rest.ProductResponseDTO;
+import com.example.common.enumeration.category.CategoryCode;
+import com.example.common.exception.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,16 +25,24 @@ public class ProductsRestController {
      private final LocalProductMapper productMapper;
 
     @GetMapping
-    public List<ProductResponseDTO> findProducts(@RequestParam(required = false) Long categoryId, @RequestParam(required = false) String filter, @RequestParam int offset) {
+    public List<ProductResponseDTO> getProducts(@RequestParam(required = false) CategoryCode categoryCode, @RequestParam(required = false) String filter, @RequestParam int offset) {
 
-        try(Stream<Product> productStream = productService.getAll(categoryId,filter,offset)){
+        try(Stream<Product> productStream = productService.getAll(categoryCode,filter,offset)){
         return productMapper.toResponseProductDTOList(productStream.toList());
         }
 
     }
 
+    @GetMapping("/{productId:\\d+}")
+    public ProductResponseDTO getProduct(@PathVariable long productId) {
+        Product product = productService.getProductByID(productId)
+                .orElseThrow(()-> new ProductNotFoundException(List.of(productId)));
+        return productMapper.toResponseProductDTO(product);
+
+    }
+
     @PostMapping("/get-by-ids")
-    public List<ProductResponseDTO> getProductByIDs(@RequestBody List<Long> IDs) {
+    public List<ProductResponseDTO> getProductsByIDs(@RequestBody List<Long> IDs) {
 
             try (Stream<Product> productStream = productService.getProductsByIDs(IDs)) {
                 List<Product> products = productStream.toList();
@@ -49,22 +59,5 @@ public class ProductsRestController {
         return new PriceDto(totalPrice,formatPrice(totalPrice));
     }
 
-   /* @PostMapping
-    public ResponseEntity<?> createProduct(@Valid @RequestBody ProductRequestDTO productDTO, BindingResult bindingResult, UriComponentsBuilder uriBuilder) throws BindException {
 
-        if(bindingResult.hasErrors()) {
-            throw new BindException(bindingResult);
-        }
-
-        else{
-            Product product = productService.createProduct(null, productMapper.toProduct(productDTO),null,null,null);
-
-            return ResponseEntity
-                    .created(uriBuilder
-                            .replacePath("catalogue-api/products/{productId}")
-                            .build(Map.of("productId",product.getId())))
-                    .body(product);
-        }
-
-    }*/
 }
