@@ -1,0 +1,47 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: email-service
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_ADDRESS}
+    password: ${MAIL_PASSWORD}
+    protocol: ${MAIL_PROTOCOL:smtps}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+    default-encoding: UTF-8
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    consumer:
+      group-id: email-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  #десериализация любых объектов
+
+
+  threads:
+    virtual:
+      enabled: true
+
+  main:
+    keep-alive: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone:
+        http://${EUREKA_HOST}:${EUREKA_PORT}/eureka/

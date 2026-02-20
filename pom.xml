@@ -10,18 +10,18 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>catalogue_service</module>
+        <module>catalogue-service</module>
         <module>common_library</module>
-        <module>support_service</module>
-        <module>media_service</module>
-        <module>e-mail_service</module>
-        <module>user_service</module>
-        <module>cart-wishlist_service</module>
-        <module>frontend_service</module>
-        <module>gateway-api</module>
-        <module>eureka_server</module>
-        <module>review-rating_service</module>
-        <module>order_service</module>
+        <module>support-service</module>
+        <module>media-service</module>
+        <module>email-service</module>
+        <module>user-service</module>
+        <module>cart-wishlist-service</module>
+        <module>frontend-service</module>
+        <module>gateway</module>
+        <module>eureka</module>
+        <module>review-service</module>
+        <module>order-service</module>
     </modules>
 
     <properties>
@@ -101,6 +101,8 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

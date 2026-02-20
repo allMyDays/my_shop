@@ -1,0 +1,72 @@
+server:
+  port: 8089
+  grpc:
+    port: 89
+
+spring:
+  application:
+    name: review-service
+
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 8MB # файлы + поля
+
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB_NAME}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    consumer:
+      group-id: review-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  #десериализация любых объектов
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        max:
+          request:
+            size: 8_388_608
+        buffer:
+          memory: 67_728_640 # размер буффера
+      compression-type: snappy #сжатие
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone:
+        http://${EUREKA_HOST}:${EUREKA_PORT}/eureka/
+
+  instance:
+    metadata-map:
+      grpc-port: ${server.grpc.port}

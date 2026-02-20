@@ -1,3 +1,32 @@
+
+# IDE
 .idea/
-/config/
+
+# игнорирую весь config
+/config/**
+
+# ---------- KEYCLOAK ----------
+#  разрешаю realm-import
+!/config/keycloak/
+!/config/keycloak/import/
+!/config/keycloak/import/realm-export.json
+
+# ---------- MINIO ----------
+# разрешаю путь до import
+!/config/minIO/
+!/config/minIO/import/
+
+# разрешаю папки-бакеты
+!/config/minIO/import/chats/
+!/config/minIO/import/products/
+!/config/minIO/import/reviews/
+!/config/minIO/import/users/
+
+# разрешаю только .gitkeep
+!/config/minIO/import/**/.gitkeep
+
+.minio.sys/
+
+# Maven
 **/target/
+.env

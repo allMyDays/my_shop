@@ -1,8 +1,12 @@
 package com.example.common.dto.user.rest;
 
-import lombok.Data;
+import lombok.*;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class UserAddressDto {
 
     private String fullAddress;

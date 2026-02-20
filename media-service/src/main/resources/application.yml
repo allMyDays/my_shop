@@ -1,0 +1,57 @@
+server:
+  port: 8078
+  grpc:
+    port: 78
+
+spring:
+  application:
+    name: media-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://${KEYCLOAK_HOST}:${KEYCLOAK_PORT}/realms/${KEYCLOAK_REALM}
+  threads:
+    virtual:
+      enabled: true
+
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT}
+    consumer:
+      group-id: media-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  #десериализация любых объектов
+        fetch:
+          max:
+            bytes: 12_971_520
+        max:
+          partition:
+            fetch:
+              bytes:
+                12_971_520
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+
+minio:
+  url: http://${MINIO_HOST}:${MINIO_PORT}
+  access-key: ${MINIO_ACCESS_KEY}
+  secret-key: ${MINIO_SECRET_KEY}
+
+eureka:
+   client:
+     service-url:
+      defaultZone:
+        http://${EUREKA_HOST}:${EUREKA_PORT}/eureka/
+   instance:
+     metadata-map:
+       grpc-port: ${server.grpc.port}
