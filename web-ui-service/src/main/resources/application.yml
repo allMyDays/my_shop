@@ -2,7 +2,7 @@ server:
   port: 8083
 spring:
   application:
-    name: frontend-service
+    name: web-ui-service
   flyway:
     enabled: false
   threads:

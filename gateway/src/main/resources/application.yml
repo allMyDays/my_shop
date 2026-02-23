@@ -54,7 +54,7 @@ spring:
 
 
         - id: cart
-          uri: lb://cart-wishlist-service
+          uri: lb://cart-service
           predicates:
             - Path=/api/cart, /api/cart/**
           filters:
@@ -63,7 +63,7 @@ spring:
 
 
         - id: wishlist
-          uri: lb://cart-wishlist-service
+          uri: lb://cart-service
           predicates:
             - Path=/api/wish-list, /api/wish-list/**
           filters:
@@ -85,13 +85,13 @@ spring:
 
 
         - id: frontend-static
-          uri: lb://frontend-service
+          uri: lb://web-ui-service
           predicates:
             - Path=/static/**, /*.css, /*.js, /*.ico, /*.png, /*.jpg, /*.svg, /*.woff2
 
 
         - id: frontend-templates
-          uri: lb://frontend-service
+          uri: lb://web-ui-service
           predicates:
               - Path=/**
           filters:

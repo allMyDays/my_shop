@@ -8,11 +8,11 @@ RUN mvn -N install
 
 RUN mvn dependency:go-offline -DskipTests
 
-RUN mvn clean package -pl cart-wishlist-service -am -DskipTests
+RUN mvn clean package -pl cart-service -am -DskipTests
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-COPY --from=builder /app/cart-wishlist-service/target/*.jar app.jar
+COPY --from=builder /app/cart-service/target/*.jar app.jar
 EXPOSE 8080 80
 CMD ["java", "-jar", "app.jar"]
 

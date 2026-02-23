@@ -11,13 +11,13 @@
 
     <modules>
         <module>catalogue-service</module>
-        <module>common_library</module>
+        <module>my-shop-core-starter</module>
         <module>support-service</module>
         <module>media-service</module>
         <module>email-service</module>
         <module>user-service</module>
-        <module>cart-wishlist-service</module>
-        <module>frontend-service</module>
+        <module>cart-service</module>
+        <module>web-ui-service</module>
         <module>gateway</module>
         <module>eureka</module>
         <module>review-service</module>

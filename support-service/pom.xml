@@ -30,7 +30,7 @@
         </dependency>
         <dependency>
             <groupId>com.example</groupId>
-            <artifactId>common_library</artifactId>
+            <artifactId>my-shop-core-starter</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 

@@ -100,12 +100,12 @@ services:
       - eureka
 
 
-  cart-wishlist-service:
+  cart-service:
     restart: unless-stopped
     build:
       context: .
-      dockerfile: cart-wishlist-service/Dockerfile
-    image: cart-wishlist-service:latest
+      dockerfile: cart-service/Dockerfile
+    image: cart-service:latest
     ports:
       - "58080:8080"
     environment:
@@ -184,12 +184,12 @@ services:
       - eureka
 
 
-  frontend-service:
+  web-ui-service:
     restart: unless-stopped
     build:
       context: .
-      dockerfile: frontend-service/Dockerfile
-    image: frontend-service:latest
+      dockerfile: web-ui-service/Dockerfile
+    image: web-ui-service:latest
     environment:
       - SPRING_PROFILES_ACTIVE=test
       - EUREKA_HOST=eureka
