@@ -6,14 +6,19 @@
 - Java 21
 - Spring Boot 3.3.1
 - Spring MVC
-- Spring Security + OAuth2 (Keycloak)
+- Spring Security + OAuth2 + OpenID Connect (Keycloak, JWT)
 - Spring Data JPA + Hibernate
-- Spring Cloud Gateway
-- Netflix Eureka
-- gRPC, gRPC streaming
-- WebSocket
-- Server-Sent Events (SSE)
+- Spring Cloud Gateway (WebFlux-based)
+- Spring Validation (Bean Validation)
 - Apache Kafka
+- Netflix Eureka
+- gRPC & gRPC streaming
+- WebSocket
+- Lombok
+- MapStruct
+- JavaMailSender (SMTP)
+- RestTemplate 
+- Server-Sent Events (SSE)
 - Swagger (OpenAPI)
 
 ### Infrastructure & Storage
@@ -32,18 +37,20 @@
 
 ### Testing & Build
 - JUnit 5
+- Mockito 
 - Maven (multi-module project)
 
 ### Frontend
 - HTML / CSS (Bootstrap)
 - JavaScript
 - AJAX
+- Thymeleaf (server-side rendering)
 
 # 💥 Возможности интернет-магазина 
 
 https://github.com/user-attachments/assets/ea699507-5ebe-4c05-8064-6c93ee748cc4
 
-- Регистрация аккаунта через свой email с отправкой кода-подтверждения 
+- Регистрация аккаунта через свой email с отправкой туда кода-подтверждения 
 - Просмотр страницы с данными о своём аккаунте
 - Установка/смена аватарки своего аккаунта, смена имени, фамилии, email-адреса
 - Смена пароля своего аккаунта
@@ -63,12 +70,12 @@ https://github.com/user-attachments/assets/ea699507-5ebe-4c05-8064-6c93ee748cc4
 - Возможность отвечать обычным пользователям в чатах поддержки с аккаунта агента поддержки
 
 #  🍫 О проекте 
-Проект реализует микросервисную архитектуру.
+Проект реализует микросервисную архитектуру. Всего 9 полноценных сервисов (user-service, support-service, review-service, order-service, media-service, email-service, catalogue-service и т.д.)
 Каждый сервис является независимым Spring Boot приложением
 со своей domain-моделью и конфигурацией.
 
 Взаимодействие между сервисами осуществляется исключительно
-по сети (HTTP / gRPC/ Kafka).
+по сети (HTTP / gRPC/ Kafka). Сервисы используют библиотеку, из которой делят общие бины, Dto, Exception и т.д.
 
 Для упрощения инфраструктуры используется общий экземпляр
 PostgreSQL и Redis, при этом каждый сервис логически изолирует
