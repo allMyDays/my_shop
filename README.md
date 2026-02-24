@@ -48,7 +48,7 @@
 
 # 💥 Возможности интернет-магазина 
 
-https://github.com/user-attachments/assets/ea699507-5ebe-4c05-8064-6c93ee748cc4
+https://github.com/user-attachments/assets/ccf02e17-7b50-4efb-9b30-1973025712df
 
 - Регистрация аккаунта через свой email с отправкой туда кода-подтверждения 
 - Просмотр страницы с данными о своём аккаунте
