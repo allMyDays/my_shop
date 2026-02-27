@@ -6,7 +6,7 @@
 - Java 21
 - Spring Boot 3.3.1
 - Spring MVC
-- Spring Security + OAuth2 + OpenID Connect (Keycloak, JWT)
+- Spring Security + OAuth2 + JWT-based stateless authentication (Keycloak)
 - Spring Data JPA + Hibernate
 - Spring Cloud Gateway (WebFlux-based)
 - Spring Validation (Bean Validation)
