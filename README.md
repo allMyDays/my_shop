@@ -1,4 +1,4 @@
-# ИНТЕРНЕТ-МАГАЗИН  — microservices pet-project 
+# ИНТЕРНЕТ-МАГАЗИН  — microservices pet-project (monorepository)
 
 ## 🧰 Technology Stack
 
