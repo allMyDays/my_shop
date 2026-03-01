@@ -27,21 +27,22 @@ import static com.example.common.service.CommonUserService.getMyUserEntityId;
 public class WishListRestController implements IWishListRestController{
 
     private final WishListService wishService;
-    private final WishListMapper listMapper;
-    private final WishItemMapper itemMapper;
+    private final WishListMapper wishListMapper;
+    private final WishItemMapper WishItemMapper;
 
 
     @GetMapping
     public WishListResponseDTO getWishList(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException {  // возвращает первые 40 товаров
 
-        return listMapper.toWishListResponseDTO(getMyUserEntityId(jwt));
+        long userId = getMyUserEntityId(jwt);
+        return wishListMapper.toWishListResponseDTO(wishService.getListSize(userId),wishService.getItems(userId,0));
 
     }
 
     @GetMapping("/items")
     public List<WishItemResponseDTO> getItems(@RequestParam int offset, @AuthenticationPrincipal Jwt jwt) throws UserNotFoundException { // возвращает по 40 товаров начиная с offset
 
-        return itemMapper.mapItems(wishService.getItems(getMyUserEntityId(jwt),offset));
+        return WishItemMapper.mapItems(wishService.getItems(getMyUserEntityId(jwt),offset));
 
     }
 

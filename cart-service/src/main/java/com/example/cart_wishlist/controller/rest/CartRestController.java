@@ -37,7 +37,9 @@ public class CartRestController implements ICartRestController {
 
     @GetMapping
     public CartResponseDTO getCart(@AuthenticationPrincipal Jwt jwt) throws UserNotFoundException{  // возвращает первые 40 товаров
-        return cartMapper.toCartResponseDTO(getMyUserEntityId(jwt));
+
+        long userId = getMyUserEntityId(jwt);
+        return cartMapper.toCartResponseDTO(cartService.getCartSize(userId), cartService.getCartItems(userId,0));
     }
 
     @PutMapping("/{productId:\\d+}")

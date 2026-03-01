@@ -57,20 +57,20 @@ class WishListRestUnitControllerTest {
     void getWishList_WhenValidRequest_ShouldReturnWishList() throws UserNotFoundException {
         // Arrange
         WishListResponseDTO expectedWishList = new WishListResponseDTO();
-        when(listMapper.toWishListResponseDTO(eq(TEST_USER_ID))).thenReturn(expectedWishList);
+        when(listMapper.toWishListResponseDTO(anyLong(), anyList())).thenReturn(expectedWishList);
 
         // Act
         WishListResponseDTO result = wishListRestController.getWishList(jwt);
 
         // Assert
         assertEquals(expectedWishList, result);
-        verify(listMapper).toWishListResponseDTO(TEST_USER_ID);
+        verify(listMapper).toWishListResponseDTO(anyLong(), anyList());
     }
 
     @Test
     void getWishList_WhenUserNotFound_ShouldThrowException() throws UserNotFoundException {
         // Arrange
-        when(listMapper.toWishListResponseDTO(eq(TEST_USER_ID)))
+        when(listMapper.toWishListResponseDTO(anyLong(), anyList()))
                 .thenThrow(new UserNotFoundException());
 
         // Act & Assert

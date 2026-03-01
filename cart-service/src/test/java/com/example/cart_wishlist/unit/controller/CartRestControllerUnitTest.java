@@ -63,20 +63,20 @@ class CartRestControllerUnitTest {
     void getCart_WhenValidRequest_ShouldReturnCart() throws UserNotFoundException {
         // Arrange
         CartResponseDTO expectedCart = new CartResponseDTO();
-        when(cartMapper.toCartResponseDTO(eq(TEST_USER_ID))).thenReturn(expectedCart);
+        when(cartMapper.toCartResponseDTO(anyLong(), anyList())).thenReturn(expectedCart);
 
         // Act
         CartResponseDTO result = cartRestController.getCart(jwt);
 
         // Assert
         assertEquals(expectedCart, result);
-        verify(cartMapper).toCartResponseDTO(TEST_USER_ID);
+        verify(cartMapper).toCartResponseDTO(anyLong(), anyList());
     }
 
     @Test
     void getCart_WhenUserNotFound_ShouldThrowException() throws UserNotFoundException {
         // Arrange
-        when(cartMapper.toCartResponseDTO(eq(TEST_USER_ID)))
+        when(cartMapper.toCartResponseDTO(anyLong(), anyList()))
                 .thenThrow(new UserNotFoundException());
 
         // Act & Assert
